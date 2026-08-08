@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.1.2 - 2026-08-08
+### Bug Fixes
+
+* **field:** support readonly mode ([a162a08](https://github.com/boundstate/eventful/commit/a162a08049563a526f3e80556b680bfef821b6b0))
+* remove unnecessary permission check ([cfced9d](https://github.com/boundstate/eventful/commit/cfced9d36d7e83bdfbb2f7c747843c55c33cce55))
+
 ## 1.1.1 - 2026-08-08
 ### Bug Fixes
 

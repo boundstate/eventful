@@ -37,6 +37,8 @@ This plugin builds its configuration from [Project config](https://craftcms.com/
 
 ## Development
 
+Run `ddev start` to serve the demo at http://eventful.ddev.site.
+
 Run `ddev composer phpdoc` to generate the docs.
 
 Run `ddev zensical serve` to serve the docs at http://eventful.ddev.site:8000

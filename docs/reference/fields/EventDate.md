@@ -167,6 +167,18 @@ public getInputHtml(mixed $value, ?ElementInterface $element = null): string
 | `$element` | <span class="code">?[ElementInterface](https://docs.craftcms.com/api/v5/craft-base-elementinterface.html '\\craft\\base\\ElementInterface')</span> |     |
 | **return** | <span class="code">string</span>                                                                                                                   |     |
 
+### getStaticHtml
+
+```php
+public getStaticHtml(mixed $value, ElementInterface $element): string
+```
+
+|            |                                                                                                                                                   |     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `$value`   | <span class="code">mixed</span>                                                                                                                   |     |
+| `$element` | <span class="code">[ElementInterface](https://docs.craftcms.com/api/v5/craft-base-elementinterface.html '\\craft\\base\\ElementInterface')</span> |     |
+| **return** | <span class="code">string</span>                                                                                                                  |     |
+
 ### getSettingsHtml
 
 ```php

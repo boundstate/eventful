@@ -43,7 +43,6 @@ class DefaultController extends Controller
         ?int $day = null,
     ): Response {
         $this->requireCpRequest();
-        $this->requirePermission('accessPlugin-eventful');
 
         $settings = Eventful::getInstance()->settings;
         $types = Eventful::getInstance()->events->getTypes();
@@ -172,7 +171,6 @@ class DefaultController extends Controller
     public function actionEvents(): Response
     {
         $this->requireCpRequest();
-        $this->requirePermission('accessPlugin-events');
 
         $settings = Eventful::getInstance()->settings;
 

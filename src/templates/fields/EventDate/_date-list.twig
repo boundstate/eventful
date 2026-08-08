@@ -8,30 +8,23 @@
                     <div class="label">
                         {{ date|date('D') }} {{ date|date('short') }}
                     </div>
-                    <div class="chip-actions">
-                        <button
-                            type="button"
-                            class="btn action-btn delete icon"
-                        >
 
-                        </button>
-                    </div>
+                    {% if not disabled %}
+                        <div class="chip-actions">
+                            <button type="button" class="btn action-btn delete icon"></button>
+                        </div>
+                    {% endif %}
 
-                    {{
-                        forms.hidden({
-                            name: inputName|namespaceInputName(namespace),
-                            value: date|date('Y-m-d')
-                        })
-                    }}
+                    {{ forms.hidden({
+                        name: inputName|namespaceInputName(namespace),
+                        value: date|date('Y-m-d'),
+                    }) }}
                 </div>
             </div>
         </li>
     {% endfor %}
-    <li>
-        {{
-            forms.dateField({
-                class: 'add'
-            })
-        }}
-    </li>
+
+    {% if not disabled %}
+        <li>{{ forms.dateField({ class: 'add' }) }}</li>
+    {% endif %}
 </ul>

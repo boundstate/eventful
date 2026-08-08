@@ -23,6 +23,17 @@
     visibility: hidden;
   }
 
+  &.readonly {
+    .input,
+    select {
+      opacity: 1;
+    }
+    .select:not(.selectize):after,
+    .selectize.select .selectize-control:after {
+      opacity: 0.5;
+    }
+  }
+
   .row + .row {
     margin-top: var(--m);
   }

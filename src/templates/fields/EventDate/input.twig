@@ -1,6 +1,6 @@
 {% import '_includes/forms' as forms %}
 
-<div id="{{ id }}" class="event-date-input loading">
+<div id="{{ id }}" class="event-date-input loading {{ readonly ? 'readonly' }}">
     <div class="row flex">
         {% if field.allDay %}
             {{
@@ -8,6 +8,7 @@
                     id: 'start'|namespaceInputId(id),
                     name: 'start'|namespaceInputName(name),
                     value: value.start,
+                    disabled: readonly,
                 })
             }}
         {% else %}
@@ -15,7 +16,8 @@
                 forms.dateTimeField({
                     id: 'start'|namespaceInputId(id),
                     name: 'start'|namespaceInputName(name),
-                    value: value.start
+                    value: value.start,
+                    disabled: readonly,
                 })
             }}
             -
@@ -23,7 +25,8 @@
                 forms.timeField({
                     id: 'end'|namespaceInputId(id),
                     name: 'end'|namespaceInputName(name),
-                    value: value.end
+                    value: value.end,
+                    disabled: readonly,
                 })
             }}
 
@@ -38,7 +41,8 @@
                             value: null
                         }
                     ]|merge(craft.cp.getTimeZoneOptions(value.start)),
-                    value: value.timezone
+                    value: value.timezone,
+                    disabled: readonly,
                 })
             }}
         {% endif %}
@@ -48,7 +52,8 @@
                 name: 'repeat'|namespaceInputName(name),
                 label: 'Repeats',
                 toggle: 'repeat',
-                checked: value.repeat
+                checked: value.repeat,
+                disabled: readonly,
             })
         }}
     </div>
@@ -66,7 +71,8 @@
                     class: 'input-short',
                     type: 'number',
                     min: 1,
-                    value: value.interval
+                    value: value.interval,
+                    disabled: readonly,
                 })
             }}
 
@@ -83,7 +89,8 @@
                         }
                     ),
                     toggle: true,
-                    targetPrefix: 'freq-'
+                    targetPrefix: 'freq-',
+                    disabled: readonly,
                 })
             }}
 
@@ -97,7 +104,8 @@
                         id: 'weekdays'|namespaceInputId(id),
                         class: 'weekdays',
                         options: dayOptions,
-                        values: value.byDay
+                        values: value.byDay,
+                        disabled: readonly,
                     })
                 }}
             </div>
@@ -116,12 +124,13 @@
                                 value: value.byDay[0] ?? value.byMonthDay[0]
                                     ?? null
                             }
-                        ]
+                        ],
+                        disabled: readonly,
                     })
                 }}
             </div>
 
-            {% if not value.inDates|length or not value.exDates|length %}
+            {% if not readonly and (not value.inDates|length or not value.exDates|length) %}
                 <button
                     type="button"
                     id="{{ id }}-action-btn"
@@ -191,7 +200,8 @@
                 {{ include('eventful/fields/EventDate/_date-list', {
                     dates: inputValue,
                     inputName: inputName ~ '[]',
-                    namespace: name
+                    namespace: name,
+                    disabled: readonly,
                 }) }}
             </div>
         {% endfor %}
@@ -227,7 +237,8 @@
                     options,
                     toggle: true,
                     targetPrefix: 'ends-',
-                    value: value.ends
+                    value: value.ends,
+                    disabled: readonly,
                 })
             }}
 
@@ -237,6 +248,7 @@
                         id: 'until'|namespaceInputId(id),
                         name: 'until'|namespaceInputName(name),
                         value: value.until,
+                        disabled: readonly,
                     })
                 }}
             </div>
@@ -252,7 +264,8 @@
                             ? 'occurrence'
                             : 'occurrences',
                         value: value.count,
-                        min: 1
+                        min: 1,
+                        disabled: readonly,
                     })
                 }}
             </div>

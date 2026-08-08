@@ -433,37 +433,45 @@ Craft.Eventful ??= {};
         ),
       );
 
-      if (extra.element.canEdit || extra.element.canDelete) {
-        let $footerActions = $('<div>', { class: 'flex' });
+      let $footerActions = $('<div>', { class: 'flex' });
 
-        if (extra.element.canEdit) {
-          let $editBtn = $('<a>', {
-            class: 'btn',
-            href: info.el.href,
-            'data-icon': 'pencil',
-            text: 'Edit',
-          });
+      if (extra.element.canEdit) {
+        let $editBtn = $('<a>', {
+          class: 'btn',
+          href: info.el.href,
+          'data-icon': 'pencil',
+          text: 'Edit',
+        });
 
-          this.addListener($editBtn, 'click', info, 'editEvent');
+        this.addListener($editBtn, 'click', info, 'editEvent');
 
-          $footerActions.append($editBtn);
-        }
+        $footerActions.append($editBtn);
+      } else {
+        let $viewBtn = $('<a>', {
+          class: 'btn',
+          href: info.el.href,
+          text: 'View',
+        });
 
-        if (extra.element.canDelete) {
-          let $deleteBtn = $('<button>', {
-            type: 'button',
-            class: 'btn',
-            'data-icon': 'trash',
-            title: 'Delete',
-          });
+        this.addListener($viewBtn, 'click', info, 'editEvent');
 
-          this.addListener($deleteBtn, 'click', info, 'confirmDeleteEvent');
-
-          $footerActions.append($deleteBtn);
-        }
-
-        $footer.append($footerActions);
+        $footerActions.append($viewBtn);
       }
+
+      if (extra.element.canDelete) {
+        let $deleteBtn = $('<button>', {
+          type: 'button',
+          class: 'btn',
+          'data-icon': 'trash',
+          title: 'Delete',
+        });
+
+        this.addListener($deleteBtn, 'click', info, 'confirmDeleteEvent');
+
+        $footerActions.append($deleteBtn);
+      }
+
+      $footer.append($footerActions);
 
       let $closeBtn = $('<button>', {
         type: 'button',

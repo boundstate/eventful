@@ -232,6 +232,28 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         mixed $value,
         ?ElementInterface $element = null,
     ): string {
+        return $this->inputHtmlInternal($value, $element);
+    }
+
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->inputHtmlInternal($value, $element, true);
+    }
+
+    public function getSettingsHtml(): string
+    {
+        return Craft::$app
+            ->getView()
+            ->renderTemplate('eventful/fields/EventDate/settings', [
+                'field' => $this,
+            ]);
+    }
+
+    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static = false): string
+    {
+        $view = Craft::$app->view;
+        $id = $this->getInputId();
+
         $freqOptions = [
             ['label' => 'day', 'value' => EventDateModel::FREQ_DAILY],
             ['label' => 'week', 'value' => EventDateModel::FREQ_WEEKLY],
@@ -248,9 +270,6 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             ['label' => 'F', 'value' => 'FR'],
             ['label' => 'S', 'value' => 'SA'],
         ];
-
-        $view = Craft::$app->view;
-        $id = $this->getInputId();
 
         $locale = Craft::$app->getUser()->getIdentity()->getPreferredLocale();
 
@@ -274,16 +293,8 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             'field' => $this,
             'freqOptions' => $freqOptions,
             'dayOptions' => $dayOptions,
+            'readonly' => $static,
         ]);
-    }
-
-    public function getSettingsHtml(): string
-    {
-        return Craft::$app
-            ->getView()
-            ->renderTemplate('eventful/fields/EventDate/settings', [
-                'field' => $this,
-            ]);
     }
 
     private function normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?EventDateModel

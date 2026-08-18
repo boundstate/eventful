@@ -95,16 +95,16 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             'timezone' => $this->allDay
                 ? Craft::$app->timeZone
                 : $value->timezone,
+
+            // denormalized for querying
+            'firstStart' => Db::prepareDateForDb($value->getFirstStartDate()),
+            'lastEnd' => Db::prepareDateForDb($value->getLastEndDate()),
         ];
 
         if ($value->repeat && $value->freq) {
             $serialized['freq'] = $value->freq;
             $serialized['interval'] = $value->interval;
             $serialized['ends'] = $value->ends;
-
-            // denormalized for querying
-            $serialized['firstStart'] = Db::prepareDateForDb($value->getFirstStartDate());
-            $serialized['lastEnd'] = Db::prepareDateForDb($value->getLastEndDate());
 
             if (! empty($value->inDates)) {
                 $serialized['inDates'] = $value->inDates;

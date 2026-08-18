@@ -1,5 +1,14 @@
 # Release notes
 
+## 1.2.0 - 2026-08-18
+### Features
+
+* avoid recalculating repeat description ([3fa800e](https://github.com/boundstate/eventful/commit/3fa800e759a98bfe32904b20e6aca5fcbc0e2cdf))
+
+### Bug Fixes
+
+* always store first start & last end ([97bee68](https://github.com/boundstate/eventful/commit/97bee68a9fd1bea3fe91aeefcef61405ce91279e))
+
 ## 1.1.2 - 2026-08-08
 ### Bug Fixes
 

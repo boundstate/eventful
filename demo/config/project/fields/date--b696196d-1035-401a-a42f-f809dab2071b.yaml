@@ -5,7 +5,7 @@ name: Date
 searchable: false
 settings:
   allDay: false
-  allowNeverEnding: false
+  allowNeverEnding: true
 translationKeyFormat: null
 translationMethod: none
 type: boundstate\eventful\fields\EventDate

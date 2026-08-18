@@ -1,0 +1,15 @@
+{% set events = craft.entries.section('virtualTraining').date({lastEnd: '>= now'}).all() %}
+
+<ul>
+  {% for event in events %}
+    <li>
+      <strong>{{ event.title }}</strong><br/>
+      {{ event.date |eventDateRange }}<br/>
+      {% if event.date.repeatDescription %}
+        {{ event.date.repeatDescription }}<br/>
+      {% endif %}<br/>
+      last end date: {{ event.date.lastEndDate|date }}
+      <a href="{{ event.url }}">Details</a>
+    </li>
+  {% endfor %}
+</ul>

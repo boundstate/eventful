@@ -1,4 +1,4 @@
-dateModified: 1786141014
+dateModified: 1786214670
 elementSources:
   craft\elements\Entry:
     - key: '*'
@@ -58,7 +58,7 @@ plugins:
       eventLocationTemplate: '{{ object.location.one()|address({ html: not ics }) }}'
       eventTitleTemplate: '{title}'
 system:
-  edition: solo
+  edition: pro
   live: true
   name: 'Eventful Demo'
   schemaVersion: 5.10.0.0

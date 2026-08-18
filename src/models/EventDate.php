@@ -77,6 +77,8 @@ class EventDate extends Model
 
     private ?RecurrenceCollection $_allRecurrences = null;
 
+    private ?string $_repeatDescription = null;
+
     public function __construct($config = [])
     {
         // use our own logic to typecast & normalize DateTime attributes,
@@ -267,14 +269,18 @@ class EventDate extends Model
         }
     }
 
-    public function getRepeatDescription(): ?string
+    public function getRepeatDescription(): string
     {
-        if (! $this->rule) {
-            return null;
+        if ($this->_repeatDescription === null) {
+            if ($this->rule) {
+                $description = $this->getTextTransformer()->transform($this->rule);
+                $this->_repeatDescription = ucfirst((string) $description);
+            } else {
+                $this->_repeatDescription = '';
+            }
         }
-        $description = $this->getTextTransformer()->transform($this->rule);
 
-        return $description ? ucfirst((string) $description) : null;
+        return $this->_repeatDescription;
     }
 
     public function getOccurrences(

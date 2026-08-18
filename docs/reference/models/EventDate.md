@@ -195,12 +195,12 @@ public validateUntil(): void
 ### getRepeatDescription
 
 ```php
-public getRepeatDescription(): ?string
+public getRepeatDescription(): string
 ```
 
-|            |                                   |     |
-| ---------- | --------------------------------- | --- |
-| **return** | <span class="code">?string</span> |     |
+|            |                                  |     |
+| ---------- | -------------------------------- | --- |
+| **return** | <span class="code">string</span> |     |
 
 ### getOccurrences
 

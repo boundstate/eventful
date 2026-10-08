@@ -2,6 +2,7 @@
 
 use boundstate\eventful\models\EventDate;
 use Recurr\Rule;
+use Recurr\Transformer\Constraint\BetweenConstraint;
 
 /**
  * Mondays & Wednesdays, 10-11AM (Toronto), starting Monday, March 2, 2026.
@@ -265,6 +266,28 @@ describe('occurrences', function (): void {
 
     it('has no last end date when the event repeats forever', function (): void {
         expect(weeklyEventDate(['ends' => null, 'count' => null])->getLastEndDate())->toBeNull();
+    });
+
+    it('applies constraints without exceeding the count', function (): void {
+        $occurrences = weeklyEventDate()->getOccurrences(
+            new BetweenConstraint(new DateTime('2026-03-04'), new DateTime('2026-12-31')),
+        );
+
+        expect(array_map(
+            fn ($recurrence) => $recurrence->getStart()->format('Y-m-d H:i'),
+            $occurrences->toArray(),
+        ))->toBe(['2026-03-04 10:00', '2026-03-09 10:00', '2026-03-11 10:00']);
+    });
+
+    it('applies constraints far beyond the start of events that repeat forever', function (): void {
+        $occurrences = weeklyEventDate(['ends' => null, 'count' => null])->getOccurrences(
+            new BetweenConstraint(new DateTime('2046-03-01'), new DateTime('2046-03-08')),
+        );
+
+        expect(array_map(
+            fn ($recurrence) => $recurrence->getStart()->format('Y-m-d H:i'),
+            $occurrences->toArray(),
+        ))->toBe(['2046-03-05 10:00', '2046-03-07 10:00']);
     });
 });
 

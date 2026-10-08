@@ -300,9 +300,13 @@ class EventDate extends Model
             return $this->_allRecurrences;
         }
 
+        // Occurrences that fail the constraint must still count toward the
+        // rule's count, but otherwise shouldn't count toward the virtual limit,
+        // so occurrences of long-running events can be found
         return $this->getArrayTransformer()->transform(
             $this->rule,
             $constraint,
+            countConstraintFailures: $this->rule->getCount() !== null,
         );
     }
 

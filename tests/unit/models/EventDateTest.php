@@ -209,9 +209,8 @@ describe('getRepeatDescription', function (): void {
         expect(weeklyEventDate()->getRepeatDescription())->toBe('Weekly on Monday and Wednesday 4 times');
     });
 
-    it('describes a monthly rule repeating until a date', function (): void {
-        // the until date is formatted in the system timezone
-        Craft::$app->timeZone = 'America/Toronto';
+    it('describes a monthly rule repeating until a date in the event timezone', function (string $systemTimezone): void {
+        Craft::$app->timeZone = $systemTimezone;
 
         $eventDate = weeklyEventDate([
             'freq' => EventDate::FREQ_MONTHLY,
@@ -221,7 +220,7 @@ describe('getRepeatDescription', function (): void {
         ]);
 
         expect($eventDate->getRepeatDescription())->toBe('Monthly on the last Friday until August 1, 2026');
-    });
+    })->with(['UTC', 'America/Toronto', 'Pacific/Auckland']);
 
     it('is translated into the application language', function (): void {
         Craft::$app->language = 'fr';

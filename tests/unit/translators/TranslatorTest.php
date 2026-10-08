@@ -24,6 +24,20 @@ it('formats a day of a month', function (): void {
     expect((new Translator)->trans('day_month', ['month' => 3, 'day' => 5]))->toBe('March 5');
 });
 
+describe('day_date', function (): void {
+    // August 2, 2026 03:59:59 UTC (August 1 in Toronto)
+    $timestamp = (new DateTime('2026-08-01 23:59:59', new DateTimeZone('America/Toronto')))->getTimestamp();
+
+    it('formats the date in the given timezone', function () use ($timestamp): void {
+        expect((new Translator(timezone: 'America/Toronto'))->trans('day_date', ['date' => $timestamp]))
+            ->toBe('August 1, 2026');
+    });
+
+    it('formats the date in the system timezone by default', function () use ($timestamp): void {
+        expect((new Translator)->trans('day_date', ['date' => $timestamp]))->toBe('August 2, 2026');
+    });
+});
+
 describe('ordinal_number', function (): void {
     it('formats positive ordinals', function (int $number, string $expected): void {
         expect((new Translator)->trans('ordinal_number', ['number' => $number]))->toBe($expected);

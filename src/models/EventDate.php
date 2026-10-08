@@ -380,7 +380,7 @@ class EventDate extends Model
     private function getTextTransformer(): TextTransformer
     {
         if (! $this->_textTransformer instanceof TextTransformer) {
-            $this->_textTransformer = new TextTransformer(new Translator);
+            $this->_textTransformer = new TextTransformer(new Translator(timezone: $this->timezone));
         }
 
         return $this->_textTransformer;

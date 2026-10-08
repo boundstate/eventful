@@ -15,6 +15,7 @@ class Translator implements TranslatorInterface
 {
     public function __construct(
         private readonly ?string $language = null,
+        private readonly ?string $timezone = null,
     ) {}
 
     public function trans(mixed $string, array $params = []): string|array
@@ -22,7 +23,7 @@ class Translator implements TranslatorInterface
         return match ($string) {
             'day_names' => $this->getLocale()->getWeekDayNames(Locale::LENGTH_FULL, false),
             'month_names' => $this->getLocale()->getMonthNames(Locale::LENGTH_FULL),
-            'day_date' => $this->getLocale()->getFormatter()->asDate((int) $params['date'], Locale::LENGTH_LONG),
+            'day_date' => $this->formatDate((int) $params['date']),
             'day_month' => $this->t('day_month', [
                 'month' => $this->getLocale()->getMonthName((int) $params['month'], Locale::LENGTH_FULL, false),
                 'day' => (int) $params['day'],
@@ -41,6 +42,20 @@ class Translator implements TranslatorInterface
         // Yii falls back to the source language for empty translations, so languages that intentionally
         // omit a word (e.g. `the_for_weekday` in German) translate it to a single space instead.
         return trim($this->t(preg_replace('/%(\w+)%/', '{$1}', $key), $params));
+    }
+
+    /**
+     * Formats a timestamp as a date in the translator's timezone, since Recurr only provides a timestamp.
+     */
+    private function formatDate(int $timestamp): string
+    {
+        $formatter = clone $this->getLocale()->getFormatter();
+
+        if ($this->timezone) {
+            $formatter->timeZone = $this->timezone;
+        }
+
+        return $formatter->asDate($timestamp, Locale::LENGTH_LONG);
     }
 
     private function ordinal(int $number, bool $hasNegatives, bool $inMonth): string

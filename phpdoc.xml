@@ -17,7 +17,7 @@
             <ignore>
                 <path>src/Eventful.php</path>
                 <path>src/controllers/**/*</path>
-                <path>src/db/**/*</path>
+                <path>src/db/Table.php</path>
                 <path>src/migrations/**/*</path>
                 <path>src/records/**/*</path>
                 <path>src/transformers/*</path>

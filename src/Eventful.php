@@ -2,6 +2,7 @@
 
 namespace boundstate\eventful;
 
+use boundstate\eventful\behaviors\OccurrencesBehavior;
 use boundstate\eventful\fields\EventDate as EventDateField;
 use boundstate\eventful\models\Settings;
 use boundstate\eventful\services\Events;
@@ -11,6 +12,9 @@ use Craft;
 use craft\base\Element;
 use craft\base\Model;
 use craft\base\Plugin;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineMenuItemsEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -112,6 +116,15 @@ class Eventful extends Plugin
         ): void {
             $e->types[] = EventDateField::class;
         });
+
+        // Occurrence queries
+        Event::on(
+            ElementQuery::class,
+            Query::EVENT_DEFINE_BEHAVIORS,
+            function (DefineBehaviorsEvent $e): void {
+                $e->behaviors['eventful.occurrences'] = OccurrencesBehavior::class;
+            },
+        );
 
         // Action menu
         Event::on(

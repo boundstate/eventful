@@ -123,6 +123,19 @@ it('adds organizers and attendees', function (): void {
     )->and(implode("\n", $lines))->not->toContain('old@example.com');
 });
 
+it('adds organizers and attendees without names', function (): void {
+    $calendar = new IcsCalendar;
+    $calendar->addEvent()
+        ->setOrganizers('organizer@example.com')
+        ->addAttendees(['jane@example.com', 'mary@example.com' => 'Mary']);
+
+    expect(icsLines($calendar))->toContain(
+        'ORGANIZER:MAILTO:organizer@example.com',
+        'ATTENDEE;ROLE=REQ-PARTICIPANT:MAILTO:jane@example.com',
+        'ATTENDEE;CN=Mary;ROLE=REQ-PARTICIPANT:MAILTO:mary@example.com',
+    );
+});
+
 it('replaces attendees', function (): void {
     $calendar = new IcsCalendar;
     $calendar->addEvent()

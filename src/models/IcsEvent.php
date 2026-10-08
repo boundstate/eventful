@@ -149,10 +149,10 @@ class IcsEvent extends Model
 
     public function addOrganizers(mixed $users): static
     {
-        foreach (MailerHelper::normalizeEmails($users) as $email => $name) {
-            $this->_doc->add('ORGANIZER', "MAILTO:{$email}", [
+        foreach ($this->normalizeEmails($users) as $email => $name) {
+            $this->_doc->add('ORGANIZER', "MAILTO:{$email}", array_filter([
                 'CN' => $name,
-            ]);
+            ]));
         }
 
         return $this;
@@ -168,11 +168,11 @@ class IcsEvent extends Model
 
     public function addAttendees(mixed $users, ?bool $accepted = null): static
     {
-        foreach (MailerHelper::normalizeEmails($users) as $email => $name) {
-            $props = [
+        foreach ($this->normalizeEmails($users) as $email => $name) {
+            $props = array_filter([
                 'CN' => $name,
                 'ROLE' => 'REQ-PARTICIPANT',
-            ];
+            ]);
             if ($accepted) {
                 $props['PARTSTAT'] = 'ACCEPTED';
                 $props['RSVP'] = 'TRUE';
@@ -181,5 +181,26 @@ class IcsEvent extends Model
         }
 
         return $this;
+    }
+
+    /**
+     * Normalizes emails to `email => name` pairs,
+     * since {@link MailerHelper::normalizeEmails()} uses numeric keys for emails without names.
+     *
+     * @return array<string, ?string>
+     */
+    private function normalizeEmails(mixed $users): array
+    {
+        $normalized = [];
+
+        foreach (MailerHelper::normalizeEmails($users) as $key => $value) {
+            if (is_int($key)) {
+                $normalized[$value] = null;
+            } else {
+                $normalized[$key] = $value;
+            }
+        }
+
+        return $normalized;
     }
 }

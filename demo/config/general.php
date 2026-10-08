@@ -31,5 +31,5 @@ return GeneralConfig::create()
     ->enableTwigSandbox()
     // Set the @webroot alias so the clear-caches command knows where to find CP resources
     ->aliases([
-        '@webroot' => dirname(__DIR__).'/web',
+        '@webroot' => __DIR__.'/../web',
     ]);

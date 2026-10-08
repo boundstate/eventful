@@ -67,7 +67,7 @@ class Exporter extends Component
 
         $attendees = MailerHelper::normalizeEmails($attendees);
 
-        return array_map(function ($element) use ($attendees, $method): string {
+        return array_map(function (ElementInterface $element) use ($attendees, $method): string {
             $calendar = new IcsCalendar;
             $calendar->setMethod($method);
             $this->addEvent(

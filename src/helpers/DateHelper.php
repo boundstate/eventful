@@ -62,12 +62,12 @@ abstract class DateHelper
             $timezone ?: $startDate->getTimezone()->getName(),
         );
 
-        $isSameDay = $endDate && $startDate->diff($endDate)->days === 0;
+        $isSameDay = $endDate instanceof DateTimeInterface && $startDate->diff($endDate)->days === 0;
 
         $startDateFormat = $format === 'long' ? 'MMMM d, yyyy' : 'MMM d, yyyy';
         $endDateFormat = $startDateFormat;
 
-        if ($endDate && ! $isSameDay) {
+        if ($endDate instanceof DateTimeInterface && ! $isSameDay) {
             if ($startDate->format('yyyy') === $endDate->format('yyyy')) {
                 $startDateFormat = $format === 'long' ? 'MMMM d' : 'MMM d';
                 if ($startDate->format('MMM') === $endDate->format('MMM')) {
@@ -78,7 +78,7 @@ abstract class DateHelper
 
         $formatted = $formatter->asDate($startDate, $startDateFormat);
 
-        if (! $isSameDay && $endDate) {
+        if (! $isSameDay && $endDate instanceof DateTimeInterface) {
             $formatted .= ' - '.$formatter->asDate($endDate, $endDateFormat);
         }
 
@@ -99,7 +99,9 @@ abstract class DateHelper
                 str_replace('Time', '', $format),
                 $timezone,
             );
-        } elseif (str_contains($format, 'Date')) {
+        }
+
+        if (str_contains($format, 'Date')) {
             return self::formatDateRange(
                 $startDate,
                 $endDate,

@@ -17,6 +17,7 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -50,11 +51,11 @@ class Events extends Component
     public function findDateField(ElementInterface|FieldLayoutProviderInterface $type): ?EventDateField
     {
         $fieldLayout = $type->getFieldLayout();
-        if ($fieldLayout === null) {
+        if (! $fieldLayout instanceof FieldLayout) {
             return null;
         }
 
-        return ArrayHelper::firstWhere($fieldLayout->getCustomFields(), fn ($field) => $field instanceof EventDateField);
+        return ArrayHelper::firstWhere($fieldLayout->getCustomFields(), fn ($field): bool => $field instanceof EventDateField);
     }
 
     public function getTypes(): array
@@ -118,7 +119,7 @@ class Events extends Component
         foreach ($this->getSources() as $key => $source) {
             if (
                 (! $sourceKeys || in_array($key, $sourceKeys)) &&
-                (! $user || $source->type->canView($user))
+                (! $user instanceof User || $source->type->canView($user))
             ) {
 
                 $query = $source->type->find();
@@ -133,7 +134,7 @@ class Events extends Component
                     $queryParams = [...$queryParams, ...$extraQueryParams];
                 }
 
-                if ($user && ! $source->type->canViewPeers($user)) {
+                if ($user instanceof User && ! $source->type->canViewPeers($user)) {
                     $queryParams = [...$queryParams, 'authorId' => $user->id];
                 }
 

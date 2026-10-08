@@ -95,10 +95,7 @@ class EventDate extends Model
                 $isTimeOnly = is_array($value) && ! isset($value['date']);
                 $isDateOnly = is_array($value) && ! isset($value['time']);
 
-                $config[$attribute] = self::toDateTime(
-                    $value,
-                    $config['timezone'],
-                );
+                $config[$attribute] = $this->toDateTime($value, $config['timezone']);
 
                 if (! $config[$attribute]) {
                     continue;
@@ -185,11 +182,11 @@ class EventDate extends Model
 
     public function getRule(?bool $forceRefresh = false): ?Rule
     {
-        if (! $this->repeat || ! $this->start || ! $this->end) {
+        if (! $this->repeat || ! $this->start instanceof DateTime || ! $this->end instanceof DateTime) {
             return null;
         }
 
-        if (! $this->_rule || $forceRefresh) {
+        if (! $this->_rule instanceof Rule || $forceRefresh) {
             $rule = (new Rule(null, $this->start, $this->end))
                 ->setFreq($this->freq)
                 ->setRDates($this->inDates)
@@ -206,7 +203,7 @@ class EventDate extends Model
             }
             if ($this->repeatsForCount() && $this->count) {
                 $rule->setCount($this->count);
-            } elseif ($this->repeatsUntil() && $this->until) {
+            } elseif ($this->repeatsUntil() && $this->until instanceof DateTime) {
                 $rule->setUntil($this->until);
             }
 
@@ -223,13 +220,13 @@ class EventDate extends Model
             [['start', 'end', 'until'], DateTimeValidator::class],
             [['end', 'timezone'], 'required', 'when' => fn (EventDate $model): bool => ! $model->allDay],
             ['repeat', 'boolean'],
-            [['interval'], 'required', 'when' => fn (EventDate $model): bool => (bool) $model->repeat],
+            [['interval'], 'required', 'when' => fn (EventDate $model): bool => $model->repeat],
             [
                 ['interval', 'count'],
                 'number',
                 'integerOnly' => true,
                 'min' => 1,
-                'when' => fn (EventDate $model): bool => (bool) $model->repeat,
+                'when' => fn (EventDate $model): bool => $model->repeat,
             ],
             [['byDay', 'byMonthDay'], 'safe'],
             [
@@ -237,16 +234,16 @@ class EventDate extends Model
                 'required',
                 'when' => fn (EventDate $model): bool => $model->repeatsWeekly(),
             ],
-            ['ends', 'required', 'when' => fn (EventDate $model): bool => (bool) $model->repeat && ! $model->allowNeverEnding],
+            ['ends', 'required', 'when' => fn (EventDate $model): bool => $model->repeat && ! $model->allowNeverEnding],
             [
                 'count',
                 'required',
-                'when' => fn (EventDate $model): bool => (bool) $model->repeat && $model->repeatsForCount(),
+                'when' => fn (EventDate $model): bool => $model->repeat && $model->repeatsForCount(),
             ],
             [
                 'until',
                 'required',
-                'when' => fn (EventDate $model): bool => (bool) $model->repeat && $model->repeatsUntil(),
+                'when' => fn (EventDate $model): bool => $model->repeat && $model->repeatsUntil(),
             ],
             [
                 'until',
@@ -293,8 +290,8 @@ class EventDate extends Model
             ]);
         }
 
-        if (! $constraint) {
-            if (! $this->_allRecurrences) {
+        if (! $constraint instanceof ConstraintInterface) {
+            if (! $this->_allRecurrences instanceof RecurrenceCollection) {
                 $this->_allRecurrences = $this->getArrayTransformer()->transform(
                     $this->rule,
                 );
@@ -352,10 +349,10 @@ class EventDate extends Model
     {
         $lastEndDate = $this->getLastEndDate();
 
-        return $lastEndDate && $lastEndDate < new DateTime;
+        return $lastEndDate instanceof DateTime && $lastEndDate < new DateTime;
     }
 
-    private static function toDateTime(
+    private function toDateTime(
         mixed $value,
         ?string $timezone,
     ): DateTime|false {
@@ -373,7 +370,7 @@ class EventDate extends Model
 
     private function getArrayTransformer(): ArrayTransformer
     {
-        if (! $this->_arrayTransformer) {
+        if (! $this->_arrayTransformer instanceof ArrayTransformer) {
             $this->_arrayTransformer = new ArrayTransformer;
         }
 
@@ -382,7 +379,7 @@ class EventDate extends Model
 
     private function getTextTransformer(): TextTransformer
     {
-        if (! $this->_textTransformer) {
+        if (! $this->_textTransformer instanceof TextTransformer) {
             $this->_textTransformer = new TextTransformer(new Translator);
         }
 

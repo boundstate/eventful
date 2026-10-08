@@ -52,7 +52,7 @@ class Translator implements TranslatorInterface
         ]);
 
         if ($hasNegatives) {
-            $ordinal = $this->t('ordinal_number_day_suffix', [
+            return $this->t('ordinal_number_day_suffix', [
                 'ordinal' => $ordinal,
                 'negative' => $negative ? 'yes' : 'no',
             ]);

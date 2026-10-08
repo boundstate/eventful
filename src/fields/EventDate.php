@@ -106,15 +106,15 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             $serialized['interval'] = $value->interval;
             $serialized['ends'] = $value->ends;
 
-            if (! empty($value->inDates)) {
+            if ($value->inDates !== []) {
                 $serialized['inDates'] = $value->inDates;
             }
 
-            if (! empty($value->exDates)) {
+            if ($value->exDates !== []) {
                 $serialized['exDates'] = $value->exDates;
             }
 
-            if ($value->repeatsWeekly() || ($value->repeatsMonthly() && ! empty($value->byDay))) {
+            if ($value->repeatsWeekly() || ($value->repeatsMonthly() && $value->byDay !== [])) {
                 $serialized['byDay'] = $value->byDay;
             } elseif ($value->repeatsMonthly()) {
                 $serialized['byMonthDay'] = $value->byMonthDay;
@@ -170,7 +170,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
                 );
             }
 
-            if (! empty($conditions)) {
+            if ($conditions !== []) {
                 return ['and', ...$conditions];
             }
         }
@@ -180,12 +180,12 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
 
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->normalizeValueInternal($value, $element, false);
+        return $this->normalizeValueInternal($value, false);
     }
 
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
-        return $this->normalizeValueInternal($value, $element, true);
+        return $this->normalizeValueInternal($value, true);
     }
 
     public function getSortOption(): array
@@ -232,12 +232,12 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         mixed $value,
         ?ElementInterface $element = null,
     ): string {
-        return $this->inputHtmlInternal($value, $element);
+        return $this->inputHtmlInternal($value);
     }
 
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        return $this->inputHtmlInternal($value, $element, true);
+        return $this->inputHtmlInternal($value, true);
     }
 
     public function getSettingsHtml(): string
@@ -249,7 +249,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             ]);
     }
 
-    private function inputHtmlInternal(mixed $value, ?ElementInterface $element, bool $static = false): string
+    private function inputHtmlInternal(mixed $value, bool $static = false): string
     {
         $view = Craft::$app->view;
         $id = $this->getInputId();
@@ -297,7 +297,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         ]);
     }
 
-    private function normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): ?EventDateModel
+    private function normalizeValueInternal(mixed $value, bool $fromRequest): ?EventDateModel
     {
         if ($value instanceof EventDateModel) {
             // already normalized

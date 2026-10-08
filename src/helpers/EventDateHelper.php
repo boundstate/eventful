@@ -71,30 +71,32 @@ abstract class EventDateHelper
             }
 
             return implode(' · ', $parts);
-        } else {
-            if (str_contains($format, 'Date')) {
-                return DateHelper::formatDateRange(
-                    $event->start,
-                    $event->end,
-                    format: str_replace('Date', '', $format),
-                    timezone: $timezone,
-                );
-            } elseif (str_contains($format, 'Time')) {
-                return DateHelper::formatTimeRange(
-                    $event->start,
-                    $event->end,
-                    format: str_replace('Time', '', $format),
-                    timezone: $timezone,
-                    displayTimezone: $displayTimezone,
-                );
-            } else {
-                return DateHelper::formatDatetimeRange(
-                    $event->start,
-                    $event->end,
-                    timezone: $timezone,
-                    displayTimezone: $displayTimezone,
-                );
-            }
         }
+
+        if (str_contains($format, 'Date')) {
+            return DateHelper::formatDateRange(
+                $event->start,
+                $event->end,
+                format: str_replace('Date', '', $format),
+                timezone: $timezone,
+            );
+        }
+
+        if (str_contains($format, 'Time')) {
+            return DateHelper::formatTimeRange(
+                $event->start,
+                $event->end,
+                format: str_replace('Time', '', $format),
+                timezone: $timezone,
+                displayTimezone: $displayTimezone,
+            );
+        }
+
+        return DateHelper::formatDatetimeRange(
+            $event->start,
+            $event->end,
+            timezone: $timezone,
+            displayTimezone: $displayTimezone,
+        );
     }
 }

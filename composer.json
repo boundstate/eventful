@@ -17,15 +17,15 @@
     "simshaun/recurr": "^5.0"
   },
   "require-dev": {
-    "craftcms/commerce": "^5.7",
-    "craftcms/generator": "^2.1",
+    "craftcms/commerce": "^5",
+    "craftcms/generator": "^2",
     "craftcms/phpstan": "dev-main",
-    "craftcms/rector": "dev-main",
-    "laravel/pint": "^1.29",
-    "phpdocumentor/shim": "^3.10",
-    "rector/rector": "^1.2",
-    "vlucas/phpdotenv": "^5.4.0",
-    "yiisoft/yii2-shell": "^2.0.3"
+    "laravel/pint": "^1",
+    "phpdocumentor/shim": "^3",
+    "phpstan/phpstan": "^2",
+    "rector/rector": "^2",
+    "vlucas/phpdotenv": "^5",
+    "yiisoft/yii2-shell": "^2"
   },
   "autoload": {
     "psr-4": {

@@ -32,7 +32,7 @@ class IcsCalendar extends Model
 
     public function setMethod(?IcsMethod $method): static
     {
-        if ($method === null) {
+        if (! $method instanceof IcsMethod) {
             $this->_doc->remove('METHOD');
         } else {
             $this->_doc->METHOD = $method->value;

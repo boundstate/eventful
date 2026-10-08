@@ -77,7 +77,7 @@ class DefaultController extends Controller
             'sources' => $viewableSources,
             'creatableTypes' => $creatableTypes,
             'icsUrl' => $calendarSecret ? "$calendarSecret.ics" : null,
-            'extraEventSources' => array_map(fn ($source) => [
+            'extraEventSources' => array_map(fn (array $source): array => [
                 ...$source,
                 'url' => Craft::$app->view->renderObjectTemplate($source['url'], [
                     'year' => $initialDate->format('Y'),
@@ -156,13 +156,13 @@ class DefaultController extends Controller
                     'type' => $element::lowerDisplayName(),
                 ]),
             );
-        } else {
-            return $this->asSuccess(
-                Craft::t('app', '{type} event deleted.', [
-                    'type' => $element::displayName(),
-                ]),
-            );
         }
+
+        return $this->asSuccess(
+            Craft::t('app', '{type} event deleted.', [
+                'type' => $element::displayName(),
+            ]),
+        );
     }
 
     /**
@@ -269,7 +269,6 @@ class DefaultController extends Controller
 
         $elementsService = Craft::$app->elements;
 
-        // @phpstan-ignore argument.templateType
         $element = $elementsService->getElementById($elementId);
         if (! $element) {
             throw new NotFoundHttpException;
@@ -291,33 +290,31 @@ class DefaultController extends Controller
                 $icsContents[0],
                 "event-{$element->id}.ics",
             );
-        } else {
-            $zipPath =
-                Craft::$app->getPath()->getTempPath().
-                '/'.
-                StringHelper::UUID().
-                '.zip';
-            $zip = new ZipArchive;
+        }
 
-            if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new Exception('Cannot create zip at '.$zipPath);
-            }
+        $zipPath =
+            Craft::$app->getPath()->getTempPath().
+            '/'.
+            StringHelper::UUID().
+            '.zip';
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+            throw new Exception('Cannot create zip at '.$zipPath);
+        }
 
-            App::maxPowerCaptain();
-
-            foreach ($icsContents as $i => $icsContent) {
-                $zip->addFromString(
-                    "event-$element->id-".($i + 1).'.ics',
-                    $icsContent,
-                );
-            }
-            $zip->close();
-
-            return $this->response->sendFile(
-                $zipPath,
-                "event-$element->id.zip",
+        App::maxPowerCaptain();
+        foreach ($icsContents as $i => $icsContent) {
+            $zip->addFromString(
+                "event-$element->id-".($i + 1).'.ics',
+                $icsContent,
             );
         }
+        $zip->close();
+
+        return $this->response->sendFile(
+            $zipPath,
+            "event-$element->id.zip",
+        );
     }
 
     /**

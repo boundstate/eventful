@@ -1,18 +1,21 @@
 <?php
 
-use craft\rector\SetList as CraftSetList;
 use Rector\Config\RectorConfig;
-use Rector\Set\ValueObject\SetList;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 
 return RectorConfig::configure()
     ->withPaths([
-        __DIR__.'/config',
-        __DIR__.'/migrations',
-        __DIR__.'/modules',
+        __DIR__.'/demo/config',
+        __DIR__.'/src',
     ])
     ->withPhpSets()
+    ->withImportNames()
     ->withPreparedSets(
         deadCode: true,
+        codeQuality: true,
         typeDeclarations: true,
+        earlyReturn: true,
     )
-    ->withSets([SetList::DEAD_CODE, CraftSetList::CRAFT_CMS_50]);
+    ->withSkip([
+        SafeDeclareStrictTypesRector::class,
+    ]);

@@ -4,6 +4,7 @@ namespace boundstate\eventful;
 
 use boundstate\eventful\fields\EventDate as EventDateField;
 use boundstate\eventful\models\Settings;
+use boundstate\eventful\services\Events;
 use boundstate\eventful\services\Exporter;
 use boundstate\eventful\web\twig\Extension;
 use Craft;
@@ -25,7 +26,7 @@ use yii\base\Event;
  *
  * @method static Eventful getInstance()
  *
- * @property-read services\Events $events
+ * @property-read Events $events
  * @property-read Exporter $exporter
  * @property-read Settings $settings
  */
@@ -41,7 +42,7 @@ class Eventful extends Plugin
     {
         return [
             'components' => [
-                'events' => services\Events::class,
+                'events' => Events::class,
                 'exporter' => Exporter::class,
             ],
         ];
@@ -55,7 +56,7 @@ class Eventful extends Plugin
 
         // Any code that creates an element query or loads Twig should be deferred until
         // after Craft is fully initialized, to avoid conflicts with other plugins/modules
-        Craft::$app->onInit(function () {
+        Craft::$app->onInit(function (): void {
             Craft::$app->view->registerTwigExtension(
                 new Extension(Craft::$app->view, Craft::$app->view->twig),
             );

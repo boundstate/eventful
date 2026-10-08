@@ -23,9 +23,9 @@ class Extension extends AbstractExtension
         return [
             new TwigFilter('eventDate', $this->eventDateFilter(...)),
             new TwigFilter('eventDateRange', $this->eventDateRangeFilter(...)),
-            new TwigFilter('eventTitle', fn (ElementInterface $el) => EventRenderer::render($el, EventProp::TITLE)),
-            new TwigFilter('eventDescription', fn (ElementInterface $el) => EventRenderer::render($el, EventProp::DESCRIPTION)),
-            new TwigFilter('eventLocation', fn (ElementInterface $el) => EventRenderer::render($el, EventProp::LOCATION)),
+            new TwigFilter('eventTitle', fn (ElementInterface $el): string => EventRenderer::render($el, EventProp::TITLE)),
+            new TwigFilter('eventDescription', fn (ElementInterface $el): string => EventRenderer::render($el, EventProp::DESCRIPTION)),
+            new TwigFilter('eventLocation', fn (ElementInterface $el): string => EventRenderer::render($el, EventProp::LOCATION)),
         ];
     }
 

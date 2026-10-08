@@ -51,7 +51,7 @@ class ArrayTransformer extends BaseArrayTransformer
                 $this->start->format('H:i'),
             );
 
-            if (! $this->constraint || $this->constraint->test($start)) {
+            if (! $this->constraint instanceof ConstraintInterface || $this->constraint->test($start)) {
                 $recurrences[] = new Recurrence(
                     $start,
                     // TODO if end date isn't the same day, add day(s) to the recurrence end

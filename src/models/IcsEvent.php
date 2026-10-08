@@ -76,7 +76,7 @@ class IcsEvent extends Model
 
     public function setStatus(?IcsStatus $status): static
     {
-        if ($status === null) {
+        if (! $status instanceof IcsStatus) {
             $this->_doc->remove('STATUS');
         } else {
             $this->_doc->STATUS = $status->value;

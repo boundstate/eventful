@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd86091cdccdade0a03fdd8451aba3ee",
+    "content-hash": "fa068b4f2dd3e39427b0ccca308642ef",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -8078,16 +8078,16 @@
     "packages-dev": [
         {
             "name": "craftcms/commerce",
-            "version": "5.7.1",
+            "version": "5.7.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/commerce.git",
-                "reference": "b27440a57d83d902e874cc364856048433806335"
+                "reference": "465d4e5266b3f074a17014e6b31abb6015cc8baa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/commerce/zipball/b27440a57d83d902e874cc364856048433806335",
-                "reference": "b27440a57d83d902e874cc364856048433806335",
+                "url": "https://api.github.com/repos/craftcms/commerce/zipball/465d4e5266b3f074a17014e6b31abb6015cc8baa",
+                "reference": "465d4e5266b3f074a17014e6b31abb6015cc8baa",
                 "shasum": ""
             },
             "require": {
@@ -8121,7 +8121,7 @@
                 "handle": "commerce",
                 "developer": "Pixel & Tonic",
                 "description": "Create beautifully bespoke ecommerce experiences",
-                "documentationUrl": "https://craftcms.com/docs/commerce/4.x/"
+                "documentationUrl": "https://craftcms.com/docs/commerce/5.x/"
             },
             "autoload": {
                 "psr-4": {
@@ -8142,14 +8142,14 @@
                 "yii2"
             ],
             "support": {
-                "docs": "https://craftcms.com/docs/commerce/4.x/",
+                "docs": "https://craftcms.com/docs/commerce/5.x/",
                 "email": "support@craftcms.com",
                 "forum": "https://craftcms.stackexchange.com/",
                 "issues": "https://github.com/craftcms/commerce/issues?state=open",
                 "rss": "https://github.com/craftcms/commerce/releases.atom",
                 "source": "https://github.com/craftcms/commerce"
             },
-            "time": "2026-07-22T14:18:14+00:00"
+            "time": "2026-10-08T15:08:15+00:00"
         },
         {
             "name": "craftcms/generator",
@@ -8216,16 +8216,16 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/phpstan.git",
-                "reference": "b61bba102b5ec8599406e6e29a28a20c915a6abc"
+                "reference": "ea74f70557e8efeda2fba6e273d6567b333a9d90"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/phpstan/zipball/b61bba102b5ec8599406e6e29a28a20c915a6abc",
-                "reference": "b61bba102b5ec8599406e6e29a28a20c915a6abc",
+                "url": "https://api.github.com/repos/craftcms/phpstan/zipball/ea74f70557e8efeda2fba6e273d6567b333a9d90",
+                "reference": "ea74f70557e8efeda2fba6e273d6567b333a9d90",
                 "shasum": ""
             },
-            "require": {
-                "phpstan/phpstan": "^1.4.6"
+            "suggest": {
+                "phpstan/phpstan": "Needed to run PHPStan"
             },
             "default-branch": true,
             "type": "library",
@@ -8235,46 +8235,7 @@
                 "issues": "https://github.com/craftcms/phpstan/issues",
                 "source": "https://github.com/craftcms/phpstan/tree/main"
             },
-            "time": "2022-04-12T20:50:18+00:00"
-        },
-        {
-            "name": "craftcms/rector",
-            "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/craftcms/rector.git",
-                "reference": "fab0a0ed308aa6cf59968a526f5db635103e5de1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/rector/zipball/fab0a0ed308aa6cf59968a526f5db635103e5de1",
-                "reference": "fab0a0ed308aa6cf59968a526f5db635103e5de1",
-                "shasum": ""
-            },
-            "require": {
-                "rector/rector": "^1.0.0"
-            },
-            "require-dev": {
-                "craftcms/cms": "^4.0.0|^5.0.0",
-                "craftcms/ecs": "dev-main",
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^9.0",
-                "symfony/var-exporter": "^6.0"
-            },
-            "default-branch": true,
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "craft\\rector\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "description": "Rector sets to automate Craft CMS upgrades",
-            "support": {
-                "issues": "https://github.com/craftcms/rector/issues",
-                "source": "https://github.com/craftcms/rector/tree/main"
-            },
-            "time": "2024-05-17T09:09:56+00:00"
+            "time": "2026-08-27T11:15:42+00:00"
         },
         {
             "name": "dompdf/dompdf",
@@ -9223,15 +9184,15 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.34",
+            "version": "2.3.1",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4dd89ca7aa30fdc6760be21550d583bcc32e8476",
-                "reference": "4dd89ca7aa30fdc6760be21550d583bcc32e8476",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/6155239b488e95d26d1ebd95c6b4bb294d7f09db",
+                "reference": "6155239b488e95d26d1ebd95c6b4bb294d7f09db",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2|^8.0"
+                "php": "^7.4|^8.0"
             },
             "conflict": {
                 "phpstan/phpstan-shim": "*"
@@ -9249,6 +9210,17 @@
             "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ondřej Mirtes"
+                },
+                {
+                    "name": "Markus Staab"
+                },
+                {
+                    "name": "Vincent Langlet"
+                }
             ],
             "description": "PHPStan - PHP Static Analysis Tool",
             "keywords": [
@@ -9272,7 +9244,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-28T10:04:39+00:00"
+            "time": "2026-10-08T21:09:11+00:00"
         },
         {
             "name": "psy/psysh",
@@ -9355,30 +9327,27 @@
         },
         {
             "name": "rector/rector",
-            "version": "1.2.10",
+            "version": "2.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "40f9cf38c05296bd32f444121336a521a293fa61"
+                "reference": "4d6a39b7fff302cac0ce90cd959a53c2f6a32776"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/40f9cf38c05296bd32f444121336a521a293fa61",
-                "reference": "40f9cf38c05296bd32f444121336a521a293fa61",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/4d6a39b7fff302cac0ce90cd959a53c2f6a32776",
+                "reference": "4d6a39b7fff302cac0ce90cd959a53c2f6a32776",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2|^8.0",
-                "phpstan/phpstan": "^1.12.5"
+                "php": "^7.4|^8.0",
+                "phpstan/phpstan": "^2.3.0"
             },
             "conflict": {
                 "rector/rector-doctrine": "*",
                 "rector/rector-downgrade-php": "*",
                 "rector/rector-phpunit": "*",
                 "rector/rector-symfony": "*"
-            },
-            "suggest": {
-                "ext-dom": "To manipulate phpunit.xml via the custom-rule command"
             },
             "bin": [
                 "bin/rector"
@@ -9394,6 +9363,7 @@
                 "MIT"
             ],
             "description": "Instant Upgrade and Automated Refactoring of any PHP code",
+            "homepage": "https://getrector.com/",
             "keywords": [
                 "automation",
                 "dev",
@@ -9402,7 +9372,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/1.2.10"
+                "source": "https://github.com/rectorphp/rector/tree/2.7.0"
             },
             "funding": [
                 {
@@ -9410,7 +9380,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-08T13:59:10+00:00"
+            "time": "2026-10-06T08:46:45+00:00"
         },
         {
             "name": "sabberworm/php-css-parser",
@@ -10035,8 +10005,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "craftcms/phpstan": 20,
-        "craftcms/rector": 20
+        "craftcms/phpstan": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

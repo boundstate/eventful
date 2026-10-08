@@ -12,7 +12,7 @@
   "require": {
     "ext-zip": "*",
     "php": ">=8.2",
-    "craftcms/cms": "^5.10.0",
+    "craftcms/cms": "^5.10",
     "sabre/vobject": "^4.5",
     "simshaun/recurr": "^5.0"
   },

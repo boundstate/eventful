@@ -1,4 +1,4 @@
-dateModified: 1786214670
+dateModified: 1791500246
 elementSources:
   craft\elements\Entry:
     - key: '*'
@@ -61,7 +61,7 @@ system:
   edition: pro
   live: true
   name: 'Eventful Demo'
-  schemaVersion: 5.10.0.0
+  schemaVersion: 5.11.0.2
   timeZone: America/Los_Angeles
 users:
   allowPublicRegistration: false

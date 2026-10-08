@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: intl
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/composer
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - id: install
+        run: composer install --ignore-platform-reqs --no-interaction --no-progress --prefer-dist
+
+      - name: PHPStan
+        run: composer phpstan -- --no-progress --error-format=github
+
+      - name: Rector
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: composer rector -- --dry-run
+
+      - name: Test
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: composer test -- --ci

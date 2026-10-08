@@ -1,5 +1,17 @@
 # Release notes
 
+## 1.3.0 - 2026-10-08
+### Features
+
+* translations ([e5410ca](https://github.com/boundstate/eventful/commit/e5410cac88d664d031fc71d4e584931cacacef1c))
+
+### Bug Fixes
+
+* handle multibyte repeat descriptions ([9347cb6](https://github.com/boundstate/eventful/commit/9347cb65d93eb2eb3d98ba07837ebed1fc68eedf))
+* **ics:** handle timezones with half-hour offsets ([df81c7a](https://github.com/boundstate/eventful/commit/df81c7a3cd4a2cef334711d100e42e3874b77ec5))
+* **ics:** handle users without names ([47ebf4c](https://github.com/boundstate/eventful/commit/47ebf4c786182a905d2f1fd8d46471bffbe0af97))
+* show until date in event timezone ([7b3e7ae](https://github.com/boundstate/eventful/commit/7b3e7aeb2ad63085babd3cccf9da61d53756d68c))
+
 ## 1.2.0 - 2026-08-18
 ### Features
 

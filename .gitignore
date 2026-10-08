@@ -9,3 +9,6 @@
 # docs
 .phpdoc/cache
 site/
+
+# AI
+.mcp.json

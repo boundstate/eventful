@@ -170,6 +170,18 @@ describe('addTimezones', function (): void {
         );
     });
 
+    it('formats offsets that are not whole hours', function (string $timezone, array $expected): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain(...$expected);
+    })->with([
+        'positive half hour' => ['Asia/Kolkata', ['TZOFFSETFROM:+0530', 'TZOFFSETTO:+0530']],
+        'positive 45 minutes' => ['Asia/Kathmandu', ['TZOFFSETFROM:+0545', 'TZOFFSETTO:+0545']],
+        'negative half hour' => ['America/St_Johns', ['TZOFFSETFROM:-0330', 'TZOFFSETTO:-0230']],
+    ]);
+
     it('defines a single non-repeating transition for timezones without daylight saving', function (): void {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone('America/Regina')));

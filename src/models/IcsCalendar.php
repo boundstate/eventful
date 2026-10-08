@@ -90,7 +90,7 @@ class IcsCalendar extends Model
         $toTimestamp = (new DateTime('2021-01-01'))->getTimestamp();
         $transitions = $tz->getTransitions($fromTimestamp, $toTimestamp);
 
-        $tzFrom = $transitions[0]['offset'] / 3600;
+        $tzFrom = $transitions[0]['offset'];
 
         foreach ($transitions as $i => $transition) {
             if ($i === 0 && count($transitions) > 1) {
@@ -98,7 +98,7 @@ class IcsCalendar extends Model
             }
 
             $date = new DateTime($transition['time']);
-            $offset = $transition['offset'] / 3600;
+            $offset = $transition['offset'];
 
             $component = $this->_doc->createComponent(
                 $transition['isdst'] ? 'DAYLIGHT' : 'STANDARD',
@@ -125,13 +125,18 @@ class IcsCalendar extends Model
         }
     }
 
+    /**
+     * Formats a UTC offset in seconds (e.g. `-12600`) as `±HHMM` (e.g. `-0330`).
+     */
     private function formatTzOffset(int $offset): string
     {
+        $absOffset = abs($offset);
+
         return sprintf(
             '%s%02d%02d',
             $offset >= 0 ? '+' : '-',
-            abs(floor($offset)),
-            ($offset - floor($offset)) * 60,
+            intdiv($absOffset, 3600),
+            intdiv($absOffset % 3600, 60),
         );
     }
 }

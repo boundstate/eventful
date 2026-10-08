@@ -1,5 +1,11 @@
 # Release notes
 
+## 1.3.1 - 2026-10-08
+### Bug Fixes
+
+* **field:** don't overwrite criteria ([eda28a2](https://github.com/boundstate/eventful/commit/eda28a2c7f329e0f05d6225f582c06cd1b402973))
+* find occurrences of long-running events within a date range ([a4acf72](https://github.com/boundstate/eventful/commit/a4acf722e9c1af0d0eba4ce8b307bf2cc361327d))
+
 ## 1.3.0 - 2026-10-08
 ### Features
 

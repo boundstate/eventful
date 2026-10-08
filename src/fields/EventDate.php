@@ -148,24 +148,26 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
                     $end = $end->format(DateTime::ATOM);
                 }
 
-                $value = [
-                    'firstStart' => "<= $end",
-                    'lastEnd' => ['or', ">= $start", ':empty:'],
-                ];
+                $conditions[] = Db::parseDateParam(
+                    static::valueSql($instances, 'firstStart'),
+                    "<= $end",
+                );
+                $conditions[] = Db::parseDateParam(
+                    static::valueSql($instances, 'lastEnd'),
+                    ['or', ">= $start", ':empty:'],
+                );
             }
 
             if (isset($value['lastEnd'])) {
-                $valueSql = static::valueSql($instances, 'lastEnd');
                 $conditions[] = Db::parseDateParam(
-                    $valueSql,
+                    static::valueSql($instances, 'lastEnd'),
                     $value['lastEnd'],
                 );
             }
 
             if (isset($value['firstStart'])) {
-                $valueSql = static::valueSql($instances, 'firstStart');
                 $conditions[] = Db::parseDateParam(
-                    $valueSql,
+                    static::valueSql($instances, 'firstStart'),
                     $value['firstStart'],
                 );
             }

@@ -18,3 +18,16 @@ tbody tr td:first-child {
 .block {
   display: block;
 }
+
+/* Pygments' PHP lexer marks class names as Name.Other (nx), which the theme
+   leaves uncolored, and variables share the muted operator color. The Twig
+   lexer marks every name as a variable, so it gets the same treatment.
+   TODO: remove once Zensical's theme colors these tokens itself */
+.highlight.language-php .nx {
+  color: var(--md-code-hl-function-color);
+}
+
+.highlight.language-php .nv,
+.highlight.language-twig .nv {
+  color: var(--md-code-hl-constant-color);
+}

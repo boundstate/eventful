@@ -7,6 +7,7 @@ use boundstate\eventful\transformers\ArrayTransformer;
 use boundstate\eventful\translators\Translator;
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
@@ -274,7 +275,7 @@ class EventDate extends Model
         if ($this->_repeatDescription === null) {
             if ($this->rule) {
                 $description = $this->getTextTransformer()->transform($this->rule);
-                $this->_repeatDescription = ucfirst((string) $description);
+                $this->_repeatDescription = StringHelper::upperCaseFirst((string) $description);
             } else {
                 $this->_repeatDescription = '';
             }

@@ -9,6 +9,7 @@ Craft.Eventful ??= {};
     locale: null,
     previousStartDate: null,
     previousStartTime: null,
+    previousEndTime: null,
     defaultTimezone: null,
 
     $container: null,
@@ -65,6 +66,7 @@ Craft.Eventful ??= {};
       // start time & timezone inputs will only exist if event field is not "all day"
       if (this.$startTimeInput.length) {
         this.addListener(this.$startTimeInput, 'change', 'onStartTimeChange');
+        this.addListener(this.$endTimeInput, 'change', 'onEndTimeChange');
         this.addListener(
           this.$timezoneSelectize.$input,
           'change',
@@ -181,6 +183,16 @@ Craft.Eventful ??= {};
       let date = getDateInputVal(this.$startDateInput);
 
       if (date) {
+        // always fill the start time once there's a date,
+        // so what's autosaved in a draft is what the user sees
+        if (
+          this.$startTimeInput.length &&
+          !getTimeInputVal(this.$startTimeInput)
+        ) {
+          setTimeInputVal(this.$startTimeInput, getNextHalfHour());
+          this.onStartTimeChange();
+        }
+
         this.$untilDateInput.datepicker('option', 'minDate', date);
 
         if (
@@ -199,6 +211,12 @@ Craft.Eventful ??= {};
     onStartTimeChange() {
       let startTime = getTimeInputVal(this.$startTimeInput);
 
+      // don't allow the start time to be cleared while there's a date
+      if (!startTime && getDateInputVal(this.$startDateInput)) {
+        startTime = this.previousStartTime || getNextHalfHour();
+        setTimeInputVal(this.$startTimeInput, startTime);
+      }
+
       this.$endTimeInput.timepicker('option', {
         minTime: startTime,
         showDuration: true,
@@ -214,9 +232,25 @@ Craft.Eventful ??= {};
           endTime = addMinutes(endTime, changeInMs / 60000);
         }
         setTimeInputVal(this.$endTimeInput, endTime);
+        this.previousEndTime = endTime;
       }
 
       this.previousStartTime = startTime;
+    },
+
+    onEndTimeChange() {
+      let endTime = getTimeInputVal(this.$endTimeInput);
+
+      // don't allow the end time to be cleared while there's a start time
+      if (!endTime) {
+        let startTime = getTimeInputVal(this.$startTimeInput);
+        if (startTime) {
+          endTime = this.previousEndTime || addMinutes(startTime, 60);
+          setTimeInputVal(this.$endTimeInput, endTime);
+        }
+      }
+
+      this.previousEndTime = endTime;
     },
 
     isAnyWeekdaySelected() {
@@ -338,6 +372,13 @@ Craft.Eventful ??= {};
     },
   });
 })(jQuery);
+
+function getNextHalfHour() {
+  let date = new Date();
+  date.setSeconds(0, 0);
+  date.setMinutes(Math.ceil(date.getMinutes() / 30) * 30);
+  return date;
+}
 
 function getWeekOfMonth(date) {
   return Math.ceil(date.getDate() / 7);

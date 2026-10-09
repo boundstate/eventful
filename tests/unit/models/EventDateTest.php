@@ -74,6 +74,38 @@ describe('constructor', function (): void {
             ->and($eventDate->end)->toBeNull();
     });
 
+    it('defaults the end to an hour after the start when the end time is blank', function (): void {
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-10-07', 'time' => '9:00 AM', 'timezone' => 'America/Vancouver'],
+            'end' => ['time' => '', 'timezone' => 'America/Vancouver'],
+            'timezone' => 'America/Vancouver',
+        ]);
+
+        expect($eventDate->validate())->toBeTrue()
+            ->and($eventDate->end->format('Y-m-d H:i'))->toBe('2026-10-07 10:00');
+    });
+
+    it('defaults the end when loading a draft saved without one', function (): void {
+        $eventDate = new EventDate([
+            'start' => '2026-10-07 07:00:00',
+            'end' => null,
+            'timezone' => 'America/Vancouver',
+        ]);
+
+        expect($eventDate->validate())->toBeTrue()
+            ->and($eventDate->end->format('Y-m-d H:i T'))->toBe('2026-10-07 01:00 PDT');
+    });
+
+    it('does not default the end for all day events', function (): void {
+        $eventDate = new EventDate([
+            'start' => '2026-10-07 07:00:00',
+            'timezone' => 'America/Vancouver',
+            'allDay' => true,
+        ]);
+
+        expect($eventDate->end)->toBeNull();
+    });
+
     it('populates attributes from a legacy rule', function (): void {
         $eventDate = new EventDate([
             'rule' => 'FREQ=WEEKLY;INTERVAL=2;BYDAY=TU;COUNT=5;EXDATE=20260324,20260310;RDATE=20260305',
@@ -110,7 +142,10 @@ describe('getRule', function (): void {
     });
 
     it('returns null without a start and end date', function (): void {
-        expect(weeklyEventDate(['end' => null])->getRule())->toBeNull();
+        $eventDate = weeklyEventDate();
+        $eventDate->end = null;
+
+        expect($eventDate->getRule())->toBeNull();
     });
 
     it('builds a rule from the attributes', function (): void {

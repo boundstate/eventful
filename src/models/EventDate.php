@@ -38,6 +38,11 @@ class EventDate extends Model
 
     const ENDS_UNTIL = 'until';
 
+    /**
+     * Default event duration in minutes, when no end is given (matches the input JS)
+     */
+    const DEFAULT_DURATION = 60;
+
     public bool $allowNeverEnding = false;
 
     public ?DateTime $start = null;
@@ -119,6 +124,18 @@ class EventDate extends Model
                         }
                         break;
                 }
+            }
+
+            // if end is missing, default to the same duration the input JS fills in,
+            // so the field can always be saved (e.g. a draft that was autosaved without an end)
+            if (
+                empty($config['allDay']) &&
+                ($config['start'] ?? null) instanceof DateTime &&
+                ! (($config['end'] ?? null) instanceof DateTime)
+            ) {
+                $config['end'] = (clone $config['start'])->modify(
+                    sprintf('+%d minutes', self::DEFAULT_DURATION),
+                );
             }
         }
 

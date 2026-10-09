@@ -20,6 +20,10 @@ title: EventDate
 
 ### ENDS_UNTIL
 
+### DEFAULT_DURATION
+
+Default event duration in minutes, when no end is given (matches the input JS)
+
 ## Properties
 
 ### allowNeverEnding

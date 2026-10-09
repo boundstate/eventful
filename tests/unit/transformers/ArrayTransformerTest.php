@@ -44,6 +44,22 @@ it('gives inclusions the start and end times of the rule', function (): void {
         ->toContain('2026-03-11 10:00 – 11:00');
 });
 
+it('gives inclusions of overnight events the same duration', function (): void {
+    $tz = new DateTimeZone('America/Toronto');
+
+    // Mondays, 11:30PM-12:30AM
+    $rule = (new Rule(null, new DateTime('2026-03-02 23:30', $tz), new DateTime('2026-03-03 00:30', $tz)))
+        ->setFreq('WEEKLY')
+        ->setByDay(['MO'])
+        ->setCount(1)
+        ->setRDates(['2026-03-11']);
+
+    $recurrences = (new ArrayTransformer)->transform($rule);
+
+    expect($recurrences->last()->getStart()->format('Y-m-d H:i'))->toBe('2026-03-11 23:30')
+        ->and($recurrences->last()->getEnd()->format('Y-m-d H:i'))->toBe('2026-03-12 00:30');
+});
+
 it('orders inclusions among the recurrences', function (): void {
     $rule = weeklyRule()->setRDates(['2026-03-11', '2026-02-20']);
 

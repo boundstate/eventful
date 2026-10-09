@@ -137,6 +137,16 @@ class EventDate extends Model
                     sprintf('+%d minutes', self::DEFAULT_DURATION),
                 );
             }
+
+            // the end is only entered as a time, so an end time before the start time
+            // means the event ends the next day (e.g. 11:30 PM - 12:30 AM)
+            if (
+                ($config['start'] ?? null) instanceof DateTime &&
+                ($config['end'] ?? null) instanceof DateTime &&
+                $config['end'] < $config['start']
+            ) {
+                $config['end']->modify('+1 day');
+            }
         }
 
         if (empty($config['freq']) && ! empty($config['rule'])) {

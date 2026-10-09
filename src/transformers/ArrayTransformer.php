@@ -54,10 +54,9 @@ class ArrayTransformer extends BaseArrayTransformer
             if (! $this->constraint instanceof ConstraintInterface || $this->constraint->test($start)) {
                 $recurrences[] = new Recurrence(
                     $start,
-                    // TODO if end date isn't the same day, add day(s) to the recurrence end
-                    //  (we currently don't support multi-day events via the UI)
-                    DateTime::createFromInterface($start)->modify(
-                        $this->end->format('H:i'),
+                    // keep the rule's duration, in case the event ends on a later day
+                    DateTime::createFromInterface($start)->add(
+                        $this->start->diff($this->end),
                     ),
                 );
                 $addedInclusion = true;

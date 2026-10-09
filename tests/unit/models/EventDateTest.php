@@ -74,6 +74,37 @@ describe('constructor', function (): void {
             ->and($eventDate->end)->toBeNull();
     });
 
+    it('ends the next day when the end time is before the start time', function (): void {
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-03-02', 'time' => '23:30', 'timezone' => 'America/Toronto'],
+            'end' => ['time' => '00:30', 'timezone' => 'America/Toronto'],
+            'timezone' => 'America/Toronto',
+        ]);
+
+        expect($eventDate->end->format('Y-m-d H:i'))->toBe('2026-03-03 00:30');
+    });
+
+    it('fixes a stored end that is before the start', function (): void {
+        $eventDate = new EventDate([
+            'start' => '2026-03-03 04:30:00',
+            'end' => '2026-03-02 05:30:00',
+            'timezone' => 'America/Toronto',
+        ]);
+
+        expect($eventDate->start->format('Y-m-d H:i'))->toBe('2026-03-02 23:30')
+            ->and($eventDate->end->format('Y-m-d H:i'))->toBe('2026-03-03 00:30');
+    });
+
+    it('keeps an end on a later day', function (): void {
+        $eventDate = new EventDate([
+            'start' => '2026-03-02 15:00:00',
+            'end' => '2026-03-04 14:00:00',
+            'timezone' => 'America/Toronto',
+        ]);
+
+        expect($eventDate->end->format('Y-m-d H:i'))->toBe('2026-03-04 09:00');
+    });
+
     it('defaults the end to an hour after the start when the end time is blank', function (): void {
         $eventDate = new EventDate([
             'start' => ['date' => '2026-10-07', 'time' => '9:00 AM', 'timezone' => 'America/Vancouver'],

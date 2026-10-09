@@ -321,14 +321,14 @@ class EventDate extends Model
     ): RecurrenceCollection {
         if (! $this->rule) {
             return new RecurrenceCollection([
-                new Recurrence($this->start, $this->end),
+                new Occurrence($this->start, $this->end, allDay: $this->allDay),
             ]);
         }
 
         if (! $constraint instanceof ConstraintInterface) {
             if (! $this->_allRecurrences instanceof RecurrenceCollection) {
-                $this->_allRecurrences = $this->getArrayTransformer()->transform(
-                    $this->rule,
+                $this->_allRecurrences = $this->toOccurrences(
+                    $this->getArrayTransformer()->transform($this->rule),
                 );
             }
 
@@ -338,10 +338,12 @@ class EventDate extends Model
         // Occurrences that fail the constraint must still count toward the
         // rule's count, but otherwise shouldn't count toward the virtual limit,
         // so occurrences of long-running events can be found
-        return $this->getArrayTransformer()->transform(
-            $this->rule,
-            $constraint,
-            countConstraintFailures: $this->rule->getCount() !== null,
+        return $this->toOccurrences(
+            $this->getArrayTransformer()->transform(
+                $this->rule,
+                $constraint,
+                countConstraintFailures: $this->rule->getCount() !== null,
+            ),
         );
     }
 
@@ -405,6 +407,22 @@ class EventDate extends Model
         }
 
         return $date;
+    }
+
+    /**
+     * @param  RecurrenceCollection<array-key, Recurrence>  $recurrences
+     */
+    private function toOccurrences(RecurrenceCollection $recurrences): RecurrenceCollection
+    {
+        return new RecurrenceCollection(array_map(
+            fn (Recurrence $recurrence): Occurrence => new Occurrence(
+                $recurrence->getStart(),
+                $recurrence->getEnd(),
+                $recurrence->getIndex(),
+                allDay: $this->allDay,
+            ),
+            $recurrences->toArray(),
+        ));
     }
 
     private function getArrayTransformer(): ArrayTransformer

@@ -29,4 +29,7 @@ return [
     'week' => 'aste',
     'ordinal_number' => '{number, plural, =1{#go} other{#garren}}',
     'ordinal_number_day_suffix' => '{ordinal}',
+
+    // event dates
+    'All day' => 'Egun osoa',
 ];

@@ -1,5 +1,15 @@
 # CLAUDE.md
 
+## Translations
+
+Any text the plugin outputs on the front end (e.g. via Twig filters or helpers like `EventDateHelper`) must be translated.
+
+- Use the `eventful` category: `Craft::t('eventful', 'All day')` in PHP, or `'All day'|t('eventful')` in Twig. Use `{param}` placeholders, not string concatenation.
+- Add every new message to all the files in `src/translations/<language>/eventful.php`, not just `en`.
+- Recurr's repeat descriptions go through `translators/Translator.php`, which maps Recurr's message keys onto the same files.
+- Don't unit test plain `Craft::t()` calls (that's just testing Craft, and breaks whenever a translation is improved). Only test our own translation logic, like `Translator`.
+- Control panel strings aren't translated for now, so don't add them to the translation files. Existing `|t('app')` calls only reuse Craft's own translations.
+
 ## Releases
 
 Releases are automated with semantic-release on every push to `main`.

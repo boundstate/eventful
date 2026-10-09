@@ -33,4 +33,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{son} other{#. sonuna kadar}}',
     'ordinal_number_day_suffix' => '{ordinal} gün',
     'day_month' => '{day} {month}',
+
+    // event dates
+    'All day' => 'Tüm gün',
 ];

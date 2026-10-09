@@ -33,4 +33,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{último} other{#º último}}',
     'ordinal_number_day_suffix' => '{ordinal} dia',
     'day_month' => '{day} de {month}',
+
+    // event dates
+    'All day' => 'Dia inteiro',
 ];

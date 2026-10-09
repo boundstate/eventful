@@ -33,4 +33,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{siste} other{#. siste}}',
     'ordinal_number_day_suffix' => '{ordinal} dag',
     'day_month' => '{day}. {month}',
+
+    // event dates
+    'All day' => 'Hele dagen',
 ];

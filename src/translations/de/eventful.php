@@ -37,4 +37,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{letzten} =2{vorletzten} =3{drittletzten} =4{viertletzten} =5{fünftletzten} =6{sechstletzten} =7{siebtletzten} =8{achtletzten} =9{neuntletzten} =10{zehntletzten} =11{elftletzten} other{#t letzten}}',
     'ordinal_number_day_suffix' => '{negative, select, yes{{ordinal} Tag} other{{ordinal}}}',
     'day_month' => '{day}. {month}',
+
+    // event dates
+    'All day' => 'Ganztägig',
 ];

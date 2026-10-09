@@ -19,6 +19,8 @@ See [`EventDateHelper::formatDateRange()`](reference/helpers/EventDateHelper.md#
 {# Output: July 30 - August 28, 2026 #}
 ```
 
+All day events are displayed without times (the time formats display `All day`).
+
 !!! tip ""
 You can display the repeat rule description using [`EventDate::getRepeatDescription()`](reference/models/EventDate.md#getrepeatdescription){ data-preview }.
 
@@ -40,6 +42,8 @@ See [`EventDateHelper::formatDate()`](reference/helpers/EventDateHelper.md#forma
     <li>Aug 1, 2026 ⋅ 10AM – 11AM</li>
   </ul> #}
 ```
+
+Occurrences of all day events are displayed without times.
 
 ## eventTitle
 

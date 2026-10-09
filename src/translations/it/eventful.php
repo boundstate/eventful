@@ -37,4 +37,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{ultimo} =2{penultimo} =3{terzultimo} other{# ultimo}}',
     'ordinal_number_day_suffix' => '{ordinal} giorno',
     'day_month' => '{day} {month}',
+
+    // event dates
+    'All day' => 'Tutto il giorno',
 ];

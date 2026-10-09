@@ -1,6 +1,7 @@
 <?php
 
 use boundstate\eventful\models\EventDate;
+use boundstate\eventful\models\Occurrence;
 use Recurr\Rule;
 use Recurr\Transformer\Constraint\BetweenConstraint;
 
@@ -164,6 +165,14 @@ describe('constructor', function (): void {
         expect(occurrenceStarts($eventDate))->toBe(['2026-03-02 00:00', '2026-03-09 00:00', '2026-03-16 00:00'])
             ->and($eventDate->getLastEndDate()->format('Y-m-d H:i:s'))->toBe('2026-03-16 23:59:59');
     });
+
+    it('marks occurrences of all day events as all day', function (bool $allDay): void {
+        $eventDate = weeklyEventDate(['allDay' => $allDay]);
+
+        expect($eventDate->getOccurrences()->toArray())->each->toBeInstanceOf(Occurrence::class)
+            ->and(array_map(fn (Occurrence $o): bool => $o->allDay, $eventDate->getOccurrences()->toArray()))
+            ->each->toBe($allDay);
+    })->with([true, false]);
 
     it('populates attributes from a legacy rule', function (): void {
         $eventDate = new EventDate([

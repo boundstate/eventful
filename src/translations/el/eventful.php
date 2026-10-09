@@ -33,4 +33,7 @@ return [
     'ordinal_number_negative' => '{number, plural, =1{τελευταία} other{#η μέχρι την τελευταία}}',
     'ordinal_number_day_suffix' => '{ordinal} ημέρα',
     'day_month' => '{day} {month}',
+
+    // event dates
+    'All day' => 'Ολοήμερο',
 ];

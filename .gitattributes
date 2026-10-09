@@ -11,7 +11,7 @@
 .gitignore export-ignore
 .prettierignore export-ignore
 .prettierrc export-ignore
-.releaserc.json export-ignore
+release.config.js export-ignore
 CHANGELOG.md export-ignore
 README.md export-ignore
 SECURITY.md export-ignore

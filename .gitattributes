@@ -16,6 +16,7 @@ CHANGELOG.md export-ignore
 README.md export-ignore
 SECURITY.md export-ignore
 composer.lock export-ignore
+commitlint.config.js export-ignore
 ecs.php export-ignore
 ide-twig.json export-ignore
 package-lock.json export-ignore

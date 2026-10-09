@@ -111,8 +111,9 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
                     /** @var EventDateModel $value */
                     $value = $element->getFieldValue($this->handle);
                     if (! $value->validate()) {
-                        foreach ($value->getErrorSummary(false) as $errors) {
-                            $element->addError($this->handle, $errors);
+                        // prefix with the field name, since Craft's error summary doesn't
+                        foreach ($value->getErrorSummary(false) as $error) {
+                            $element->addError($this->handle, "{$this->getUiLabel()}: $error");
                         }
                     }
                 },

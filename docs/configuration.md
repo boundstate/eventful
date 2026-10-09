@@ -18,8 +18,8 @@ The templates are passed the element `object`, and an `ics` variable that is `tr
 If you want to have a public iCalendar format URL, you can configure a **calendar secret**,
 which will be used to generate a URL like `https://example.com/admin/secret.ics`.
 
-<!-- prettier-ignore -->
 !!! tip ""
+
     Once configured, view the public URL by clicking on the :lucide-ellipsis: button above the calendar.
 
 ## Extra event sources
@@ -28,8 +28,8 @@ You can configure extra event sources to display readonly on the calendar.
 The URLs are [object templates] passed a `year` variable,
 so you can configure URLs like `https://canada-holidays.ca/ics/{year}`.
 
-<!-- prettier-ignore -->
 !!! tip ""
+
     You may want to configure yearly sources multiple times (e.g. `{year}`, `{year+1}` and `{year-1}`),
     so that they can be displayed even when navigating back and forward a year.
 
@@ -42,8 +42,8 @@ You can optionally enable the ability to filter the calendar by organizer.
 By default this will list all users and filter events by their `authorId`,
 but you can customize the filter label, user group, and organizer field handle.
 
-<!-- prettier-ignore -->
 !!! warning ""
+
     Commerce products don't have a built-in author field, so when filtering products, you need to add a field to the product type and configure an appropriate field handle.
 
 [object templates]: https://craftcms.com/docs/5.x/system/object-templates.html

@@ -10,6 +10,10 @@ Any text the plugin outputs on the front end (e.g. via Twig filters or helpers l
 - Don't unit test plain `Craft::t()` calls (that's just testing Craft, and breaks whenever a translation is improved). Only test our own translation logic, like `Translator`.
 - Control panel strings aren't translated for now, so don't add them to the translation files. Existing `|t('app')` calls only reuse Craft's own translations.
 
+## Docs
+
+- Admonitions need a blank line between the `!!! type` line and the indented body. Otherwise Prettier (run by lint-staged) treats the body as a paragraph continuation, strips its indentation, and the box renders empty.
+
 ## Releases
 
 Releases are automated with semantic-release on every push to `main`.

@@ -22,7 +22,7 @@ you can query all ongoing and upcoming meetings in your template as follows:
 | `{ lastEnd: '< now' }`                     | Past (all occurrences have ended)                 |
 | `{ firstStart: '> now' }`                  | Only future (no occurrence has started)           |
 
-<!-- prettier-ignore -->
 !!! note
+
     Events that repeat forever have no last end date, so `lastEnd` is empty for them.
     Include `':empty:'` in `lastEnd` criteria to match these events.

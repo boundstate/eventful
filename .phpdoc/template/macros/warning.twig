@@ -1,6 +1,5 @@
 {% macro deprecationWarning(node) %}
-  {{~ '<!-- prettier-ignore -->' }}
-  {{~ '!!! warning "Deprecated"' }}
+  {{~ '!!! warning "Deprecated"' }}{{ "\n" }}
 
   {%- set multiple = node.deprecations|length > 1 -%}
 

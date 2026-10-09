@@ -22,7 +22,8 @@ See [`EventDateHelper::formatDateRange()`](reference/helpers/EventDateHelper.md#
 All day events are displayed without times (the time formats display `All day`).
 
 !!! tip ""
-You can display the repeat rule description using [`EventDate::getRepeatDescription()`](reference/models/EventDate.md#getrepeatdescription){ data-preview }.
+
+    You can display the repeat rule description using [`EventDate::getRepeatDescription()`](reference/models/EventDate.md#getrepeatdescription){ data-preview }.
 
 ## eventDate
 

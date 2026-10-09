@@ -6,8 +6,8 @@ icon: lucide/zap
 
 This plugin triggers several events to allow greater customization for developers:
 
-<!-- prettier-ignore -->
 !!! tip ""
+
     Craft CMS has a [tutorial](https://craftcms.com/knowledge-base/custom-module-events) on wiring up your first event handler in a module.
 
 ## Events

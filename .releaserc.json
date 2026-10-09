@@ -18,15 +18,10 @@
       }
     ],
     [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "composer config version ${nextRelease.version}"
-      }
-    ],
-    [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "composer.json"]
+        "assets": ["CHANGELOG.md"],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
     "@semantic-release/github"

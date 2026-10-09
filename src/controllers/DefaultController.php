@@ -337,7 +337,10 @@ class DefaultController extends Controller
     {
         $settings = Eventful::getInstance()->settings;
 
-        if (! $secret || $secret !== $settings->parseCalendarSecret()) {
+        $calendarSecret = $settings->parseCalendarSecret();
+
+        // compare in constant time, so the secret can't be guessed from response times
+        if (! $secret || ! $calendarSecret || ! hash_equals($calendarSecret, $secret)) {
             throw new NotFoundHttpException;
         }
 

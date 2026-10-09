@@ -335,3 +335,12 @@ combine_header_slug = true
 [project.markdown_extensions.pymdownx.tasklist]
 custom_checkbox = true
 [project.markdown_extensions.pymdownx.tilde]
+
+# Customized navigation with a a `.nav.yml` file in each documentation directory
+# https://zensical.org/docs/compatibility/mkdocs/plugins/?h=awesome#awesome-nav
+[project.plugins.awesome-nav]
+
+# Add the ability to embed content from arbitrary files, including other docs or source files
+# https://zensical.org/docs/compatibility/markdown/python-markdown-extensions/?h=snippets#snippets
+[project.markdown_extensions.pymdownx.snippets]
+check_paths = true

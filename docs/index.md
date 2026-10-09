@@ -9,4 +9,4 @@ Attach recurring event dates to any Craft element.
 
 View and filter entries, products, and any other elements in a powerful calendar view.
 
-[:lucide-rocket: Get started](00-get-started.md){ .md-button .md-button--primary }
+[:lucide-rocket: Get started](get-started.md){ .md-button .md-button--primary }

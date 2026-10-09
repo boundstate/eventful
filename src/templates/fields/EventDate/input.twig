@@ -1,8 +1,11 @@
 {% import '_includes/forms' as forms %}
 
-<div id="{{ id }}" class="event-date-input loading {{ readonly ? 'readonly' }}">
+<div
+    id="{{ id }}"
+    class="event-date-input loading {{ readonly ? 'readonly' }} {{ value.allDay ? 'all-day' }}"
+>
     <div class="row flex">
-        {% if field.allDay %}
+        {% if field.allDayMode == constant('ALL_DAY_ALWAYS', field) %}
             {{
                 forms.dateField({
                     id: 'start'|namespaceInputId(id),
@@ -16,32 +19,47 @@
                 forms.dateTimeField({
                     id: 'start'|namespaceInputId(id),
                     name: 'start'|namespaceInputName(name),
+                    fieldClass: 'start-field',
                     value: value.start,
                     disabled: readonly,
                 })
             }}
-            -
-            {{
-                forms.timeField({
-                    id: 'end'|namespaceInputId(id),
-                    name: 'end'|namespaceInputName(name),
-                    value: value.end,
-                    disabled: readonly,
-                })
-            }}
+            <div class="time-inputs flex">
+                -
+                {{
+                    forms.timeField({
+                        id: 'end'|namespaceInputId(id),
+                        name: 'end'|namespaceInputName(name),
+                        value: value.end,
+                        disabled: readonly,
+                    })
+                }}
 
+                {{
+                    forms.selectizeField({
+                        id: 'timezone'|namespaceInputId(id),
+                        name: 'timezone'|namespaceInputName(name),
+                        class: 'timezone-field',
+                        options: [
+                            {
+                                label: '',
+                                value: null
+                            }
+                        ]|merge(craft.cp.getTimeZoneOptions(value.start)),
+                        value: value.timezone,
+                        disabled: readonly,
+                    })
+                }}
+            </div>
+        {% endif %}
+        {% if field.allDayMode == constant('ALL_DAY_OPTIONAL', field) %}
+            &nbsp;
             {{
-                forms.selectizeField({
-                    id: 'timezone'|namespaceInputId(id),
-                    name: 'timezone'|namespaceInputName(name),
-                    class: 'timezone-field',
-                    options: [
-                        {
-                            label: '',
-                            value: null
-                        }
-                    ]|merge(craft.cp.getTimeZoneOptions(value.start)),
-                    value: value.timezone,
+                forms.checkboxField({
+                    id: 'all-day'|namespaceInputId(id),
+                    name: 'allDay'|namespaceInputName(name),
+                    label: 'All day',
+                    checked: value.allDay,
                     disabled: readonly,
                 })
             }}

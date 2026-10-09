@@ -48,6 +48,14 @@
     }
   }
 
+  /* the time inputs are hidden (but still posted) when "All day" is checked */
+  &.all-day {
+    .start-field .timewrapper,
+    .time-inputs {
+      display: none;
+    }
+  }
+
   .timezone-field {
     width: 9.5rem !important;
   }

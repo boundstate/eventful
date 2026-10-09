@@ -6,6 +6,20 @@ title: EventDate
 
 <small class="block">Extends <span class="code">[Field](https://docs.craftcms.com/api/v5/craft-base-field.html '\\craft\\base\\Field')</span>, Implements <span class="code">[PreviewableFieldInterface](https://docs.craftcms.com/api/v5/craft-base-previewablefieldinterface.html '\\craft\\base\\PreviewableFieldInterface')</span>, <span class="code">[SortableFieldInterface](https://docs.craftcms.com/api/v5/craft-base-sortablefieldinterface.html '\\craft\\base\\SortableFieldInterface')</span></small>
 
+## Constants
+
+### ALL_DAY_NEVER
+
+Events always have start and end times
+
+### ALL_DAY_ALWAYS
+
+Events always last all day
+
+### ALL_DAY_OPTIONAL
+
+Authors choose whether each event lasts all day
+
 ## Properties
 
 ### allowNeverEnding
@@ -14,10 +28,12 @@ title: EventDate
 public bool $allowNeverEnding
 ```
 
-### allDay
+### allDayMode
+
+Whether events last all day (one of the `ALL_DAY_*` constants)
 
 ```php
-public bool $allDay
+public string $allDayMode
 ```
 
 ## Methods
@@ -61,6 +77,17 @@ public static phpType(): string
 |            |                                  |     |
 | ---------- | -------------------------------- | --- |
 | **return** | <span class="code">string</span> |     |
+
+### __construct
+
+```php
+public __construct(mixed $config = []): mixed
+```
+
+|            |                                 |     |
+| ---------- | ------------------------------- | --- |
+| `$config`  | <span class="code">mixed</span> |     |
+| **return** | <span class="code">mixed</span> |     |
 
 ### getElementValidationRules
 

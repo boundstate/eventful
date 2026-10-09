@@ -10,10 +10,24 @@
 }}
 
 {{
-    forms.checkboxField({
-        label: 'All day',
-        name: 'allDay',
-        value: 1,
-        checked: field.allDay
+    forms.radioGroupField({
+        name: 'allDayMode',
+        value: field.allDayMode,
+        options: [
+            {
+                label: 'Show date',
+                value: constant('ALL_DAY_ALWAYS', field)
+            },
+            {
+                label: 'Show date and time',
+                value: constant('ALL_DAY_NEVER', field)
+            },
+            {
+                label: 'Show date and time, with an “All day” option',
+                value: constant('ALL_DAY_OPTIONAL', field)
+            }
+        ],
+        warning: field.id ? 'Changing this may result in data loss.'|t('app'),
+        errors: field.getErrors('allDayMode')
     })
 }}

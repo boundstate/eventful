@@ -15,6 +15,7 @@ Craft.Eventful ??= {};
     $container: null,
     $startDateInput: null,
     $startTimeInput: null,
+    $allDayCheckbox: null,
     $endTimeInput: null,
     $untilDateInput: null,
     $countInput: null,
@@ -37,6 +38,7 @@ Craft.Eventful ??= {};
       this.$startDateInput = $('#' + Craft.namespaceId('start-date', inputId));
       this.$startTimeInput = $('#' + Craft.namespaceId('start-time', inputId));
       this.$endTimeInput = $('#' + Craft.namespaceId('end-time', inputId));
+      this.$allDayCheckbox = $('#' + Craft.namespaceId('all-day', inputId));
       this.$timezoneSelectize = $(
         '#' + Craft.namespaceId('timezone', inputId),
       ).data('selectize');
@@ -60,6 +62,7 @@ Craft.Eventful ??= {};
       this.addListener(this.$countInput, 'change', 'updateCountLabel');
       this.addListener(this.$intervalInput, 'change', 'updateFrequencyLabels');
       this.addListener(this.$startDateInput, 'change', 'onStartDateChange');
+      this.addListener(this.$allDayCheckbox, 'change', 'onAllDayChange');
       this.addListener(this.$chips.find('.add input'), 'change', 'addDate');
       this.addListener(this.$chips.find('.delete'), 'click', 'removeDate');
 
@@ -111,6 +114,13 @@ Craft.Eventful ??= {};
       }
 
       this.$container.removeClass('loading');
+    },
+
+    onAllDayChange() {
+      this.$container.toggleClass(
+        'all-day',
+        this.$allDayCheckbox.prop('checked'),
+      );
     },
 
     updateTimezone() {

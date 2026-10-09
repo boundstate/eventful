@@ -34,6 +34,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             'start' => Schema::TYPE_DATETIME,
             'end' => Schema::TYPE_DATETIME,
             'timezone' => Schema::TYPE_STRING,
+            'allDay' => Schema::TYPE_BOOLEAN,
 
             // recurrence
             'freq' => Schema::TYPE_STRING,
@@ -57,9 +58,50 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         return sprintf('\\%s|null', EventDateModel::class);
     }
 
+    /**
+     * Events always have start and end times
+     */
+    const ALL_DAY_NEVER = 'never';
+
+    /**
+     * Events always last all day
+     */
+    const ALL_DAY_ALWAYS = 'always';
+
+    /**
+     * Authors choose whether each event lasts all day
+     */
+    const ALL_DAY_OPTIONAL = 'optional';
+
     public bool $allowNeverEnding = false;
 
-    public bool $allDay = false;
+    /**
+     * Whether events last all day (one of the `ALL_DAY_*` constants)
+     */
+    public string $allDayMode = self::ALL_DAY_NEVER;
+
+    public function __construct($config = [])
+    {
+        // fields saved before `allDayMode` existed have an `allDay` boolean setting
+        if (array_key_exists('allDay', $config)) {
+            $config['allDayMode'] ??= $config['allDay'] ? self::ALL_DAY_ALWAYS : self::ALL_DAY_NEVER;
+            unset($config['allDay']);
+        }
+
+        parent::__construct($config);
+    }
+
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = [
+            'allDayMode',
+            'in',
+            'range' => [self::ALL_DAY_NEVER, self::ALL_DAY_ALWAYS, self::ALL_DAY_OPTIONAL],
+        ];
+
+        return $rules;
+    }
 
     public function getElementValidationRules(): array
     {
@@ -92,9 +134,10 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         $serialized = [
             'start' => Db::prepareDateForDb($value->start),
             'end' => Db::prepareDateForDb($value->end),
-            'timezone' => $this->allDay
+            'timezone' => $value->allDay
                 ? Craft::$app->timeZone
                 : $value->timezone,
+            'allDay' => $value->allDay,
 
             // denormalized for querying
             'firstStart' => Db::prepareDateForDb($value->getFirstStartDate()),
@@ -211,7 +254,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
 
         $formatter = Craft::$app->getFormatter();
 
-        return $this->allDay
+        return $value->allDay
             ? $formatter->asDate($value->start, Locale::LENGTH_MEDIUM)
             : $formatter->asDatetime($value->start, Locale::LENGTH_SHORT);
     }
@@ -223,7 +266,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         return $this->getPreviewHtml(
             $value ??
                 new EventDateModel([
-                    'allDay' => $this->allDay,
+                    'allDay' => $this->allDayMode === self::ALL_DAY_ALWAYS,
                     'start' => new DateTime,
                 ]),
             $element ?? new Entry,
@@ -291,7 +334,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         return $view->renderTemplate('eventful/fields/EventDate/input', [
             'id' => $id,
             'name' => $this->handle,
-            'value' => $value ?? new EventDateModel(['allDay' => $this->allDay]),
+            'value' => $value ?? new EventDateModel(['allDay' => $this->allDayMode === self::ALL_DAY_ALWAYS]),
             'field' => $this,
             'freqOptions' => $freqOptions,
             'dayOptions' => $dayOptions,
@@ -310,8 +353,23 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             return null;
         }
 
-        $value['allDay'] = $this->allDay;
+        $value['allDay'] = match ($this->allDayMode) {
+            self::ALL_DAY_ALWAYS => true,
+            self::ALL_DAY_OPTIONAL => (bool) ($value['allDay'] ?? false),
+            default => false,
+        };
         $value['allowNeverEnding'] = $this->allowNeverEnding;
+
+        if ($fromRequest && $value['allDay']) {
+            // the time inputs are only hidden when "All day" is checked,
+            // so ignore them like the date only input of an always all day field
+            // (all day events are in the system timezone, rather than the one selected)
+            unset($value['end'], $value['timezone']);
+            if (is_array($value['start'] ?? null)) {
+                unset($value['start']['time']);
+                $value['start']['timezone'] = Craft::$app->getTimeZone();
+            }
+        }
 
         if (! $fromRequest) {
             // from database

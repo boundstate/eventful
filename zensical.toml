@@ -344,3 +344,7 @@ custom_checkbox = true
 # https://zensical.org/docs/compatibility/markdown/python-markdown-extensions/?h=snippets#snippets
 [project.markdown_extensions.pymdownx.snippets]
 check_paths = true
+
+# Render GitHub-style alerts as admonitions
+# https://github.com/oprypin/markdown-callouts
+[project.markdown_extensions."markdown_callouts.github_callouts"]

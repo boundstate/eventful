@@ -1,4 +1,4 @@
-dateModified: 1791500246
+dateModified: 1791574144
 elementSources:
   craft\elements\Entry:
     - key: '*'
@@ -50,7 +50,7 @@ plugins:
     edition: standard
     enabled: true
     licenseKey: JV2QWKXJTHWJR6BKURP7URAE
-    schemaVersion: 1.0.0
+    schemaVersion: 1.1.0
     settings:
       calendarSecret: null
       displayTimezone: false

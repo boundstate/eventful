@@ -4,7 +4,7 @@ instructions: null
 name: Date
 searchable: false
 settings:
-  allDay: false
+  allDayMode: optional
   allowNeverEnding: true
 translationKeyFormat: null
 translationMethod: none

@@ -246,6 +246,17 @@ describe('getRule', function (): void {
         expect($eventDate->getRule())->toBe($rule)
             ->and($eventDate->getRule(true)->getCount())->toBe(10);
     });
+
+    it('refreshes the occurrences and description with the rule', function (): void {
+        $eventDate = weeklyEventDate();
+        $eventDate->getOccurrences();
+        $eventDate->getRepeatDescription();
+        $eventDate->count = 10;
+        $eventDate->getRule(true);
+
+        expect($eventDate->getOccurrences())->toHaveCount(10)
+            ->and($eventDate->getRepeatDescription())->toContain('10 times');
+    });
 });
 
 describe('validation', function (): void {

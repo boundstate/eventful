@@ -243,6 +243,10 @@ class EventDate extends Model
             }
 
             $this->_rule = $rule;
+
+            // these are generated from the rule, so are stale once it's rebuilt
+            $this->_allRecurrences = null;
+            $this->_repeatDescription = null;
         }
 
         return $this->_rule;

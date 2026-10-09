@@ -1,5 +1,12 @@
 # CLAUDE.md
 
+## Dev environment
+
+The dev environment runs in DDEV (`.ddev/config.yaml`). Run PHP, Composer, Node.js/npm, Python, etc. inside the container, not on the host.
+
+- Use `ddev exec <command>`, e.g. `ddev exec vendor/bin/phpunit`, or the shortcuts `ddev composer`, `ddev npm` and `ddev craft`.
+- The Python virtualenv for the docs is created in the container at `.venv` by a `post-start` hook, so use `ddev exec .venv/bin/<command>`.
+
 ## Translations
 
 Any text the plugin outputs on the front end (e.g. via Twig filters or helpers like `EventDateHelper`) must be translated.

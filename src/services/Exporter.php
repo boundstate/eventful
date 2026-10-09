@@ -105,6 +105,7 @@ class Exporter extends Component
             ->setUid($element->uid)
             ->setSequence($metadata->iCalendarSequence ?? 0)
             ->setStatus($status)
+            ->setAllDay($date->allDay)
             ->setStart($date->start)
             ->setEnd($date->end)
             ->setSummary(EventRenderer::render($element, EventProp::TITLE, ics: true))

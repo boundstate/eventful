@@ -185,6 +185,14 @@ class EventDate extends Model
         unset($config['rule']);
 
         parent::__construct($config);
+
+        // all day events don't have an end input, so they end at the end of the start day
+        // (the start may not have been converted above, since the timezone isn't posted for all day events)
+        if ($this->allDay && $this->start instanceof DateTime) {
+            $this->end = DateHelper::endOfDay(
+                DateTime::createFromInterface($this->start)->setTime(0, 0),
+            );
+        }
     }
 
     public function repeatsForCount(): bool

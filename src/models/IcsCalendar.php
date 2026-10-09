@@ -65,7 +65,8 @@ class IcsCalendar extends Model
                     ->getStart()
                     ?->getTimezone()
                     ->getName(),
-                $this->_events,
+                // all day events don't have times, so don't need a timezone
+                array_filter($this->_events, fn (IcsEvent $event): bool => ! $event->isAllDay()),
             ),
         );
 

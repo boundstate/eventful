@@ -127,14 +127,42 @@ describe('constructor', function (): void {
             ->and($eventDate->end->format('Y-m-d H:i T'))->toBe('2026-10-07 01:00 PDT');
     });
 
-    it('does not default the end for all day events', function (): void {
+    it('ends all day events at the end of the start day', function (): void {
         $eventDate = new EventDate([
             'start' => '2026-10-07 07:00:00',
             'timezone' => 'America/Vancouver',
             'allDay' => true,
         ]);
 
-        expect($eventDate->end)->toBeNull();
+        expect($eventDate->end->format('Y-m-d H:i:s T'))->toBe('2026-10-07 23:59:59 PDT');
+    });
+
+    it('ends all day events from the request at the end of the start day', function (): void {
+        // the timezone isn't posted for all day events
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-10-07', 'timezone' => 'UTC'],
+            'allDay' => true,
+        ]);
+
+        expect($eventDate->validate())->toBeTrue()
+            ->and($eventDate->start->format('Y-m-d H:i'))->toBe('2026-10-07 00:00')
+            ->and($eventDate->end->format('Y-m-d H:i:s'))->toBe('2026-10-07 23:59:59');
+    });
+
+    it('repeats all day events', function (): void {
+        $eventDate = new EventDate([
+            'start' => '2026-03-02 05:00:00',
+            'timezone' => 'America/Toronto',
+            'allDay' => true,
+            'repeat' => true,
+            'freq' => EventDate::FREQ_WEEKLY,
+            'byDay' => ['MO'],
+            'ends' => EventDate::ENDS_COUNT,
+            'count' => 3,
+        ]);
+
+        expect(occurrenceStarts($eventDate))->toBe(['2026-03-02 00:00', '2026-03-09 00:00', '2026-03-16 00:00'])
+            ->and($eventDate->getLastEndDate()->format('Y-m-d H:i:s'))->toBe('2026-03-16 23:59:59');
     });
 
     it('populates attributes from a legacy rule', function (): void {

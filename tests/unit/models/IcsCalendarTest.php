@@ -95,6 +95,53 @@ it('adds exclusions and inclusions with times outside of the rule', function ():
     );
 });
 
+it('serializes an all day event without times', function (): void {
+    $calendar = new IcsCalendar;
+    $calendar->addEvent()
+        ->setAllDay(true)
+        ->setStart(torontoTime('2026-03-02 00:00'))
+        ->setEnd(torontoTime('2026-03-02 23:59:59'));
+
+    expect(icsLines($calendar))->toContain(
+        'DTSTART;VALUE=DATE:20260302',
+        // exclusive
+        'DTEND;VALUE=DATE:20260303',
+    );
+});
+
+it('serializes the dates of an all day event regardless of the order they are set', function (): void {
+    $calendar = new IcsCalendar;
+    $calendar->addEvent()
+        ->setStart(torontoTime('2026-03-02 00:00'))
+        ->setEnd(torontoTime('2026-03-02 23:59:59'))
+        ->setAllDay(true);
+
+    $lines = icsLines($calendar);
+
+    expect($lines)->toContain('DTSTART;VALUE=DATE:20260302', 'DTEND;VALUE=DATE:20260303')
+        ->and(array_filter($lines, fn ($line): bool => str_starts_with($line, 'DTSTART')))->toHaveCount(1);
+});
+
+it('adds the rule, exclusions, and inclusions of an all day event as dates', function (): void {
+    $start = torontoTime('2026-03-02 00:00');
+    $end = torontoTime('2026-03-02 23:59:59');
+    $rule = (new Rule(null, $start, $end))
+        ->setFreq('WEEKLY')
+        ->setByDay(['MO'])
+        ->setUntil(torontoTime('2026-03-30 23:59:59'))
+        ->setExDates(['2026-03-09'])
+        ->setRDates(['2026-03-04']);
+
+    $calendar = new IcsCalendar;
+    $calendar->addEvent()->setAllDay(true)->setStart($start)->setEnd($end)->setRule($rule);
+
+    expect(icsLines($calendar))->toContain(
+        'RRULE:FREQ=WEEKLY;UNTIL=20260330;BYDAY=MO',
+        'EXDATE;VALUE=DATE:20260309',
+        'RDATE;VALUE=DATE:20260304',
+    );
+});
+
 it('does not modify the given rule', function (): void {
     $rule = (new Rule(null, torontoTime('2026-03-02 10:00'), torontoTime('2026-03-02 11:30')))
         ->setFreq('DAILY')
@@ -159,6 +206,14 @@ describe('addTimezones', function (): void {
         $tzIds = array_values(array_filter(icsLines($calendar), fn ($line): bool => str_starts_with($line, 'TZID:')));
 
         expect($tzIds)->toBe(['TZID:America/Toronto', 'TZID:Europe/London']);
+    });
+
+    it('does not add timezones for all day events', function (): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setAllDay(true)->setStart(torontoTime('2026-03-02 00:00'));
+        $calendar->addTimezones();
+
+        expect(implode("\n", icsLines($calendar)))->not->toContain('VTIMEZONE');
     });
 
     it('defines repeating daylight saving transitions', function (): void {

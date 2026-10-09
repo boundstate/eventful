@@ -22,6 +22,8 @@ class IcsEvent extends Model
 
     private ?DateTime $_end = null;
 
+    private bool $_allDay = false;
+
     public function __construct(VCalendar $doc, array $config = [])
     {
         /** @var VEvent $event */
@@ -48,10 +50,27 @@ class IcsEvent extends Model
         return $this;
     }
 
+    /**
+     * Sets whether this is an all day event, so its dates are serialized without times.
+     * NOTE: call this before {@link setRule()}.
+     */
+    public function setAllDay(bool $allDay): static
+    {
+        $this->_allDay = $allDay;
+        $this->updateDates();
+
+        return $this;
+    }
+
+    public function isAllDay(): bool
+    {
+        return $this->_allDay;
+    }
+
     public function setStart(DateTime $start): static
     {
-        $this->_doc->DTSTART = $start;
         $this->_start = $start;
+        $this->updateDates();
 
         return $this;
     }
@@ -61,10 +80,13 @@ class IcsEvent extends Model
         return $this->_start;
     }
 
+    /**
+     * Sets the end of the event (for all day events, the last day of the event).
+     */
     public function setEnd(DateTime $end): static
     {
-        $this->_doc->DTEND = $end;
         $this->_end = $end;
+        $this->updateDates();
 
         return $this;
     }
@@ -113,19 +135,28 @@ class IcsEvent extends Model
     public function setRule(Rule $rule): static
     {
         // DTEND, EXDATE, & RDATE should not be part of the RRULE
-        $this->_doc->RRULE = (clone $rule)
+        $rrule = (clone $rule)
             ->setEndDate(null)
             ->setExDates([])
             ->setRDates([])
             ->getString(Rule::TZ_FIXED);
 
-        // add EXDATE & RDATE dates directly to VEVENT, and include time,
+        // UNTIL must be a date when DTSTART is a date
+        $until = $rule->getUntil();
+        if ($this->_allDay && $until !== null) {
+            $rrule = preg_replace('/UNTIL=[^;]+/', 'UNTIL='.$until->format('Ymd'), $rrule);
+        }
+
+        $this->_doc->RRULE = $rrule;
+
+        // add EXDATE & RDATE dates directly to VEVENT, and include time (unless all day),
         // otherwise they won't be parsed correctly by calendars
 
         foreach ($rule->getExDates() as $exDate) {
             $this->_doc->add(
                 'EXDATE',
                 DateHelper::setTime($exDate->date, $rule->getStartDate()),
+                $this->dateParameters(),
             );
         }
 
@@ -133,6 +164,7 @@ class IcsEvent extends Model
             $this->_doc->add(
                 'RDATE',
                 DateHelper::setTime($inDate->date, $this->getStart()),
+                $this->dateParameters(),
             );
         }
 
@@ -181,6 +213,30 @@ class IcsEvent extends Model
         }
 
         return $this;
+    }
+
+    private function updateDates(): void
+    {
+        $this->_doc->remove('DTSTART');
+        $this->_doc->remove('DTEND');
+
+        if ($this->_start instanceof DateTime) {
+            $this->_doc->add('DTSTART', $this->_start, $this->dateParameters());
+        }
+
+        if ($this->_end instanceof DateTime) {
+            $this->_doc->add(
+                'DTEND',
+                // the end date of all day events is exclusive
+                $this->_allDay ? DateTime::createFromInterface($this->_end)->modify('+1 day') : $this->_end,
+                $this->dateParameters(),
+            );
+        }
+    }
+
+    private function dateParameters(): array
+    {
+        return $this->_allDay ? ['VALUE' => 'DATE'] : [];
     }
 
     /**

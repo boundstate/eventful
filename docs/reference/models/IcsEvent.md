@@ -50,6 +50,31 @@ public setSequence(int $sequence): static
 | `$sequence` | <span class="code">int</span>    |     |
 | **return**  | <span class="code">static</span> |     |
 
+### setAllDay
+
+Sets whether this is an all day event, so its dates are serialized without times.
+
+NOTE: call this before [`setRule()`](#setrule).
+
+```php
+public setAllDay(bool $allDay): static
+```
+
+|            |                                  |     |
+| ---------- | -------------------------------- | --- |
+| `$allDay`  | <span class="code">bool</span>   |     |
+| **return** | <span class="code">static</span> |     |
+
+### isAllDay
+
+```php
+public isAllDay(): bool
+```
+
+|            |                                |     |
+| ---------- | ------------------------------ | --- |
+| **return** | <span class="code">bool</span> |     |
+
 ### setStart
 
 ```php
@@ -72,6 +97,8 @@ public getStart(): ?DateTime
 | **return** | <span class="code">?DateTime</span> |     |
 
 ### setEnd
+
+Sets the end of the event (for all day events, the last day of the event).
 
 ```php
 public setEnd(DateTime $end): static

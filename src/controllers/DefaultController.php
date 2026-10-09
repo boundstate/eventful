@@ -188,6 +188,12 @@ class DefaultController extends Controller
         $organizers = Craft::$app->request->getQueryParam('organizers');
         $sourceKeys = Craft::$app->request->getQueryParam('sources');
 
+        $startDate = DateTimeHelper::toDateTime($start);
+        $endDate = DateTimeHelper::toDateTime($end);
+        if (! $startDate || ! $endDate) {
+            throw new BadRequestHttpException('Valid start and end dates are required.');
+        }
+
         $elementsBySource = Eventful::getInstance()->events->getEvents(
             date: ['inRange' => [$start, $end]],
             extraQueryParams: [
@@ -199,11 +205,7 @@ class DefaultController extends Controller
             user: $currentUser,
         );
 
-        $constraint = new BetweenConstraint(
-            DateTimeHelper::toDateTime($start),
-            DateTimeHelper::toDateTime($end),
-            true,
-        );
+        $constraint = new BetweenConstraint($startDate, $endDate, true);
 
         $events = [];
 

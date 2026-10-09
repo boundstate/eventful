@@ -13,6 +13,7 @@ use boundstate\eventful\models\EventSource;
 use boundstate\eventful\web\assets\CpCalendarAsset;
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
@@ -93,13 +94,18 @@ class DefaultController extends Controller
     public function actionDelete(): Response
     {
         $this->requireCpRequest();
+        $this->requirePostRequest();
 
-        $elementId = $this->request->getRequiredParam('elementId');
-        $elementType = $this->request->getParam('type');
-        $siteId = $this->request->getParam('siteId');
-        $exDate = $this->request->getParam('date');
+        $elementId = $this->request->getRequiredBodyParam('elementId');
+        $elementType = $this->request->getBodyParam('type');
+        $siteId = $this->request->getBodyParam('siteId');
+        $exDate = $this->request->getRequiredBodyParam('date');
 
         $elementsService = Craft::$app->getElements();
+
+        if ($elementType && ! is_subclass_of($elementType, ElementInterface::class)) {
+            throw new BadRequestHttpException("Invalid element type: $elementType");
+        }
 
         if (! $elementType) {
             $elementType = $elementsService->getElementTypeById($elementId);

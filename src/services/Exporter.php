@@ -41,7 +41,7 @@ class Exporter extends Component
         }
 
         $calendar = new IcsCalendar;
-        foreach ($elements as $element) {
+        foreach ($this->filterWithDates($elements) as $element) {
             $this->addEvent($calendar, $element);
         }
         $calendar->addTimezones();
@@ -79,7 +79,22 @@ class Exporter extends Component
             $calendar->addTimezones();
 
             return $calendar->serialize();
-        }, $elements);
+        }, $this->filterWithDates($elements));
+    }
+
+    /**
+     * Returns the elements that have an event date set.
+     *
+     * @param  array<ElementInterface>  $elements
+     * @return array<ElementInterface>
+     */
+    private function filterWithDates(array $elements): array
+    {
+        return array_values(array_filter($elements, function (ElementInterface $element): bool {
+            $dateField = Eventful::getInstance()->events->findDateField($element);
+
+            return $dateField && $element->getFieldValue($dateField->handle) instanceof EventDate;
+        }));
     }
 
     /**

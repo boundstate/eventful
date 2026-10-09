@@ -286,6 +286,10 @@ class DefaultController extends Controller
             method: IcsMethod::PUBLISH,
         );
 
+        if ($icsContents === []) {
+            throw new BadRequestHttpException('Element has no date set.');
+        }
+
         if (count($icsContents) === 1) {
             return $this->response->sendContentAsFile(
                 $icsContents[0],

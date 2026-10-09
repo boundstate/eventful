@@ -376,7 +376,9 @@ class EventDate extends Model
             return $this->end ?: null;
         }
 
-        if (! $this->count && ! $this->until) {
+        // check the rule rather than the attributes, since `count` and `until` keep their values
+        // (e.g. the default count) when the event doesn't end that way
+        if ($this->rule->getCount() === null && ! $this->rule->getUntil() instanceof DateTime) {
             // event repeats forever
             return null;
         }

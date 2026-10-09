@@ -367,9 +367,13 @@ describe('occurrences', function (): void {
             ->and($eventDate->getLastEndDate()->format('Y-m-d H:i'))->toBe('2026-03-11 11:00');
     });
 
-    it('has no last end date when the event repeats forever', function (): void {
-        expect(weeklyEventDate(['ends' => null, 'count' => null])->getLastEndDate())->toBeNull();
-    });
+    it('has no last end date when the event repeats forever', function (array $config): void {
+        expect(weeklyEventDate(['ends' => null, ...$config])->getLastEndDate())->toBeNull();
+    })->with([
+        'without a count' => [['count' => null]],
+        'with the default count' => [['count' => (new EventDate)->count]],
+        'with an until date' => [['until' => '2026-03-31']],
+    ]);
 
     it('applies constraints without exceeding the count', function (): void {
         $occurrences = weeklyEventDate()->getOccurrences(
@@ -428,6 +432,7 @@ describe('isPast', function (): void {
     });
 
     it('is never past when the event repeats forever', function (): void {
-        expect(weeklyEventDate(['ends' => null, 'count' => null])->isPast())->toBeFalse();
+        expect(weeklyEventDate(['ends' => null, 'start' => '2010-01-04 15:00:00', 'end' => '2010-01-04 16:00:00'])->isPast())
+            ->toBeFalse();
     });
 });

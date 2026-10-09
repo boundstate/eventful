@@ -1,3 +1,6 @@
+{# @var value \boundstate\eventful\models\EventDate #}
+{# @var field \boundstate\eventful\fields\EventDate #}
+
 {% import '_includes/forms' as forms %}
 
 <div
@@ -114,7 +117,7 @@
 
             <div
                 id="freq-WEEKLY"
-                class="flex {{ value.freq != 'WEEKLY' ? 'hidden' }}"
+                class="flex {{ value.freq != constant('FREQ_WEEKLY', value) ? 'hidden' }}"
             >
                 on
                 {{
@@ -130,7 +133,7 @@
 
             <div
                 id="freq-MONTHLY"
-                class="flex {{ value.freq != 'MONTHLY' ? 'hidden' }}"
+                class="flex {{ value.freq != constant('FREQ_MONTHLY', value) ? 'hidden' }}"
             >
                 {{
                     forms.selectField({
@@ -230,11 +233,11 @@
             {% set options = [
                 {
                     label: 'Ends on',
-                    value: 'until'
+                    value: constant('ENDS_UNTIL', value)
                 },
                 {
                     label: 'Ends after',
-                    value: 'count'
+                    value: constant('ENDS_COUNT', value)
                 }
             ] %}
 
@@ -260,7 +263,7 @@
                 })
             }}
 
-            <div id="ends-until" class="{{ value.ends != 'until' ? 'hidden' }}">
+            <div id="ends-until" class="{{ value.ends != constant('ENDS_UNTIL', value) ? 'hidden' }}">
                 {{
                     forms.dateField({
                         id: 'until'|namespaceInputId(id),
@@ -271,7 +274,7 @@
                 }}
             </div>
 
-            <div id="ends-count" class="{{ value.ends != 'count' ? 'hidden' }}">
+            <div id="ends-count" class="{{ value.ends != constant('ENDS_COUNT', value) ? 'hidden' }}">
                 {{
                     forms.textField({
                         id: 'count'|namespaceInputId(id),

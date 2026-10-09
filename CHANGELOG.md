@@ -1,5 +1,29 @@
 # Release notes
 
+## 2.0.0 - 2026-10-09
+> [!IMPORTANT]
+> `EventDate::getNextOccurrence()` now only returns a future occurrence, instead of the first occurrence today.
+
+### Features
+
+* **field:** optional all day events ([2b9ba9d](https://github.com/boundstate/eventful/commit/2b9ba9df815d279c94f236f46693f656eef4b10e))
+
+### Bug Fixes
+
+* all day events in ICS exports and repeating rules ([0144229](https://github.com/boundstate/eventful/commit/01442294feac9d375283f6bc747ad1b71195c748))
+* all day events in twig filters ([d37adcf](https://github.com/boundstate/eventful/commit/d37adcfc7307533e86f2eb04aaf53f60b87c5576))
+* compare the calendar secret in constant time ([0d891d3](https://github.com/boundstate/eventful/commit/0d891d39c20b6acc6effeae8e7fb456d7f17a6ed))
+* consistent separator for repeating event date ranges ([dccc61e](https://github.com/boundstate/eventful/commit/dccc61e062faa2311c456d004ba94d2b81c16d62))
+* end an event the next day if end time is before start time ([86b99ab](https://github.com/boundstate/eventful/commit/86b99ab590d576a76a0087e98184dd9c9ef1530d))
+* **field:** always fill the start & end times ([b9b6a30](https://github.com/boundstate/eventful/commit/b9b6a302ef9b65bd4fca1df07d625e8d60f140cf))
+* **field:** never-ending events dropping out of the calendar ([c1f0e21](https://github.com/boundstate/eventful/commit/c1f0e21afccb643eefc76b3e4d152b3c110a82d5))
+* **ics:** skip events without dates in exports ([0793205](https://github.com/boundstate/eventful/commit/0793205e7e74f9f90a05921171acfc20415aeeea))
+* only return occurrences that start after now ([7bb1d0c](https://github.com/boundstate/eventful/commit/7bb1d0c92f60668a2160f6911e025d219bb78d34))
+* refresh occurrences and repeat description when the rule is refreshed ([925e422](https://github.com/boundstate/eventful/commit/925e4228dec944b0fa758ac30c3b588d56de60e1))
+* require post request to delete event occurrence ([da0378e](https://github.com/boundstate/eventful/commit/da0378e2fb1a3d3e56b07721d097bdcd65503e54))
+* show both dates for events that end the next day ([76cc0a0](https://github.com/boundstate/eventful/commit/76cc0a06ed4646a57a29d155b5b36ffc2ec6ea61))
+* throw 400 when events action is passed invalid dates ([6b29579](https://github.com/boundstate/eventful/commit/6b29579cdc6348897367d4eed8e52ec7bc8fdff3))
+
 ## 1.3.1 - 2026-10-08
 ### Bug Fixes
 

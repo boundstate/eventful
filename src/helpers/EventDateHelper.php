@@ -89,7 +89,7 @@ abstract class EventDateHelper
                 );
             }
 
-            return implode(' · ', $parts);
+            return implode(' ⋅ ', $parts);
         }
 
         if (str_contains($format, 'Date')) {

@@ -13,7 +13,7 @@ See [`EventDateHelper::formatDateRange()`](reference/helpers/EventDateHelper.md#
 
 ```twig
 {{ entry.date|eventDateRange }}
-{# Output: Jul 30 - Aug 28, 2026 · 10AM – 11AM #}
+{# Output: Jul 30 - Aug 28, 2026 ⋅ 10AM – 11AM #}
 
 {{ entry.date|eventDateRange('longDate') }}
 {# Output: July 30 - August 28, 2026 #}

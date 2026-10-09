@@ -103,7 +103,7 @@ describe('formatDateRange', function (): void {
     it('formats a repeating event as the range of dates and times', function (string $format, string $expected): void {
         expect(EventDateHelper::formatDateRange(weeklyTorontoEventDate(), $format))->toBe($expected);
     })->with([
-        'medium' => ['medium', 'Mar 2 - 16, 2026 · 10AM – 11:30AM'],
+        'medium' => ['medium', 'Mar 2 - 16, 2026 ⋅ 10AM – 11:30AM'],
         'mediumDate' => ['mediumDate', 'Mar 2 - 16, 2026'],
         'longDate' => ['longDate', 'March 2 - 16, 2026'],
         'mediumTime' => ['mediumTime', '10AM – 11:30AM'],
@@ -113,7 +113,7 @@ describe('formatDateRange', function (): void {
         expect(EventDateHelper::formatDateRange(torontoEventDate(), displayTimezone: true))
             ->toBe('Mar 2, 2026 ⋅ 10AM – 11:30AM EST')
             ->and(EventDateHelper::formatDateRange(weeklyTorontoEventDate(), displayTimezone: true))
-            ->toBe('Mar 2 - 16, 2026 · 10AM – 11:30AM EST');
+            ->toBe('Mar 2 - 16, 2026 ⋅ 10AM – 11:30AM EST');
     });
 
     it('formats in the given timezone', function (): void {

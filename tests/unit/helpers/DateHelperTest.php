@@ -65,7 +65,20 @@ describe('formatDateRange', function (): void {
         'same year' => ['2026-03-05 10:00', '2026-04-07 10:00', 'medium', 'Mar 5 - Apr 7, 2026'],
         'same year (long)' => ['2026-03-05 10:00', '2026-04-07 10:00', 'long', 'March 5 - April 7, 2026'],
         'different years' => ['2026-12-30 10:00', '2027-01-02 10:00', 'medium', 'Dec 30, 2026 - Jan 2, 2027'],
+        'overnight' => ['2026-03-05 23:30', '2026-03-06 00:30', 'medium', 'Mar 5 - 6, 2026'],
+        'next day, less than 24 hours' => ['2026-03-05 14:00', '2026-03-06 13:00', 'medium', 'Mar 5 - 6, 2026'],
     ]);
+
+    it('compares dates in the given timezone', function (): void {
+        $utc = new DateTimeZone('UTC');
+
+        // Feb 28, 10PM - Mar 3, 10AM in Toronto
+        expect(DateHelper::formatDateRange(
+            new DateTime('2026-03-01 03:00', $utc),
+            new DateTime('2026-03-03 15:00', $utc),
+            timezone: 'America/Toronto',
+        ))->toBe('Feb 28 - Mar 3, 2026');
+    });
 });
 
 describe('formatTimeRange', function (): void {

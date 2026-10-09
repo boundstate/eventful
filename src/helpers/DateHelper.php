@@ -62,15 +62,19 @@ abstract class DateHelper
             $timezone ?: $startDate->getTimezone()->getName(),
         );
 
-        $isSameDay = $endDate instanceof DateTimeInterface && $startDate->diff($endDate)->days === 0;
+        // compare calendar dates, since an event can end the next day in less than 24 hours
+        $isSameDay = $endDate instanceof DateTimeInterface &&
+            $formatter->asDate($startDate, 'yyyy-MM-dd') === $formatter->asDate($endDate, 'yyyy-MM-dd');
 
         $startDateFormat = $format === 'long' ? 'MMMM d, yyyy' : 'MMM d, yyyy';
         $endDateFormat = $startDateFormat;
 
         if ($endDate instanceof DateTimeInterface && ! $isSameDay) {
-            if ($startDate->format('yyyy') === $endDate->format('yyyy')) {
+            $isSameYear = $formatter->asDate($startDate, 'yyyy') === $formatter->asDate($endDate, 'yyyy');
+            if ($isSameYear) {
                 $startDateFormat = $format === 'long' ? 'MMMM d' : 'MMM d';
-                if ($startDate->format('MMM') === $endDate->format('MMM')) {
+                $isSameMonth = $formatter->asDate($startDate, 'yyyy-MM') === $formatter->asDate($endDate, 'yyyy-MM');
+                if ($isSameMonth) {
                     $endDateFormat = 'd, yyyy';
                 }
             }

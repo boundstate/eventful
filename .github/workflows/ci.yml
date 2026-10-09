@@ -3,6 +3,25 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '.phpdoc/**'
+      - 'phpdoc.xml'
+      - 'zensical.toml'
+      - 'requirements.txt'
+      - '.github/workflows/docs.yml'
+      - '.ddev/**'
+      - '.husky/**'
+      - '.gitignore'
+      - '.prettierignore'
+      - '.prettierrc'
+      - 'ide-twig.json'
+      - 'pint.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.ts'
+      - 'README.md'
+      - 'CLAUDE.md'
   pull_request:
 
 concurrency:

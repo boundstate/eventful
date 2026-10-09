@@ -399,20 +399,35 @@ describe('occurrences', function (): void {
 });
 
 describe('getNextOccurrence', function (): void {
-    it('returns the next occurrence starting today or later', function (): void {
-        $start = (new DateTime('-3 days'))->setTime(10, 0);
+    it('returns the first occurrence that starts after now', function (string $offset, int $days): void {
+        // today's occurrence starts or started an hour from now, so is either upcoming or in progress
+        $start = new DateTime("-3 days $offset");
         $eventDate = new EventDate([
             'start' => $start,
-            'end' => (clone $start)->setTime(11, 0),
+            'end' => (clone $start)->modify('+2 hours'),
             'repeat' => true,
             'freq' => EventDate::FREQ_DAILY,
             'ends' => EventDate::ENDS_COUNT,
             'count' => 10,
         ]);
 
-        expect($eventDate->getNextOccurrence()->getStart()->format('Y-m-d H:i'))
-            ->toBe((new DateTime)->format('Y-m-d').' 10:00');
-    });
+        expect($eventDate->getNextOccurrence()->getStart()->format('Y-m-d H:i:s'))
+            ->toBe((clone $start)->modify("+$days days")->format('Y-m-d H:i:s'));
+    })->with([
+        'upcoming today' => ['+1 hour', 3],
+        'in progress' => ['-1 hour', 4],
+    ]);
+
+    it('returns an event that does not repeat if it starts after now', function (string $start, bool $expected): void {
+        $start = new DateTime($start);
+        $eventDate = new EventDate(['start' => $start, 'end' => (clone $start)->modify('+2 hours')]);
+
+        expect($eventDate->getNextOccurrence()?->getStart())->toEqual($expected ? $start : null);
+    })->with([
+        'upcoming' => ['+1 hour', true],
+        'in progress' => ['-1 hour', false],
+        'past' => ['-1 day', false],
+    ]);
 
     it('returns null when all occurrences are in the past', function (): void {
         expect(weeklyEventDate()->getNextOccurrence())->toBeNull();

@@ -347,14 +347,21 @@ class EventDate extends Model
         );
     }
 
+    /**
+     * Returns the first occurrence that starts after now.
+     */
     public function getNextOccurrence(): ?Recurrence
     {
-        $today = (new DateTime)->setTime(0, 0);
+        if (! $this->start instanceof DateTime) {
+            return null;
+        }
 
-        return $this->getOccurrences(
-            new AfterConstraint($today, true),
-        )->first() ?:
-            null;
+        $now = new DateTime;
+
+        $occurrence = $this->getOccurrences(new AfterConstraint($now))->first();
+
+        // the constraint is ignored when the event doesn't repeat, so check the start too
+        return $occurrence && $occurrence->getStart() > $now ? $occurrence : null;
     }
 
     public function getFirstStartDate(): ?DateTime

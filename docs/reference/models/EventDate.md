@@ -219,6 +219,8 @@ public getOccurrences(?ConstraintInterface $constraint = null): RecurrenceCollec
 
 ### getNextOccurrence
 
+Returns the first occurrence that starts after now.
+
 ```php
 public getNextOccurrence(): ?Recurrence
 ```

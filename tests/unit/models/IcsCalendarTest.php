@@ -208,6 +208,20 @@ describe('addTimezones', function (): void {
         expect($tzIds)->toBe(['TZID:America/Toronto', 'TZID:Europe/London']);
     });
 
+    it('defines transitions from inclusions before the start', function (): void {
+        $start = torontoTime('2026-03-09 10:00');
+        $rule = (new Rule(null, $start))->setFreq('WEEKLY')->setCount(3)->setRDates(['2026-01-05']);
+
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart($start)->setRule($rule);
+        $calendar->addTimezones();
+
+        $lines = icsLines($calendar);
+        $standard = array_slice($lines, array_search('BEGIN:STANDARD', $lines), 7);
+
+        expect($standard)->toContain('TZOFFSETTO:-0500', 'DTSTART:20260105T100000');
+    });
+
     it('does not add timezones for all day events', function (): void {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setAllDay(true)->setStart(torontoTime('2026-03-02 00:00'));

@@ -119,6 +119,18 @@ public getEnd(): ?DateTime
 | ---------- | ----------------------------------- | --- |
 | **return** | <span class="code">?DateTime</span> |     |
 
+### getFirstStart
+
+Returns the start of the first occurrence, which may be an inclusion before the start.
+
+```php
+public getFirstStart(): ?DateTime
+```
+
+|            |                                     |     |
+| ---------- | ----------------------------------- | --- |
+| **return** | <span class="code">?DateTime</span> |     |
+
 ### setStatus
 
 ```php

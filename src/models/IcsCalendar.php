@@ -64,18 +64,23 @@ class IcsCalendar extends Model
      */
     public function addTimezones(): void
     {
+        /** @var array<string, DateTime[]> $firstStarts */
+        $firstStarts = [];
         /** @var array<string, DateTime[]> $starts */
         $starts = [];
         foreach ($this->_events as $event) {
             $start = $event->getStart();
             // all day events don't have times, so don't need a timezone
             if ($start instanceof DateTime && ! $event->isAllDay()) {
-                $starts[$start->getTimezone()->getName()][] = $start;
+                $tz = $start->getTimezone()->getName();
+                // the timezone must also cover inclusions before the start
+                $firstStarts[$tz][] = $event->getFirstStart();
+                $starts[$tz][] = $start;
             }
         }
 
         foreach ($starts as $tz => $tzStarts) {
-            $this->addTimezone(new DateTimeZone($tz), min($tzStarts), max($tzStarts));
+            $this->addTimezone(new DateTimeZone($tz), min($firstStarts[$tz]), max($tzStarts));
         }
     }
 

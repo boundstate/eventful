@@ -24,6 +24,11 @@ class IcsEvent extends Model
 
     private bool $_allDay = false;
 
+    /**
+     * @var DateTime[]
+     */
+    private array $_rDates = [];
+
     public function __construct(VCalendar $doc, array $config = [])
     {
         /** @var VEvent $event */
@@ -96,6 +101,18 @@ class IcsEvent extends Model
         return $this->_end;
     }
 
+    /**
+     * Returns the start of the first occurrence, which may be an inclusion before the start.
+     */
+    public function getFirstStart(): ?DateTime
+    {
+        if (! $this->_start instanceof DateTime || $this->_rDates === []) {
+            return $this->_start;
+        }
+
+        return min($this->_start, ...$this->_rDates);
+    }
+
     public function setStatus(?IcsStatus $status): static
     {
         if (! $status instanceof IcsStatus) {
@@ -161,11 +178,9 @@ class IcsEvent extends Model
         }
 
         foreach ($rule->getRDates() as $inDate) {
-            $this->_doc->add(
-                'RDATE',
-                DateHelper::setTime($inDate->date, $this->getStart()),
-                $this->dateParameters(),
-            );
+            $rDate = DateHelper::setTime($inDate->date, $this->getStart());
+            $this->_rDates[] = $rDate;
+            $this->_doc->add('RDATE', $rDate, $this->dateParameters());
         }
 
         return $this;

@@ -19,6 +19,11 @@ class IcsCalendar extends Model
      */
     private array $_events = [];
 
+    /**
+     * How many years after the latest event (or now) to include timezone transitions for.
+     */
+    private const TZ_HORIZON_YEARS = 10;
+
     public function __construct(array $config = [])
     {
         $this->_doc = new VCalendar([
@@ -55,29 +60,35 @@ class IcsCalendar extends Model
     }
 
     /**
-     * Adds a timezone definition the calendar.
+     * Adds a timezone definition for each timed event's timezone to the calendar.
      */
     public function addTimezones(): void
     {
-        $timezones = array_unique(
-            array_map(
-                fn (IcsEvent $event) => $event
-                    ->getStart()
-                    ?->getTimezone()
-                    ->getName(),
-                // all day events don't have times, so don't need a timezone
-                array_filter($this->_events, fn (IcsEvent $event): bool => ! $event->isAllDay()),
-            ),
-        );
-
-        foreach ($timezones as $tz) {
-            if ($tz) {
-                $this->addTimezone(new DateTimeZone($tz));
+        /** @var array<string, DateTime[]> $starts */
+        $starts = [];
+        foreach ($this->_events as $event) {
+            $start = $event->getStart();
+            // all day events don't have times, so don't need a timezone
+            if ($start instanceof DateTime && ! $event->isAllDay()) {
+                $starts[$start->getTimezone()->getName()][] = $start;
             }
+        }
+
+        foreach ($starts as $tz => $tzStarts) {
+            $this->addTimezone(new DateTimeZone($tz), min($tzStarts), max($tzStarts));
         }
     }
 
-    private function addTimezone(DateTimeZone $tz): void
+    /**
+     * Adds a timezone definition, generated from the timezone database.
+     *
+     * The definition starts at the first event, and includes transitions up to
+     * {@link TZ_HORIZON_YEARS} years after the last event (or now), rather than until the events
+     * end, which also gives calendars both the standard and daylight saving time observances.
+     * Transitions that repeat yearly on the same rule are collapsed into an RRULE, which is left
+     * open-ended if the rule is still in effect at the end, so it also covers events that repeat forever.
+     */
+    private function addTimezone(DateTimeZone $tz, DateTime $first, DateTime $last): void
     {
         /** @var VTimeZone $tzComponent */
         $tzComponent = $this->_doc->add('VTIMEZONE', [
@@ -85,45 +96,127 @@ class IcsCalendar extends Model
             'X-LIC-LOCATION' => $tz->getName(),
         ]);
 
-        // generate the timezone transitions for a single year
-        // (we don't have any events starting before 2020)
-        $fromTimestamp = (new DateTime('2020-01-01'))->getTimestamp();
-        $toTimestamp = (new DateTime('2021-01-01'))->getTimestamp();
-        $transitions = $tz->getTransitions($fromTimestamp, $toTimestamp);
+        $horizonYear = max((int) $last->format('Y'), (int) gmdate('Y', IcsEvent::$now ?? time())) + self::TZ_HORIZON_YEARS;
+        $transitions = $tz->getTransitions($first->getTimestamp(), gmmktime(0, 0, 0, 1, 1, $horizonYear + 1));
 
-        $tzFrom = $transitions[0]['offset'];
+        // fixed offset timezones (e.g. `+02:00`) don't have transitions, and return false
+        if (! $transitions) {
+            $offset = $tz->getOffset($first);
+            $tzComponent->add($this->_doc->createComponent('STANDARD', [
+                'TZOFFSETFROM' => $this->formatTzOffset($offset),
+                'TZOFFSETTO' => $this->formatTzOffset($offset),
+                'TZNAME' => $tz->getName(),
+                'DTSTART' => gmdate('Ymd\THis', $first->getTimestamp() + $offset),
+            ]));
 
-        foreach ($transitions as $i => $transition) {
-            if ($i === 0 && count($transitions) > 1) {
-                continue;
+            return;
+        }
+
+        // the first entry is the observance in effect at the first event, rather than an actual transition
+        $initial = array_shift($transitions);
+        $observances = [[
+            'transition' => $initial + ['offsetFrom' => $initial['offset']],
+            'count' => 1,
+        ]];
+
+        // index (in $observances) of the latest yearly observance for each signature
+        $open = [];
+        $offsetFrom = $initial['offset'];
+
+        foreach ($transitions as $transition) {
+            $transition['offsetFrom'] = $offsetFrom;
+            $offsetFrom = $transition['offset'];
+
+            // onsets are in local time, before the transition
+            $local = $transition['ts'] + $transition['offsetFrom'];
+            $year = (int) gmdate('Y', $local);
+            $day = (int) gmdate('j', $local);
+            $byDay = [(int) ceil($day / 7)];
+            if ($day + 7 > (int) gmdate('t', $local)) {
+                $byDay[] = -1;
             }
 
-            $date = new DateTime($transition['time']);
-            $offset = $transition['offset'];
+            $signature = implode('|', [
+                $transition['isdst'] ? 1 : 0,
+                $transition['offsetFrom'],
+                $transition['offset'],
+                $transition['abbr'],
+                gmdate('n|w|His', $local),
+            ]);
+
+            $i = $open[$signature] ?? null;
+            if ($i !== null && $observances[$i]['lastYear'] === $year - 1) {
+                $sharedByDay = array_values(array_intersect($observances[$i]['byDay'], $byDay));
+                if ($sharedByDay !== []) {
+                    $observances[$i]['byDay'] = $sharedByDay;
+                    $observances[$i]['lastYear'] = $year;
+                    $observances[$i]['last'] = $transition;
+                    $observances[$i]['count']++;
+
+                    continue;
+                }
+            }
+
+            $open[$signature] = count($observances);
+            $observances[] = [
+                'transition' => $transition,
+                'last' => $transition,
+                'lastYear' => $year,
+                'byDay' => $byDay,
+                'count' => 1,
+            ];
+        }
+
+        foreach ($observances as $observance) {
+            $transition = $observance['transition'];
+            $local = $transition['ts'] + $transition['offsetFrom'];
 
             $component = $this->_doc->createComponent(
                 $transition['isdst'] ? 'DAYLIGHT' : 'STANDARD',
                 [
-                    'TZOFFSETFROM' => $this->formatTzOffset($tzFrom),
-                    'TZOFFSETTO' => $this->formatTzOffset($offset),
+                    'TZOFFSETFROM' => $this->formatTzOffset($transition['offsetFrom']),
+                    'TZOFFSETTO' => $this->formatTzOffset($transition['offset']),
                     'TZNAME' => $transition['abbr'],
-                    'DTSTART' => $date->format('Ymd\THis'),
+                    'DTSTART' => gmdate('Ymd\THis', $local),
                 ],
             );
 
-            if (count($transitions) > 1) {
-                // assume that DST is observed from the 2nd Sunday in March to the 1st Sunday in November,
-                // to avoid including every timezone transition for the duration of our events
-                // (especially in case an event repeats forever)
-                $component->RRULE = $transition['isdst']
-                    ? 'FREQ=YEARLY;BYMONTH=3;BYDAY=2SU'
-                    : 'FREQ=YEARLY;BYMONTH=11;BYDAY=1SU';
+            if ($observance['count'] > 1) {
+                $component->RRULE = $this->transitionRule($observance, $horizonYear);
             }
 
             $tzComponent->add($component);
-
-            $tzFrom = $offset;
         }
+    }
+
+    /**
+     * Returns the RRULE for a timezone observance that repeats yearly, e.g. `FREQ=YEARLY;BYMONTH=3;BYDAY=2SU`.
+     */
+    private function transitionRule(array $observance, int $horizonYear): string
+    {
+        $transition = $observance['transition'];
+        $local = $transition['ts'] + $transition['offsetFrom'];
+
+        // prefer e.g. 2nd Sunday, unless it's the 5th, which only some months have
+        $byDay = min($observance['byDay']);
+        $nth = max($observance['byDay']);
+        if ($nth > 0 && $nth < 5) {
+            $byDay = $nth;
+        }
+
+        $rule = sprintf(
+            'FREQ=YEARLY;BYMONTH=%d;BYDAY=%d%s',
+            gmdate('n', $local),
+            $byDay,
+            ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'][(int) gmdate('w', $local)],
+        );
+
+        // the rule stopped before the end, so it was replaced (e.g. daylight saving time was abolished)
+        if ($observance['lastYear'] < $horizonYear) {
+            $rule .= ';UNTIL='.gmdate('Ymd\THis\Z', $observance['last']['ts']);
+        }
+
+        return $rule;
     }
 
     /**

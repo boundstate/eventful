@@ -53,7 +53,7 @@ public serialize(): string
 
 ### addTimezones
 
-Adds a timezone definition the calendar.
+Adds a timezone definition for each timed event's timezone to the calendar.
 
 ```php
 public addTimezones(): void

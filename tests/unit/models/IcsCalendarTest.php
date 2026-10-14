@@ -223,7 +223,8 @@ describe('addTimezones', function (): void {
 
         $lines = icsLines($calendar);
         $daylight = array_slice($lines, array_search('BEGIN:DAYLIGHT', $lines), 7);
-        $standard = array_slice($lines, array_search('BEGIN:STANDARD', $lines), 7);
+        // the first is the observance in effect at the event
+        $standard = array_slice($lines, max(array_keys($lines, 'BEGIN:STANDARD')), 7);
 
         expect($daylight)->toContain(
             'TZOFFSETFROM:-0500',
@@ -238,6 +239,68 @@ describe('addTimezones', function (): void {
         );
     });
 
+    it('defines transitions in local time', function (): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain('DTSTART:20260308T020000', 'DTSTART:20261101T020000');
+    });
+
+    it('defines transitions from the earliest event', function (): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
+        $calendar->addEvent()->setStart(torontoTime('1995-06-01 10:00'));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain(
+            'DTSTART:19950601T100000',
+            // the rules changed in 2007
+            'RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU;UNTIL=20060402T070000Z',
+            'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU;UNTIL=20061029T060000Z',
+            'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU',
+            'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU',
+        );
+    });
+
+    it('uses the daylight saving rules of the timezone', function (string $timezone, array $expected): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain(...$expected);
+    })->with([
+        'last Sunday' => ['Europe/London', [
+            'DTSTART:20260329T010000',
+            'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU',
+            'DTSTART:20261025T020000',
+            'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU',
+        ]],
+        'southern hemisphere' => ['Australia/Sydney', [
+            'DTSTART:20260405T030000',
+            'RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU',
+            'DTSTART:20261004T020000',
+            'RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=1SU',
+        ]],
+    ]);
+
+    it('ends repeating transitions when daylight saving is abolished', function (): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(new DateTime('2024-01-01 10:00', new DateTimeZone('America/Vancouver')));
+        $calendar->addTimezones();
+
+        $lines = icsLines($calendar);
+
+        expect($lines)->toContain(
+            'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU;UNTIL=20260308T100000Z',
+            'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU;UNTIL=20251102T090000Z',
+            // permanent -07:00 from November 2026
+            'TZNAME:MST',
+            'DTSTART:20261101T020000',
+        )->and(array_filter($lines, fn ($line): bool => str_starts_with($line, 'RRULE:FREQ=YEARLY') && ! str_contains($line, 'UNTIL=')))
+            ->toBeEmpty();
+    });
+
     it('formats offsets that are not whole hours', function (string $timezone, array $expected): void {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
@@ -249,6 +312,19 @@ describe('addTimezones', function (): void {
         'positive 45 minutes' => ['Asia/Kathmandu', ['TZOFFSETFROM:+0545', 'TZOFFSETTO:+0545']],
         'negative half hour' => ['America/St_Johns', ['TZOFFSETFROM:-0330', 'TZOFFSETTO:-0230']],
     ]);
+
+    it('defines a fixed offset timezone', function (): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone('+02:00')));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain(
+            'TZID:+02:00',
+            'TZOFFSETFROM:+0200',
+            'TZOFFSETTO:+0200',
+            'DTSTART:20260302T100000',
+        );
+    });
 
     it('defines a single non-repeating transition for timezones without daylight saving', function (): void {
         $calendar = new IcsCalendar;

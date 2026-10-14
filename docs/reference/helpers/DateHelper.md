@@ -20,6 +20,20 @@ public static setTime(DateTimeInterface $date, DateTimeInterface $time): DateTim
 | `$time`    | <span class="code">DateTimeInterface</span> |     |
 | **return** | <span class="code">DateTime</span>          |     |
 
+### hasFixedOffset
+
+Returns whether a date is in a fixed offset timezone (e.g. `+02:00` or `EST`),
+rather than a timezone identifier (e.g. `America/Toronto` or `UTC`).
+
+```php
+public static hasFixedOffset(DateTimeInterface $date): bool
+```
+
+|            |                                             |     |
+| ---------- | ------------------------------------------- | --- |
+| `$date`    | <span class="code">DateTimeInterface</span> |     |
+| **return** | <span class="code">bool</span>              |     |
+
 ### endOfDay
 
 Returns a new DateTime object with the time set to the end of the day.

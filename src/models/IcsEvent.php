@@ -8,6 +8,7 @@ use boundstate\eventful\helpers\UrlHelper;
 use craft\base\Model;
 use craft\helpers\MailerHelper;
 use DateTime;
+use DateTimeZone;
 use Recurr\Rule;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
@@ -172,7 +173,7 @@ class IcsEvent extends Model
         foreach ($rule->getExDates() as $exDate) {
             $this->_doc->add(
                 'EXDATE',
-                DateHelper::setTime($exDate->date, $rule->getStartDate()),
+                $this->toIcsDate(DateHelper::setTime($exDate->date, $rule->getStartDate())),
                 $this->dateParameters(),
             );
         }
@@ -180,7 +181,7 @@ class IcsEvent extends Model
         foreach ($rule->getRDates() as $inDate) {
             $rDate = DateHelper::setTime($inDate->date, $this->getStart());
             $this->_rDates[] = $rDate;
-            $this->_doc->add('RDATE', $rDate, $this->dateParameters());
+            $this->_doc->add('RDATE', $this->toIcsDate($rDate), $this->dateParameters());
         }
 
         return $this;
@@ -236,17 +237,31 @@ class IcsEvent extends Model
         $this->_doc->remove('DTEND');
 
         if ($this->_start instanceof DateTime) {
-            $this->_doc->add('DTSTART', $this->_start, $this->dateParameters());
+            $this->_doc->add('DTSTART', $this->toIcsDate($this->_start), $this->dateParameters());
         }
 
         if ($this->_end instanceof DateTime) {
             $this->_doc->add(
                 'DTEND',
                 // the end date of all day events is exclusive
-                $this->_allDay ? DateTime::createFromInterface($this->_end)->modify('+1 day') : $this->_end,
+                $this->_allDay ? DateTime::createFromInterface($this->_end)->modify('+1 day') : $this->toIcsDate($this->_end),
                 $this->dateParameters(),
             );
         }
+    }
+
+    /**
+     * Converts a date in a fixed offset timezone (e.g. `+02:00` or `EST`) to UTC,
+     * since it can't be referenced by a TZID (`:` isn't allowed) or defined by a VTIMEZONE (it has no transitions).
+     * All day dates are left as is, since they don't have times.
+     */
+    private function toIcsDate(DateTime $date): DateTime
+    {
+        if ($this->_allDay || ! DateHelper::hasFixedOffset($date)) {
+            return $date;
+        }
+
+        return DateTime::createFromInterface($date)->setTimezone(new DateTimeZone('UTC'));
     }
 
     private function dateParameters(): array

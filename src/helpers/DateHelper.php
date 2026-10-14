@@ -22,6 +22,15 @@ abstract class DateHelper
     }
 
     /**
+     * Returns whether a date is in a fixed offset timezone (e.g. `+02:00` or `EST`),
+     * rather than a timezone identifier (e.g. `America/Toronto` or `UTC`).
+     */
+    public static function hasFixedOffset(DateTimeInterface $date): bool
+    {
+        return $date->getTimezone()->getLocation() === false;
+    }
+
+    /**
      * Returns a new DateTime object with the time set to the end of the day.
      */
     public static function endOfDay(DateTimeInterface $date): DateTime

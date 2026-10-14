@@ -3,6 +3,7 @@
 namespace boundstate\eventful\models;
 
 use boundstate\eventful\enums\IcsMethod;
+use boundstate\eventful\helpers\DateHelper;
 use Craft;
 use craft\base\Model;
 use DateTime;
@@ -70,8 +71,8 @@ class IcsCalendar extends Model
         $starts = [];
         foreach ($this->_events as $event) {
             $start = $event->getStart();
-            // all day events don't have times, so don't need a timezone
-            if ($start instanceof DateTime && ! $event->isAllDay()) {
+            // all day events don't have times, and fixed offsets are converted to UTC, so don't need a timezone
+            if ($start instanceof DateTime && ! $event->isAllDay() && ! DateHelper::hasFixedOffset($start)) {
                 $tz = $start->getTimezone()->getName();
                 // the timezone must also cover inclusions before the start
                 $firstStarts[$tz][] = $event->getFirstStart();
@@ -103,19 +104,6 @@ class IcsCalendar extends Model
 
         $horizonYear = max((int) $last->format('Y'), (int) gmdate('Y', IcsEvent::$now ?? time())) + self::TZ_HORIZON_YEARS;
         $transitions = $tz->getTransitions($first->getTimestamp(), gmmktime(0, 0, 0, 1, 1, $horizonYear + 1));
-
-        // fixed offset timezones (e.g. `+02:00`) don't have transitions, and return false
-        if (! $transitions) {
-            $offset = $tz->getOffset($first);
-            $tzComponent->add($this->_doc->createComponent('STANDARD', [
-                'TZOFFSETFROM' => $this->formatTzOffset($offset),
-                'TZOFFSETTO' => $this->formatTzOffset($offset),
-                'TZNAME' => $tz->getName(),
-                'DTSTART' => gmdate('Ymd\THis', $first->getTimestamp() + $offset),
-            ]));
-
-            return;
-        }
 
         // the first entry is the observance in effect at the first event, rather than an actual transition
         $initial = array_shift($transitions);

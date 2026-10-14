@@ -327,18 +327,31 @@ describe('addTimezones', function (): void {
         'negative half hour' => ['America/St_Johns', ['TZOFFSETFROM:-0330', 'TZOFFSETTO:-0230']],
     ]);
 
-    it('defines a fixed offset timezone', function (): void {
+    it('converts dates in fixed offset timezones to UTC', function (string $timezone, string $utcTime): void {
+        $tz = new DateTimeZone($timezone);
+        $start = new DateTime('2026-03-02 10:00', $tz);
+        $end = new DateTime('2026-03-02 11:00', $tz);
+        $rule = (new Rule(null, $start, $end))
+            ->setFreq('WEEKLY')
+            ->setCount(3)
+            ->setExDates(['2026-03-09'])
+            ->setRDates(['2026-03-04']);
+
         $calendar = new IcsCalendar;
-        $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone('+02:00')));
+        $calendar->addEvent()->setStart($start)->setEnd($end)->setRule($rule);
         $calendar->addTimezones();
 
-        expect(icsLines($calendar))->toContain(
-            'TZID:+02:00',
-            'TZOFFSETFROM:+0200',
-            'TZOFFSETTO:+0200',
-            'DTSTART:20260302T100000',
-        );
-    });
+        $lines = icsLines($calendar);
+
+        expect($lines)->toContain(
+            "DTSTART:20260302T{$utcTime}Z",
+            "EXDATE:20260309T{$utcTime}Z",
+            "RDATE:20260304T{$utcTime}Z",
+        )->and(implode("\n", $lines))->not->toContain('TZID');
+    })->with([
+        'offset' => ['+02:00', '080000'],
+        'abbreviation' => ['EST', '150000'],
+    ]);
 
     it('formats offsets with seconds', function (): void {
         $calendar = new IcsCalendar;

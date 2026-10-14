@@ -16,6 +16,7 @@ use Recurr\DateInclusion;
 use Recurr\Recurrence;
 use Recurr\RecurrenceCollection;
 use Recurr\Rule;
+use Recurr\Transformer\ArrayTransformerConfig;
 use Recurr\Transformer\Constraint\AfterConstraint;
 use Recurr\Transformer\ConstraintInterface;
 use Recurr\Transformer\TextTransformer;
@@ -394,9 +395,43 @@ class EventDate extends Model
             return null;
         }
 
-        $lastRecurrence = $this->getOccurrences()->last();
+        $lastRecurrence = $this->getLastRecurrence();
 
-        return $lastRecurrence ? $lastRecurrence->getEnd() : null;
+        return $lastRecurrence instanceof Recurrence ? $lastRecurrence->getEnd() : null;
+    }
+
+    /**
+     * Returns the last occurrence of a rule that ends.
+     *
+     * Unlike {@link getOccurrences()}, this isn't cut off at the transformer's virtual limit
+     * (732 occurrences), e.g. for an event that repeats daily for several years.
+     */
+    private function getLastRecurrence(): ?Recurrence
+    {
+        $count = $this->rule->getCount();
+        if ($count !== null) {
+            $config = new ArrayTransformerConfig;
+            $config->setVirtualLimit($count);
+
+            return (new ArrayTransformer($config))->transform($this->rule)->last() ?: null;
+        }
+
+        // occurrences are at most daily, so only keep those in the last year before the until date
+        // to stay within the virtual limit, searching further back if there are none (e.g. when
+        // the event repeats every few years, or the last occurrences are excluded)
+        $start = $this->rule->getStartDate();
+        $until = $this->rule->getUntil();
+        for ($years = 1; ; $years *= 2) {
+            $after = DateTime::createFromInterface($until)->modify("-{$years} years");
+            if ($after <= $start) {
+                return $this->getOccurrences(new AfterConstraint($start, true))->last() ?: null;
+            }
+
+            $lastRecurrence = $this->getOccurrences(new AfterConstraint($after, true))->last();
+            if ($lastRecurrence) {
+                return $lastRecurrence;
+            }
+        }
     }
 
     public function isPast(): bool

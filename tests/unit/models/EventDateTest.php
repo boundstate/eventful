@@ -378,6 +378,36 @@ describe('occurrences', function (): void {
             ->and($eventDate->getLastEndDate()->format('Y-m-d H:i'))->toBe('2026-03-11 11:00');
     });
 
+    it('returns the last end date of an event with more occurrences than the virtual limit', function (array $config, string $expected): void {
+        $eventDate = weeklyEventDate([
+            'freq' => EventDate::FREQ_DAILY,
+            'byDay' => null,
+            ...$config,
+        ]);
+
+        expect($eventDate->getLastEndDate()->format('Y-m-d H:i'))->toBe($expected);
+    })->with([
+        'count' => [['count' => 1000], '2028-11-25 11:00'],
+        'until' => [['ends' => EventDate::ENDS_UNTIL, 'until' => ['date' => '2029-03-01', 'timezone' => 'America/Toronto']], '2029-03-01 11:00'],
+        'until with the last occurrences excluded' => [[
+            'ends' => EventDate::ENDS_UNTIL,
+            'until' => ['date' => '2029-03-01', 'timezone' => 'America/Toronto'],
+            'exDates' => ['2029-02-28', '2029-03-01'],
+        ], '2029-02-27 11:00'],
+    ]);
+
+    it('returns the last end date of an event that repeats every few years', function (): void {
+        $eventDate = weeklyEventDate([
+            'freq' => EventDate::FREQ_YEARLY,
+            'interval' => 3,
+            'byDay' => null,
+            'ends' => EventDate::ENDS_UNTIL,
+            'until' => ['date' => '2034-12-31', 'timezone' => 'America/Toronto'],
+        ]);
+
+        expect($eventDate->getLastEndDate()->format('Y-m-d H:i'))->toBe('2032-03-02 11:00');
+    });
+
     it('has no last end date when the event repeats forever', function (array $config): void {
         expect(weeklyEventDate(['ends' => null, ...$config])->getLastEndDate())->toBeNull();
     })->with([

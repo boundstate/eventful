@@ -225,17 +225,21 @@ class IcsCalendar extends Model
     }
 
     /**
-     * Formats a UTC offset in seconds (e.g. `-12600`) as `±HHMM` (e.g. `-0330`).
+     * Formats a UTC offset in seconds (e.g. `-12600`) as `±HHMM` (e.g. `-0330`),
+     * or `±HHMMSS` if it has seconds (e.g. local mean time before standard time was adopted).
      */
     private function formatTzOffset(int $offset): string
     {
         $absOffset = abs($offset);
-
-        return sprintf(
+        $formatted = sprintf(
             '%s%02d%02d',
             $offset >= 0 ? '+' : '-',
             intdiv($absOffset, 3600),
             intdiv($absOffset % 3600, 60),
         );
+
+        $seconds = $absOffset % 60;
+
+        return $seconds !== 0 ? sprintf('%s%02d', $formatted, $seconds) : $formatted;
     }
 }

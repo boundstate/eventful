@@ -340,6 +340,15 @@ describe('addTimezones', function (): void {
         );
     });
 
+    it('formats offsets with seconds', function (): void {
+        $calendar = new IcsCalendar;
+        // Liberia used local mean time (-00:44:30) until 1972
+        $calendar->addEvent()->setStart(new DateTime('1960-03-02 10:00', new DateTimeZone('Africa/Monrovia')));
+        $calendar->addTimezones();
+
+        expect(icsLines($calendar))->toContain('TZOFFSETFROM:-004430', 'TZOFFSETTO:+0000');
+    });
+
     it('defines a single non-repeating transition for timezones without daylight saving', function (): void {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone('America/Regina')));

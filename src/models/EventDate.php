@@ -82,7 +82,10 @@ class EventDate extends Model
 
     private ?TextTransformer $_textTransformer = null;
 
-    private ?RecurrenceCollection $_allRecurrences = null;
+    /**
+     * @var ?RecurrenceCollection<array-key, Occurrence>
+     */
+    private ?RecurrenceCollection $_allOccurrences = null;
 
     private ?string $_repeatDescription = null;
 
@@ -317,6 +320,9 @@ class EventDate extends Model
         return $this->_repeatDescription;
     }
 
+    /**
+     * @return RecurrenceCollection<array-key, Occurrence>
+     */
     public function getOccurrences(
         ?ConstraintInterface $constraint = null,
     ): RecurrenceCollection {
@@ -327,13 +333,13 @@ class EventDate extends Model
         }
 
         if (! $constraint instanceof ConstraintInterface) {
-            if (! $this->_allRecurrences instanceof RecurrenceCollection) {
-                $this->_allRecurrences = $this->toOccurrences(
+            if (! $this->_allOccurrences instanceof RecurrenceCollection) {
+                $this->_allOccurrences = $this->toOccurrences(
                     $this->getArrayTransformer()->transform($this->rule),
                 );
             }
 
-            return $this->_allRecurrences;
+            return $this->_allOccurrences;
         }
 
         // Occurrences that fail the constraint must still count toward the
@@ -351,7 +357,7 @@ class EventDate extends Model
     /**
      * Returns the first occurrence that starts after now.
      */
-    public function getNextOccurrence(): ?Recurrence
+    public function getNextOccurrence(): ?Occurrence
     {
         if (! $this->start instanceof DateTime) {
             return null;
@@ -372,9 +378,9 @@ class EventDate extends Model
             return $this->start ?: null;
         }
 
-        $firstRecurrence = $this->getOccurrences()->first();
+        $firstOccurrence = $this->getOccurrences()->first();
 
-        return $firstRecurrence ? $firstRecurrence->getStart() : null;
+        return $firstOccurrence ? $firstOccurrence->getStart() : null;
     }
 
     public function getLastEndDate(): ?DateTime
@@ -391,9 +397,9 @@ class EventDate extends Model
             return null;
         }
 
-        $lastRecurrence = $this->getLastRecurrence();
+        $lastOccurrence = $this->getLastOccurrence();
 
-        return $lastRecurrence instanceof Recurrence ? $lastRecurrence->getEnd() : null;
+        return $lastOccurrence instanceof Occurrence ? $lastOccurrence->getEnd() : null;
     }
 
     /**
@@ -402,14 +408,16 @@ class EventDate extends Model
      * Unlike {@link getOccurrences()}, this isn't cut off at the transformer's virtual limit
      * (732 occurrences), e.g. for an event that repeats daily for several years.
      */
-    private function getLastRecurrence(): ?Recurrence
+    private function getLastOccurrence(): ?Occurrence
     {
         $count = $this->rule->getCount();
         if ($count !== null) {
             $config = new ArrayTransformerConfig;
             $config->setVirtualLimit($count);
 
-            return (new ArrayTransformer($config))->transform($this->rule)->last() ?: null;
+            $lastRecurrence = (new ArrayTransformer($config))->transform($this->rule)->last();
+
+            return $lastRecurrence ? $this->toOccurrence($lastRecurrence) : null;
         }
 
         // occurrences are at most daily, so only keep those in the last year before the until date
@@ -423,9 +431,9 @@ class EventDate extends Model
                 return $this->getOccurrences(new AfterConstraint($start, true))->last() ?: null;
             }
 
-            $lastRecurrence = $this->getOccurrences(new AfterConstraint($after, true))->last();
-            if ($lastRecurrence) {
-                return $lastRecurrence;
+            $lastOccurrence = $this->getOccurrences(new AfterConstraint($after, true))->last();
+            if ($lastOccurrence) {
+                return $lastOccurrence;
             }
         }
     }
@@ -455,18 +463,24 @@ class EventDate extends Model
 
     /**
      * @param  RecurrenceCollection<array-key, Recurrence>  $recurrences
+     * @return RecurrenceCollection<array-key, Occurrence>
      */
     private function toOccurrences(RecurrenceCollection $recurrences): RecurrenceCollection
     {
         return new RecurrenceCollection(array_map(
-            fn (Recurrence $recurrence): Occurrence => new Occurrence(
-                $recurrence->getStart(),
-                $recurrence->getEnd(),
-                $recurrence->getIndex(),
-                allDay: $this->allDay,
-            ),
+            $this->toOccurrence(...),
             $recurrences->toArray(),
         ));
+    }
+
+    private function toOccurrence(Recurrence $recurrence): Occurrence
+    {
+        return new Occurrence(
+            $recurrence->getStart(),
+            $recurrence->getEnd(),
+            $recurrence->getIndex(),
+            allDay: $this->allDay,
+        );
     }
 
     private function getArrayTransformer(): ArrayTransformer

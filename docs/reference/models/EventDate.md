@@ -208,25 +208,25 @@ public getRepeatDescription(): string
 ### getOccurrences
 
 ```php
-public getOccurrences(?ConstraintInterface $constraint = null): RecurrenceCollection
+public getOccurrences(?ConstraintInterface $constraint = null): \Recurr\RecurrenceCollection<array-key,Occurrence>
 ```
 
 |               |                                                                                                                                                                                              |     |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | `$constraint` | <span class="code">?[ConstraintInterface](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/Transformer/ConstraintInterface.php '\\Recurr\\Transformer\\ConstraintInterface')</span> |     |
-| **return**    | <span class="code">[RecurrenceCollection](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/RecurrenceCollection.php '\\Recurr\\RecurrenceCollection')</span>                        |     |
+| **return**    | <span class="code">\Recurr\RecurrenceCollection&lt;array-key,[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')&gt;</span>                                             |     |
 
 ### getNextOccurrence
 
 Returns the first occurrence that starts after now.
 
 ```php
-public getNextOccurrence(): ?Recurrence
+public getNextOccurrence(): ?Occurrence
 ```
 
-|            |                                                                                                                                          |     |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| **return** | <span class="code">?[Recurrence](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/Recurrence.php '\\Recurr\\Recurrence')</span> |     |
+|            |                                                                                                     |     |
+| ---------- | --------------------------------------------------------------------------------------------------- | --- |
+| **return** | <span class="code">?[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')</span> |     |
 
 ### getFirstStartDate
 

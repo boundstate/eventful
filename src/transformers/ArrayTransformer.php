@@ -123,6 +123,9 @@ class ArrayTransformer extends BaseArrayTransformer
             $recurrences,
         ));
 
+        // keep the rule's duration, in case the event ends on a later day
+        $duration = $this->start->diff($this->end);
+
         foreach ($inclusions as $inclusion) {
             $start = DateTime::createFromInterface($inclusion->date)->modify(
                 $this->start->format('H:i'),
@@ -134,13 +137,7 @@ class ArrayTransformer extends BaseArrayTransformer
 
             if (! $this->constraint instanceof ConstraintInterface || $this->constraint->test($start)) {
                 $starts[$start->getTimestamp()] = true;
-                $recurrences[] = new Recurrence(
-                    $start,
-                    // keep the rule's duration, in case the event ends on a later day
-                    DateTime::createFromInterface($start)->add(
-                        $this->start->diff($this->end),
-                    ),
-                );
+                $recurrences[] = new Recurrence($start, DateTime::createFromInterface($start)->add($duration));
                 $addedInclusion = true;
             }
         }

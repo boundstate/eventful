@@ -109,7 +109,7 @@ class EventDate extends Model
     private DateTime|false|null $_lastEndDate = false;
 
     /**
-     * @var array<int, ?Occurrence> Cach keyed by whether occurrences in progress are included.
+     * @var array<int, ?Occurrence> Cache keyed by whether occurrences in progress are included.
      */
     private array $_nextOccurrences = [];
 
@@ -422,29 +422,23 @@ class EventDate extends Model
         $start = DateTimeImmutable::createFromInterface($start);
         $end = DateTimeImmutable::createFromInterface($end);
 
-        if (! $this->rule) {
+        if ($this->rule) {
+            // constraints only test the start, but every occurrence has the same duration,
+            // so an occurrence ends after the range starts if it starts after that minus the duration
+            $after = $includeInProgress ? $start->sub($this->getDuration()) : $start;
+            $occurrences = $this->getOccurrences(new BetweenConstraint($after, $end, true));
+        } else {
             // event does not repeat
-            $inRange = $this->start <= $end && ($includeInProgress
-                ? ($this->end ?? $this->start) > $start || $this->start >= $start
-                : $this->start >= $start);
-
-            return $inRange ? $this->getOccurrences() : new RecurrenceCollection;
+            $occurrences = $this->getOccurrences();
         }
 
-        if (! $includeInProgress) {
-            return $this->getOccurrences(new BetweenConstraint($start, $end, true));
-        }
-
-        // constraints only test the start, but every occurrence has the same duration,
-        // so an occurrence ends after the range starts if it starts after that minus the duration
-        $occurrences = $this->getOccurrences(
-            new BetweenConstraint($start->sub($this->getDuration()), $end, true),
-        );
-
-        // the inclusive constraint also keeps an occurrence that ends exactly when the range starts
+        // the constraint is ignored when the event doesn't repeat, and keeps an occurrence
+        // in progress that ends exactly when the range starts
         return new RecurrenceCollection(array_values(array_filter(
             $occurrences->toArray(),
-            fn (Occurrence $occurrence): bool => $occurrence->getEnd() > $start || $occurrence->getStart() >= $start,
+            fn (Occurrence $occurrence): bool => $occurrence->getStart() <= $end && (
+                $occurrence->getStart() >= $start || ($includeInProgress && $occurrence->getEnd() > $start)
+            ),
         )));
     }
 

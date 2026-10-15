@@ -499,7 +499,29 @@ class EventDate extends Model
      */
     private function getLastOccurrence(): ?Occurrence
     {
-        $lastRecurrence = ArrayTransformer::getRecurrences($this->rule, limit: null)->last();
+        $lastRecurrence = null;
+
+        $until = $this->rule->getUntil();
+        if ($until instanceof DateTime) {
+            // only keep the occurrences shortly before the until date, so an event that repeats for a long time
+            // doesn't hold them all in memory, searching further back if there are none (e.g. when the event
+            // repeats every few years, or the last occurrences are excluded)
+            $start = $this->rule->getStartDate();
+            for ($years = 1; ! $lastRecurrence; $years *= 2) {
+                $after = DateTimeImmutable::createFromInterface($until)->modify("-{$years} years");
+                if ($after <= $start) {
+                    break;
+                }
+
+                $lastRecurrence = ArrayTransformer::getRecurrences(
+                    $this->rule,
+                    new AfterConstraint($after, true),
+                    limit: null,
+                )->last();
+            }
+        }
+
+        $lastRecurrence = $lastRecurrence ?: ArrayTransformer::getRecurrences($this->rule, limit: null)->last();
 
         return $lastRecurrence ? $this->toOccurrence($lastRecurrence) : null;
     }

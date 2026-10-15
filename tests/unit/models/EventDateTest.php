@@ -408,6 +408,12 @@ describe('occurrences', function () {
             'until' => ['date' => '2029-03-01', 'timezone' => 'America/Toronto'],
             'exDates' => ['2029-02-28', '2029-03-01'],
         ], '2029-02-27 11:00'],
+        'until far in the future' => [['ends' => EventDate::ENDS_UNTIL, 'until' => ['date' => '2126-03-01', 'timezone' => 'America/Toronto']], '2126-03-01 11:00'],
+        'until with an inclusion after it' => [[
+            'ends' => EventDate::ENDS_UNTIL,
+            'until' => ['date' => '2029-03-01', 'timezone' => 'America/Toronto'],
+            'inDates' => ['2029-03-05'],
+        ], '2029-03-05 11:00'],
     ]);
 
     it('returns the last end date of an event that repeats every few years', function () {

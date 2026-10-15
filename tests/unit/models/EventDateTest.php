@@ -331,8 +331,8 @@ describe('getRepeatDescription', function (): void {
         expect(weeklyEventDate()->getRepeatDescription())->toBe('Chaque semaine le lundi et mercredi 4 fois');
     });
 
-    it('is empty when the event does not repeat', function (): void {
-        expect(weeklyEventDate(['repeat' => false])->getRepeatDescription())->toBe('');
+    it('is null when the event does not repeat', function (): void {
+        expect(weeklyEventDate(['repeat' => false])->getRepeatDescription())->toBeNull();
     });
 });
 

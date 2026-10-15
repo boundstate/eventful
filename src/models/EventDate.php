@@ -25,6 +25,10 @@ use Recurr\Transformer\TextTransformer;
 /**
  * @property-read ?Rule $rule
  * @property-read ?string $repeatDescription
+ * @property-read RecurrenceCollection<array-key, Occurrence> $occurrences
+ * @property-read ?Occurrence $nextOccurrence
+ * @property-read ?DateTime $firstStartDate
+ * @property-read ?DateTime $lastEndDate
  */
 class EventDate extends Model
 {
@@ -88,7 +92,16 @@ class EventDate extends Model
      */
     private ?RecurrenceCollection $_allOccurrences = null;
 
-    private ?string $_repeatDescription = null;
+    private string|false|null $_repeatDescription = false;
+
+    private DateTime|false|null $_firstStartDate = false;
+
+    private DateTime|false|null $_lastEndDate = false;
+
+    /**
+     * @var array<int, ?Occurrence> Cach keyed by whether occurrences in progress are included.
+     */
+    private array $_nextOccurrences = [];
 
     public function __construct($config = [])
     {
@@ -307,14 +320,14 @@ class EventDate extends Model
         }
     }
 
-    public function getRepeatDescription(): string
+    public function getRepeatDescription(): ?string
     {
-        if ($this->_repeatDescription === null) {
+        if ($this->_repeatDescription === false) {
             if ($this->rule) {
                 $description = $this->getTextTransformer()->transform($this->rule);
                 $this->_repeatDescription = StringHelper::upperCaseFirst((string) $description);
             } else {
-                $this->_repeatDescription = '';
+                $this->_repeatDescription = null;
             }
         }
 
@@ -370,16 +383,20 @@ class EventDate extends Model
             return $date > $now ? $this->getOccurrences()->first() : null;
         }
 
-        if (! $includeInProgress) {
-            return $this->getFirstOccurrence(new AfterConstraint($now));
+        $key = (int) $includeInProgress;
+        if (! array_key_exists($key, $this->_nextOccurrences)) {
+            $after = $now;
+            if ($includeInProgress) {
+                // constraints only test the start, but every occurrence has the same duration,
+                // so an occurrence ends after now if it starts after now minus the duration
+                $start = $this->rule->getStartDate();
+                $after = $now->sub($start->diff($this->rule->getEndDate() ?? $start));
+            }
+
+            $this->_nextOccurrences[$key] = $this->getFirstOccurrence(new AfterConstraint($after));
         }
 
-        // constraints only test the start, but every occurrence has the same duration,
-        // so an occurrence ends after now if it starts after now minus the duration
-        $start = $this->rule->getStartDate();
-        $duration = $start->diff($this->rule->getEndDate() ?? $start);
-
-        return $this->getFirstOccurrence(new AfterConstraint($now->sub($duration)));
+        return $this->_nextOccurrences[$key];
     }
 
     public function getFirstStartDate(): ?DateTime
@@ -389,9 +406,12 @@ class EventDate extends Model
             return $this->start ?: null;
         }
 
-        $start = $this->getFirstOccurrence()?->getStart();
+        if ($this->_firstStartDate === false) {
+            $start = $this->getFirstOccurrence()?->getStart();
+            $this->_firstStartDate = $start ? DateTime::createFromInterface($start) : null;
+        }
 
-        return $start ? DateTime::createFromInterface($start) : null;
+        return $this->_firstStartDate;
     }
 
     /**
@@ -432,9 +452,11 @@ class EventDate extends Model
             return null;
         }
 
-        $lastOccurrence = $this->getLastOccurrence();
+        if ($this->_lastEndDate === false) {
+            $this->_lastEndDate = $this->getLastOccurrence()?->getEnd();
+        }
 
-        return $lastOccurrence instanceof Occurrence ? $lastOccurrence->getEnd() : null;
+        return $this->_lastEndDate;
     }
 
     /**

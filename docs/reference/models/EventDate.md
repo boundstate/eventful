@@ -4,6 +4,16 @@ title: EventDate
 
 # Class EventDate
 
+The value of an Event Date field: when an event starts and ends, and how it repeats.
+
+An event that repeats has a Recurr rule built from the repeat attributes (`freq`, `interval`, `byDay`, etc.),
+which generates its occurrences, along with any inclusion dates (`inDates`) and minus any exclusion dates (`exDates`).
+Dates are in the event's timezone, or the system timezone for all day events.
+
+The rule, occurrences, first start, last end, etc. are cached when they're first read,
+and modifying the attributes afterwards doesn't update them. Only modify a value before
+reading any of them (like `DefaultController::actionDelete()` does), or create a new one.
+
 <small class="block">Extends <span class="code">[Model](https://docs.craftcms.com/api/v5/craft-base-model.html '\\craft\\base\\Model')</span></small>
 
 ## Constants

@@ -207,6 +207,10 @@ public getRepeatDescription(): ?string
 
 ### getOccurrences
 
+Returns the occurrences, up to 732 of them (`ArrayTransformer::DEFAULT_LIMIT`).
+
+Use [`getOccurrencesInRange()`](#getoccurrencesinrange) to get later occurrences.
+
 ```php
 public getOccurrences(?ConstraintInterface $constraint = null): \Recurr\RecurrenceCollection<array-key,Occurrence>
 ```

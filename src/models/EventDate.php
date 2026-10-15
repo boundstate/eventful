@@ -19,7 +19,6 @@ use Recurr\DateInclusion;
 use Recurr\Recurrence;
 use Recurr\RecurrenceCollection;
 use Recurr\Rule;
-use Recurr\Transformer\ArrayTransformerConfig;
 use Recurr\Transformer\Constraint\AfterConstraint;
 use Recurr\Transformer\Constraint\BetweenConstraint;
 use Recurr\Transformer\ConstraintInterface;
@@ -85,8 +84,6 @@ class EventDate extends Model
     private static array $dateAttributes = ['start', 'end', 'until'];
 
     private ?Rule $_rule = null;
-
-    private ?ArrayTransformer $_arrayTransformer = null;
 
     private ?TextTransformer $_textTransformer = null;
 
@@ -338,6 +335,9 @@ class EventDate extends Model
     }
 
     /**
+     * Returns the occurrences, up to 732 of them (`ArrayTransformer::DEFAULT_LIMIT`).
+     * Use {@link getOccurrencesInRange()} to get later occurrences.
+     *
      * @return RecurrenceCollection<array-key, Occurrence>
      */
     public function getOccurrences(
@@ -352,32 +352,15 @@ class EventDate extends Model
         if (! $constraint instanceof ConstraintInterface) {
             if (! $this->_allOccurrences instanceof RecurrenceCollection) {
                 $this->_allOccurrences = $this->toOccurrences(
-                    $this->getArrayTransformer()->transform($this->rule),
+                    ArrayTransformer::getRecurrences($this->rule),
                 );
             }
 
             return $this->_allOccurrences;
         }
 
-        // Occurrences that fail the constraint must still count toward the
-        // rule's count, but otherwise shouldn't count toward the virtual limit,
-        // so occurrences of long-running events can be found
-        $count = $this->rule->getCount();
-        $transformer = $this->getArrayTransformer();
-        if ($count !== null) {
-            // occurrences that fail the constraint count toward the limit too,
-            // so raise it to the count to reach the last occurrences
-            $config = new ArrayTransformerConfig;
-            $config->setVirtualLimit(max($count, $config->getVirtualLimit()));
-            $transformer = new ArrayTransformer($config);
-        }
-
         return $this->toOccurrences(
-            $transformer->transform(
-                $this->rule,
-                clone $constraint,
-                countConstraintFailures: $count !== null,
-            ),
+            ArrayTransformer::getRecurrences($this->rule, $constraint),
         );
     }
 
@@ -475,21 +458,7 @@ class EventDate extends Model
      */
     private function getFirstOccurrence(?ConstraintInterface $constraint = null): ?Occurrence
     {
-        $count = $this->rule->getCount();
-
-        $config = new ArrayTransformerConfig;
-        $config->setVirtualLimit(
-            $constraint instanceof ConstraintInterface && $count !== null
-                // occurrences that fail the constraint count toward the limit too
-                ? $count
-                // exclusions are removed after the limit is applied, and each removes at most one
-                // occurrence (they're at most daily), so one more than that is always enough
-                : count($this->rule->getExDates()) + 1,
-        );
-
-        $recurrence = (new ArrayTransformer($config))
-            ->transform($this->rule, $constraint, countConstraintFailures: $count !== null)
-            ->first();
+        $recurrence = ArrayTransformer::getRecurrences($this->rule, $constraint, limit: 1)->first();
 
         return $recurrence ? $this->toOccurrence($recurrence) : null;
     }
@@ -516,39 +485,13 @@ class EventDate extends Model
     }
 
     /**
-     * Returns the last occurrence of a rule that ends.
-     *
-     * Unlike {@link getOccurrences()}, this isn't cut off at the transformer's virtual limit
-     * (732 occurrences), e.g. for an event that repeats daily for several years.
+     * Returns the last occurrence of a rule that ends (with a count or until date).
      */
     private function getLastOccurrence(): ?Occurrence
     {
-        $count = $this->rule->getCount();
-        if ($count !== null) {
-            $config = new ArrayTransformerConfig;
-            $config->setVirtualLimit($count);
+        $lastRecurrence = ArrayTransformer::getRecurrences($this->rule, limit: null)->last();
 
-            $lastRecurrence = (new ArrayTransformer($config))->transform($this->rule)->last();
-
-            return $lastRecurrence ? $this->toOccurrence($lastRecurrence) : null;
-        }
-
-        // occurrences are at most daily, so only keep those in the last year before the until date
-        // to stay within the virtual limit, searching further back if there are none (e.g. when
-        // the event repeats every few years, or the last occurrences are excluded)
-        $start = $this->rule->getStartDate();
-        $until = $this->rule->getUntil();
-        for ($years = 1; ; $years *= 2) {
-            $after = DateTime::createFromInterface($until)->modify("-{$years} years");
-            if ($after <= $start) {
-                return $this->getOccurrences(new AfterConstraint($start, true))->last() ?: null;
-            }
-
-            $lastOccurrence = $this->getOccurrences(new AfterConstraint($after, true))->last();
-            if ($lastOccurrence) {
-                return $lastOccurrence;
-            }
-        }
+        return $lastRecurrence ? $this->toOccurrence($lastRecurrence) : null;
     }
 
     public function isPast(): bool
@@ -604,15 +547,6 @@ class EventDate extends Model
             $recurrence->getIndex(),
             allDay: $this->allDay,
         );
-    }
-
-    private function getArrayTransformer(): ArrayTransformer
-    {
-        if (! $this->_arrayTransformer instanceof ArrayTransformer) {
-            $this->_arrayTransformer = new ArrayTransformer;
-        }
-
-        return $this->_arrayTransformer;
     }
 
     private function getTextTransformer(): TextTransformer

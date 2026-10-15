@@ -452,6 +452,16 @@ describe('occurrences', function (): void {
         ))->toBe(['2046-03-05 10:00', '2046-03-07 10:00']);
     });
 
+    it('returns up to 732 occurrences', function (): void {
+        $occurrences = dailyEventDate([
+            'ends' => EventDate::ENDS_UNTIL,
+            'count' => null,
+            'until' => '2028-11-25',
+        ])->getOccurrences();
+
+        expect($occurrences)->toHaveCount(732);
+    });
+
     it('applies constraints after more occurrences than the virtual limit', function (): void {
         $occurrences = dailyEventDate(['count' => 1000])->getOccurrences(
             new BetweenConstraint(new DateTime('2028-05-10'), new DateTime('2028-05-11')),

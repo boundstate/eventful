@@ -1,5 +1,6 @@
 <?php
 
+use Rector\CodingStyle\Rector\ArrowFunction\ArrowFunctionDelegatingCallToFirstClassCallableRector;
 use Rector\Config\RectorConfig;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\SafeDeclareStrictTypesRector;
 
@@ -18,4 +19,8 @@ return RectorConfig::configure()
     )
     ->withSkip([
         SafeDeclareStrictTypesRector::class,
+        // Pest binds dataset closures to the test case, which fails for first-class callables of functions
+        ArrowFunctionDelegatingCallToFirstClassCallableRector::class => [
+            __DIR__.'/tests',
+        ],
     ]);

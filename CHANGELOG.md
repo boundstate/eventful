@@ -1,5 +1,19 @@
 # Release notes
 
+## 2.1.0 - 2026-10-15
+### Features
+
+* get events & occurrences in range ([11e07d9](https://github.com/boundstate/eventful/commit/11e07d9600016827323ee74136913163d140fa8a))
+* improve caching of event properties ([136a1dd](https://github.com/boundstate/eventful/commit/136a1dd0ba2ddff69d172199fbf33197de2433cf))
+* option to include in-progress occurrences when getting next ([d3c7f44](https://github.com/boundstate/eventful/commit/d3c7f44c5f0e4dd2958a033d98b7828a5cbbcad4))
+
+### Bug Fixes
+
+* clone constraint when getting occurrences ([2e356ff](https://github.com/boundstate/eventful/commit/2e356ff12e105b812cdd6966eed1992d6d679ac5))
+* don't duplicate occurrences for inclusions on a repeat date ([0023f38](https://github.com/boundstate/eventful/commit/0023f3859596ed8122cea9650ba091ccf0d771d1))
+* find the next occurrence of events with more past occurrences than the virtual limit ([fd90b99](https://github.com/boundstate/eventful/commit/fd90b99360b35bace85c5face15ae4ce254ec8a8))
+* optimize finding the last end of an until rule ([99fe32e](https://github.com/boundstate/eventful/commit/99fe32e16dd6489c4cfea770f16dcd216b97beac))
+
 ## 2.0.1 - 2026-10-15
 ### Bug Fixes
 

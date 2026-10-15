@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.0.1 - 2026-10-15
+### Bug Fixes
+
+* find the last end date of events with more than 732 occurrences ([3dd4945](https://github.com/boundstate/eventful/commit/3dd49458a3eef641a3df9d16bba0c097c1f58d7d))
+* **ics:** convert dates in fixed offset timezones to UTC ([a8b24a7](https://github.com/boundstate/eventful/commit/a8b24a78473da3325282ca6a783cc8c2ea32755c))
+* **ics:** define timezones for inclusions before the start ([05c42df](https://github.com/boundstate/eventful/commit/05c42dfd1f42e3ab944a8544c4cc3122863fc4b1))
+* **ics:** don't define a timezone for UTC ([52e8475](https://github.com/boundstate/eventful/commit/52e8475da98ccbb075c32b2afb85dd79b2addb34))
+* **ics:** include seconds in timezone offsets ([9d97fdb](https://github.com/boundstate/eventful/commit/9d97fdb4f84e646b48584077e89165206833b830))
+* **ics:** timezone definitions ([b6e7a77](https://github.com/boundstate/eventful/commit/b6e7a77ba7b1aac0976515d4310b8665de15cd3e))
+* include field label in validation errors ([d2cf5f7](https://github.com/boundstate/eventful/commit/d2cf5f7a733e0dcc805437af0e66d493bbbd4881))
+
 ## 2.0.0 - 2026-10-09
 > [!IMPORTANT]
 > `EventDate::getNextOccurrence()` now only returns a future occurrence, instead of the first occurrence today.

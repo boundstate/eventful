@@ -218,15 +218,14 @@ public getOccurrences(?ConstraintInterface $constraint = null): \Recurr\Recurren
 
 ### getNextOccurrence
 
-Returns the first occurrence that starts after now.
-
 ```php
-public getNextOccurrence(): ?Occurrence
+public getNextOccurrence(bool $includeInProgress = false): ?Occurrence
 ```
 
-|            |                                                                                                     |     |
-| ---------- | --------------------------------------------------------------------------------------------------- | --- |
-| **return** | <span class="code">?[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')</span> |     |
+|                      |                                                                                                     |     |
+| -------------------- | --------------------------------------------------------------------------------------------------- | --- |
+| `$includeInProgress` | <span class="code">bool</span>                                                                      |     |
+| **return**           | <span class="code">?[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')</span> |     |
 
 ### getFirstStartDate
 

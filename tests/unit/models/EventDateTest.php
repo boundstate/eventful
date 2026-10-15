@@ -443,8 +443,8 @@ describe('occurrences', function (): void {
 });
 
 describe('getNextOccurrence', function (): void {
-    it('returns the first occurrence that starts after now', function (string $offset, int $days): void {
-        // today's occurrence starts or started an hour from now, so is either upcoming or in progress
+    it('returns the next occurrence', function (string $offset, bool $includeInProgress, int $days): void {
+        // today's occurrence lasts 2 hours, starting at the offset from now
         $start = new DateTime("-3 days $offset");
         $eventDate = new EventDate([
             'start' => $start,
@@ -455,12 +455,30 @@ describe('getNextOccurrence', function (): void {
             'count' => 10,
         ]);
 
-        expect($eventDate->getNextOccurrence()->getStart()->format('Y-m-d H:i:s'))
+        expect($eventDate->getNextOccurrence($includeInProgress)->getStart()->format('Y-m-d H:i:s'))
             ->toBe((clone $start)->modify("+$days days")->format('Y-m-d H:i:s'));
     })->with([
-        'upcoming today' => ['+1 hour', 3],
-        'in progress' => ['-1 hour', 4],
+        'upcoming today' => ['+1 hour', false, 3],
+        'in progress' => ['-1 hour', false, 4],
+        'upcoming today, including in progress' => ['+1 hour', true, 3],
+        'in progress, including in progress' => ['-1 hour', true, 3],
+        'ended, including in progress' => ['-3 hours', true, 4],
     ]);
+
+    it('returns an all day occurrence in progress when including in progress', function (): void {
+        $start = new DateTime('-3 days midnight');
+        $eventDate = new EventDate([
+            'start' => $start,
+            'allDay' => true,
+            'repeat' => true,
+            'freq' => EventDate::FREQ_DAILY,
+            'ends' => EventDate::ENDS_COUNT,
+            'count' => 10,
+        ]);
+
+        expect($eventDate->getNextOccurrence(includeInProgress: true)->getStart()->format('Y-m-d H:i:s'))
+            ->toBe((new DateTime('midnight'))->format('Y-m-d H:i:s'));
+    });
 
     it('skips excluded occurrences', function (): void {
         $start = new DateTime('-3 days +1 hour');
@@ -494,20 +512,26 @@ describe('getNextOccurrence', function (): void {
             ->toBe((clone $start)->modify('+800 days')->format('Y-m-d H:i:s'));
     });
 
-    it('returns an event that does not repeat if it starts after now', function (string $start, bool $expected): void {
+    it('returns an event that does not repeat if it is next', function (string $start, bool $includeInProgress, bool $expected): void {
         $start = new DateTime($start);
         $eventDate = new EventDate(['start' => $start, 'end' => (clone $start)->modify('+2 hours')]);
 
-        expect($eventDate->getNextOccurrence()?->getStart())->toEqual($expected ? $start : null);
+        expect($eventDate->getNextOccurrence($includeInProgress)?->getStart())->toEqual($expected ? $start : null);
     })->with([
-        'upcoming' => ['+1 hour', true],
-        'in progress' => ['-1 hour', false],
-        'past' => ['-1 day', false],
+        'upcoming' => ['+1 hour', false, true],
+        'in progress' => ['-1 hour', false, false],
+        'past' => ['-1 day', false, false],
+        'upcoming, including in progress' => ['+1 hour', true, true],
+        'in progress, including in progress' => ['-1 hour', true, true],
+        'past, including in progress' => ['-1 day', true, false],
     ]);
 
-    it('returns null when all occurrences are in the past', function (): void {
-        expect(weeklyEventDate()->getNextOccurrence())->toBeNull();
-    });
+    it('returns null when all occurrences are in the past', function (bool $includeInProgress): void {
+        expect(weeklyEventDate()->getNextOccurrence($includeInProgress))->toBeNull();
+    })->with([
+        'excluding in progress' => [false],
+        'including in progress' => [true],
+    ]);
 });
 
 describe('isPast', function (): void {

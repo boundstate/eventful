@@ -10,6 +10,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\validators\DateTimeValidator;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use Recurr\DateExclusion;
 use Recurr\DateInclusion;
@@ -354,23 +355,31 @@ class EventDate extends Model
         );
     }
 
-    /**
-     * Returns the first occurrence that starts after now.
-     */
-    public function getNextOccurrence(): ?Occurrence
+    public function getNextOccurrence(bool $includeInProgress = false): ?Occurrence
     {
         if (! $this->start instanceof DateTime) {
             return null;
         }
 
-        $now = new DateTime;
+        $now = new DateTimeImmutable;
 
         if (! $this->rule) {
             // event does not repeat
-            return $this->start > $now ? $this->getOccurrences()->first() : null;
+            $date = $includeInProgress ? ($this->end ?? $this->start) : $this->start;
+
+            return $date > $now ? $this->getOccurrences()->first() : null;
         }
 
-        return $this->getFirstOccurrence(new AfterConstraint($now));
+        if (! $includeInProgress) {
+            return $this->getFirstOccurrence(new AfterConstraint($now));
+        }
+
+        // constraints only test the start, but every occurrence has the same duration,
+        // so an occurrence ends after now if it starts after now minus the duration
+        $start = $this->rule->getStartDate();
+        $duration = $start->diff($this->rule->getEndDate() ?? $start);
+
+        return $this->getFirstOccurrence(new AfterConstraint($now->sub($duration)));
     }
 
     public function getFirstStartDate(): ?DateTime

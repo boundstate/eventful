@@ -35,37 +35,37 @@ function weeklyTorontoEventDate(): EventDate
     ]);
 }
 
-describe('formatDate', function (): void {
-    $recurrence = fn (): Recurrence => new Recurrence(
+describe('formatDate', function () {
+    $recurrence = fn () => new Recurrence(
         new DateTime('2026-03-02 10:00', new DateTimeZone('America/Toronto')),
         new DateTime('2026-03-02 11:30', new DateTimeZone('America/Toronto')),
     );
 
-    it('formats the date and times', function () use ($recurrence): void {
+    it('formats the date and times', function () use ($recurrence) {
         expect(EventDateHelper::formatDate($recurrence()))->toBe('Mar 2, 2026 ⋅ 10AM – 11:30AM')
             ->and(EventDateHelper::formatDate($recurrence(), displayTimezone: true))
             ->toBe('Mar 2, 2026 ⋅ 10AM – 11:30AM EST');
     });
 
-    it('formats only the date for all day events', function () use ($recurrence): void {
+    it('formats only the date for all day events', function () use ($recurrence) {
         expect(EventDateHelper::formatDate($recurrence(), 'long', allDay: true))->toBe('March 2, 2026');
     });
 
-    it('formats only the date for occurrences of all day events', function (): void {
+    it('formats only the date for occurrences of all day events', function () {
         $occurrence = allDayTorontoEventDate()->getOccurrences()->first();
 
         expect(EventDateHelper::formatDate($occurrence))->toBe('Mar 2, 2026');
     });
 
-    it('does not convert all day dates to the given timezone', function (): void {
+    it('does not convert all day dates to the given timezone', function () {
         $occurrence = allDayTorontoEventDate()->getOccurrences()->first();
 
         expect(EventDateHelper::formatDate($occurrence, timezone: 'America/Vancouver'))->toBe('Mar 2, 2026');
     });
 });
 
-describe('formatDateRange', function (): void {
-    it('formats a non-repeating event', function (string $format, string $expected): void {
+describe('formatDateRange', function () {
+    it('formats a non-repeating event', function (string $format, string $expected) {
         expect(EventDateHelper::formatDateRange(torontoEventDate(), $format))->toBe($expected);
     })->with([
         'medium' => ['medium', 'Mar 2, 2026 ⋅ 10AM – 11:30AM'],
@@ -75,7 +75,7 @@ describe('formatDateRange', function (): void {
         'longTime' => ['longTime', '10:00AM – 11:30AM'],
     ]);
 
-    it('formats an all day event without times', function (string $format, string $expected): void {
+    it('formats an all day event without times', function (string $format, string $expected) {
         expect(EventDateHelper::formatDateRange(allDayTorontoEventDate(), $format))->toBe($expected);
     })->with([
         'medium' => ['medium', 'Mar 2, 2026'],
@@ -83,7 +83,7 @@ describe('formatDateRange', function (): void {
         'mediumTime' => ['mediumTime', 'All day'],
     ]);
 
-    it('formats a repeating all day event as the range of dates', function (): void {
+    it('formats a repeating all day event as the range of dates', function () {
         $eventDate = allDayTorontoEventDate([
             'repeat' => true,
             'freq' => EventDate::FREQ_WEEKLY,
@@ -95,12 +95,12 @@ describe('formatDateRange', function (): void {
         expect(EventDateHelper::formatDateRange($eventDate))->toBe('Mar 2 - 16, 2026');
     });
 
-    it('does not convert all day dates to the given timezone', function (): void {
+    it('does not convert all day dates to the given timezone', function () {
         expect(EventDateHelper::formatDateRange(allDayTorontoEventDate(), timezone: 'America/Vancouver'))
             ->toBe('Mar 2, 2026');
     });
 
-    it('formats a repeating event as the range of dates and times', function (string $format, string $expected): void {
+    it('formats a repeating event as the range of dates and times', function (string $format, string $expected) {
         expect(EventDateHelper::formatDateRange(weeklyTorontoEventDate(), $format))->toBe($expected);
     })->with([
         'medium' => ['medium', 'Mar 2 - 16, 2026 ⋅ 10AM – 11:30AM'],
@@ -109,14 +109,14 @@ describe('formatDateRange', function (): void {
         'mediumTime' => ['mediumTime', '10AM – 11:30AM'],
     ]);
 
-    it('optionally displays the timezone', function (): void {
+    it('optionally displays the timezone', function () {
         expect(EventDateHelper::formatDateRange(torontoEventDate(), displayTimezone: true))
             ->toBe('Mar 2, 2026 ⋅ 10AM – 11:30AM EST')
             ->and(EventDateHelper::formatDateRange(weeklyTorontoEventDate(), displayTimezone: true))
             ->toBe('Mar 2 - 16, 2026 ⋅ 10AM – 11:30AM EST');
     });
 
-    it('formats in the given timezone', function (): void {
+    it('formats in the given timezone', function () {
         expect(EventDateHelper::formatDateRange(torontoEventDate(), timezone: 'America/Vancouver'))
             ->toBe('Mar 2, 2026 ⋅ 7AM – 8:30AM');
     });

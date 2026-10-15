@@ -6,14 +6,14 @@ use boundstate\eventful\models\IcsCalendar;
 use boundstate\eventful\models\IcsEvent;
 use Recurr\Rule;
 
-beforeEach(function (): void {
+beforeEach(function () {
     $site = (object) ['name' => 'Acme', 'baseUrl' => 'https://events.example.com/'];
     Craft::$app->set('sites', (object) ['currentSite' => $site, 'primarySite' => $site]);
 
     IcsEvent::$now = (new DateTime('2026-01-01 12:00:00', new DateTimeZone('UTC')))->getTimestamp();
 });
 
-afterEach(function (): void {
+afterEach(function () {
     IcsEvent::$now = null;
 });
 
@@ -30,18 +30,18 @@ function torontoTime(string $date): DateTime
     return new DateTime($date, new DateTimeZone('America/Toronto'));
 }
 
-it('identifies the site in the product identifier', function (): void {
+it('identifies the site in the product identifier', function () {
     expect(icsLines(new IcsCalendar))->toContain('PRODID:-//Acme/Calendar//EN');
 });
 
-it('sets and removes the method', function (): void {
+it('sets and removes the method', function () {
     $calendar = (new IcsCalendar)->setMethod(IcsMethod::REQUEST);
 
     expect(icsLines($calendar))->toContain('METHOD:REQUEST')
         ->and(icsLines($calendar->setMethod(null)))->not->toContain('METHOD:REQUEST');
 });
 
-it('serializes an event', function (): void {
+it('serializes an event', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->setUid('event-1')
@@ -68,14 +68,14 @@ it('serializes an event', function (): void {
     );
 });
 
-it('removes the status', function (): void {
+it('removes the status', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()->setStatus(IcsStatus::CANCELLED)->setStatus(null);
 
     expect(implode("\n", icsLines($calendar)))->not->toContain('STATUS');
 });
 
-it('adds exclusions and inclusions with times outside of the rule', function (): void {
+it('adds exclusions and inclusions with times outside of the rule', function () {
     $start = torontoTime('2026-03-02 10:00');
     $end = torontoTime('2026-03-02 11:30');
     $rule = (new Rule(null, $start, $end))
@@ -95,7 +95,7 @@ it('adds exclusions and inclusions with times outside of the rule', function ():
     );
 });
 
-it('serializes an all day event without times', function (): void {
+it('serializes an all day event without times', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->setAllDay(true)
@@ -109,7 +109,7 @@ it('serializes an all day event without times', function (): void {
     );
 });
 
-it('serializes the dates of an all day event regardless of the order they are set', function (): void {
+it('serializes the dates of an all day event regardless of the order they are set', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->setStart(torontoTime('2026-03-02 00:00'))
@@ -119,10 +119,10 @@ it('serializes the dates of an all day event regardless of the order they are se
     $lines = icsLines($calendar);
 
     expect($lines)->toContain('DTSTART;VALUE=DATE:20260302', 'DTEND;VALUE=DATE:20260303')
-        ->and(array_filter($lines, fn ($line): bool => str_starts_with($line, 'DTSTART')))->toHaveCount(1);
+        ->and(array_filter($lines, fn ($line) => str_starts_with($line, 'DTSTART')))->toHaveCount(1);
 });
 
-it('adds the rule, exclusions, and inclusions of an all day event as dates', function (): void {
+it('adds the rule, exclusions, and inclusions of an all day event as dates', function () {
     $start = torontoTime('2026-03-02 00:00');
     $end = torontoTime('2026-03-02 23:59:59');
     $rule = (new Rule(null, $start, $end))
@@ -142,7 +142,7 @@ it('adds the rule, exclusions, and inclusions of an all day event as dates', fun
     );
 });
 
-it('does not modify the given rule', function (): void {
+it('does not modify the given rule', function () {
     $rule = (new Rule(null, torontoTime('2026-03-02 10:00'), torontoTime('2026-03-02 11:30')))
         ->setFreq('DAILY')
         ->setExDates(['2026-03-04']);
@@ -153,7 +153,7 @@ it('does not modify the given rule', function (): void {
         ->and($rule->getExDates())->toHaveCount(1);
 });
 
-it('adds organizers and attendees', function (): void {
+it('adds organizers and attendees', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->setOrganizers(['old@example.com' => 'Old Organizer'])
@@ -170,7 +170,7 @@ it('adds organizers and attendees', function (): void {
     )->and(implode("\n", $lines))->not->toContain('old@example.com');
 });
 
-it('adds organizers and attendees without names', function (): void {
+it('adds organizers and attendees without names', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->setOrganizers('organizer@example.com')
@@ -183,7 +183,7 @@ it('adds organizers and attendees without names', function (): void {
     );
 });
 
-it('replaces attendees', function (): void {
+it('replaces attendees', function () {
     $calendar = new IcsCalendar;
     $calendar->addEvent()
         ->addAttendees(['jane@example.com' => 'Jane'])
@@ -194,8 +194,8 @@ it('replaces attendees', function (): void {
         ->toContain('john@example.com');
 });
 
-describe('addTimezones', function (): void {
-    it('adds each event timezone once', function (): void {
+describe('addTimezones', function () {
+    it('adds each event timezone once', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
         $calendar->addEvent()->setStart(torontoTime('2026-03-09 10:00'));
@@ -203,12 +203,12 @@ describe('addTimezones', function (): void {
         $calendar->addEvent();
         $calendar->addTimezones();
 
-        $tzIds = array_values(array_filter(icsLines($calendar), fn ($line): bool => str_starts_with($line, 'TZID:')));
+        $tzIds = array_values(array_filter(icsLines($calendar), fn ($line) => str_starts_with($line, 'TZID:')));
 
         expect($tzIds)->toBe(['TZID:America/Toronto', 'TZID:Europe/London']);
     });
 
-    it('defines transitions from inclusions before the start', function (): void {
+    it('defines transitions from inclusions before the start', function () {
         $start = torontoTime('2026-03-09 10:00');
         $rule = (new Rule(null, $start))->setFreq('WEEKLY')->setCount(3)->setRDates(['2026-01-05']);
 
@@ -222,7 +222,7 @@ describe('addTimezones', function (): void {
         expect($standard)->toContain('TZOFFSETTO:-0500', 'DTSTART:20260105T100000');
     });
 
-    it('does not add timezones for all day events', function (): void {
+    it('does not add timezones for all day events', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setAllDay(true)->setStart(torontoTime('2026-03-02 00:00'));
         $calendar->addTimezones();
@@ -230,7 +230,7 @@ describe('addTimezones', function (): void {
         expect(implode("\n", icsLines($calendar)))->not->toContain('VTIMEZONE');
     });
 
-    it('does not add a timezone for UTC', function (string $timezone): void {
+    it('does not add a timezone for UTC', function (string $timezone) {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
         $calendar->addTimezones();
@@ -241,7 +241,7 @@ describe('addTimezones', function (): void {
             ->and(implode("\n", $lines))->not->toContain('VTIMEZONE');
     })->with(['UTC', 'GMT', 'Z']);
 
-    it('defines repeating daylight saving transitions', function (): void {
+    it('defines repeating daylight saving transitions', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
         $calendar->addTimezones();
@@ -264,7 +264,7 @@ describe('addTimezones', function (): void {
         );
     });
 
-    it('defines transitions in local time', function (): void {
+    it('defines transitions in local time', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
         $calendar->addTimezones();
@@ -272,7 +272,7 @@ describe('addTimezones', function (): void {
         expect(icsLines($calendar))->toContain('DTSTART:20260308T020000', 'DTSTART:20261101T020000');
     });
 
-    it('defines transitions from the earliest event', function (): void {
+    it('defines transitions from the earliest event', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));
         $calendar->addEvent()->setStart(torontoTime('1995-06-01 10:00'));
@@ -288,7 +288,7 @@ describe('addTimezones', function (): void {
         );
     });
 
-    it('uses the daylight saving rules of the timezone', function (string $timezone, array $expected): void {
+    it('uses the daylight saving rules of the timezone', function (string $timezone, array $expected) {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
         $calendar->addTimezones();
@@ -309,7 +309,7 @@ describe('addTimezones', function (): void {
         ]],
     ]);
 
-    it('ends repeating transitions when daylight saving is abolished', function (): void {
+    it('ends repeating transitions when daylight saving is abolished', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2024-01-01 10:00', new DateTimeZone('America/Vancouver')));
         $calendar->addTimezones();
@@ -322,11 +322,11 @@ describe('addTimezones', function (): void {
             // permanent -07:00 from November 2026
             'TZNAME:MST',
             'DTSTART:20261101T020000',
-        )->and(array_filter($lines, fn ($line): bool => str_starts_with($line, 'RRULE:FREQ=YEARLY') && ! str_contains($line, 'UNTIL=')))
+        )->and(array_filter($lines, fn ($line) => str_starts_with($line, 'RRULE:FREQ=YEARLY') && ! str_contains($line, 'UNTIL=')))
             ->toBeEmpty();
     });
 
-    it('formats offsets that are not whole hours', function (string $timezone, array $expected): void {
+    it('formats offsets that are not whole hours', function (string $timezone, array $expected) {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
         $calendar->addTimezones();
@@ -338,7 +338,7 @@ describe('addTimezones', function (): void {
         'negative half hour' => ['America/St_Johns', ['TZOFFSETFROM:-0330', 'TZOFFSETTO:-0230']],
     ]);
 
-    it('converts dates in fixed offset timezones to UTC', function (string $timezone, string $utcTime): void {
+    it('converts dates in fixed offset timezones to UTC', function (string $timezone, string $utcTime) {
         $tz = new DateTimeZone($timezone);
         $start = new DateTime('2026-03-02 10:00', $tz);
         $end = new DateTime('2026-03-02 11:00', $tz);
@@ -364,7 +364,7 @@ describe('addTimezones', function (): void {
         'abbreviation' => ['EST', '150000'],
     ]);
 
-    it('formats offsets with seconds', function (): void {
+    it('formats offsets with seconds', function () {
         $calendar = new IcsCalendar;
         // Liberia used local mean time (-00:44:30) until 1972
         $calendar->addEvent()->setStart(new DateTime('1960-03-02 10:00', new DateTimeZone('Africa/Monrovia')));
@@ -373,7 +373,7 @@ describe('addTimezones', function (): void {
         expect(icsLines($calendar))->toContain('TZOFFSETFROM:-004430', 'TZOFFSETTO:+0000');
     });
 
-    it('defines a single non-repeating transition for timezones without daylight saving', function (): void {
+    it('defines a single non-repeating transition for timezones without daylight saving', function () {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone('America/Regina')));
         $calendar->addTimezones();

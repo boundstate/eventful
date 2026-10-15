@@ -21,7 +21,7 @@ require_once __DIR__.'/TestApplication.php';
 |
 */
 
-uses()->beforeEach(function (): void {
+uses()->beforeEach(function () {
     new TestApplication([
         'id' => 'eventful-tests',
         'basePath' => dirname(__DIR__),

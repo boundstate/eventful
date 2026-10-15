@@ -47,7 +47,7 @@ function recurrenceTimes(iterable $recurrences): array
     return $times;
 }
 
-it('generates recurrences from the rule', function (): void {
+it('generates recurrences from the rule', function () {
     expect(recurrenceTimes((new ArrayTransformer)->transform(weeklyRule())))->toBe([
         '2026-03-02 10:00 – 11:00',
         '2026-03-09 10:00 – 11:00',
@@ -55,14 +55,14 @@ it('generates recurrences from the rule', function (): void {
     ]);
 });
 
-it('gives inclusions the start and end times of the rule', function (): void {
+it('gives inclusions the start and end times of the rule', function () {
     $rule = weeklyRule()->setRDates(['2026-03-11']);
 
     expect(recurrenceTimes((new ArrayTransformer)->transform($rule)))
         ->toContain('2026-03-11 10:00 – 11:00');
 });
 
-it('gives inclusions of overnight events the same duration', function (): void {
+it('gives inclusions of overnight events the same duration', function () {
     $tz = new DateTimeZone('America/Toronto');
 
     // Mondays, 11:30PM-12:30AM
@@ -78,7 +78,7 @@ it('gives inclusions of overnight events the same duration', function (): void {
         ->and($recurrences->last()->getEnd()->format('Y-m-d H:i'))->toBe('2026-03-12 00:30');
 });
 
-it('orders inclusions among the recurrences', function (): void {
+it('orders inclusions among the recurrences', function () {
     $rule = weeklyRule()->setRDates(['2026-03-11', '2026-02-20']);
 
     expect(recurrenceTimes((new ArrayTransformer)->transform($rule)))->toBe([
@@ -90,7 +90,7 @@ it('orders inclusions among the recurrences', function (): void {
     ]);
 });
 
-it('applies constraints to inclusions', function (): void {
+it('applies constraints to inclusions', function () {
     $rule = weeklyRule()->setRDates(['2026-03-11', '2026-02-20']);
     $constraint = new AfterConstraint(new DateTime('2026-03-05', new DateTimeZone('America/Toronto')));
 
@@ -101,7 +101,7 @@ it('applies constraints to inclusions', function (): void {
     ]);
 });
 
-it('uses the start time for inclusion end times when the rule has no end date', function (): void {
+it('uses the start time for inclusion end times when the rule has no end date', function () {
     $rule = (new Rule(null, new DateTime('2026-03-02 10:00')))
         ->setFreq('WEEKLY')
         ->setCount(1)
@@ -113,15 +113,15 @@ it('uses the start time for inclusion end times when the rule has no end date', 
     ]);
 });
 
-describe('getRecurrences', function (): void {
-    it('returns every occurrence of a rule with a count beyond the default limit', function (): void {
+describe('getRecurrences', function () {
+    it('returns every occurrence of a rule with a count beyond the default limit', function () {
         $recurrences = ArrayTransformer::getRecurrences(dailyRule()->setCount(1000), limit: null);
 
         expect($recurrences)->toHaveCount(1000)
             ->and($recurrences->last()->getStart()->format('Y-m-d'))->toBe('2028-11-24');
     });
 
-    it('applies constraints beyond the virtual limit of a rule with a count', function (): void {
+    it('applies constraints beyond the virtual limit of a rule with a count', function () {
         $recurrences = ArrayTransformer::getRecurrences(
             dailyRule()->setCount(1000),
             new BetweenConstraint(utc('2028-11-23'), utc('2028-12-31')),
@@ -133,7 +133,7 @@ describe('getRecurrences', function (): void {
         ]);
     });
 
-    it('counts occurrences that fail the constraint toward the count', function (): void {
+    it('counts occurrences that fail the constraint toward the count', function () {
         $recurrences = ArrayTransformer::getRecurrences(
             dailyRule()->setCount(5),
             new AfterConstraint(utc('2026-03-03 12:00')),
@@ -145,26 +145,26 @@ describe('getRecurrences', function (): void {
         ]);
     });
 
-    it('returns every occurrence of a rule with an until date beyond the default limit', function (): void {
+    it('returns every occurrence of a rule with an until date beyond the default limit', function () {
         $recurrences = ArrayTransformer::getRecurrences(dailyRule()->setUntil(utc('2028-11-24 23:59')), limit: null);
 
         expect($recurrences)->toHaveCount(1000)
             ->and($recurrences->last()->getStart()->format('Y-m-d'))->toBe('2028-11-24');
     });
 
-    it('returns up to the default limit', function (Rule $rule): void {
+    it('returns up to the default limit', function (Rule $rule) {
         expect(ArrayTransformer::getRecurrences($rule))->toHaveCount(732);
     })->with([
-        'with a count' => fn (): Rule => dailyRule()->setCount(1000),
-        'with an until date' => fn (): Rule => dailyRule()->setUntil(utc('2028-11-24 23:59')),
-        'repeating forever' => fn (): Rule => dailyRule(),
+        'with a count' => fn () => dailyRule()->setCount(1000),
+        'with an until date' => fn () => dailyRule()->setUntil(utc('2028-11-24 23:59')),
+        'repeating forever' => fn () => dailyRule(),
     ]);
 
-    it('requires a limit for a rule that repeats forever', function (): void {
+    it('requires a limit for a rule that repeats forever', function () {
         ArrayTransformer::getRecurrences(dailyRule(), limit: null);
     })->throws(InvalidArgumentException::class);
 
-    it('finds occurrences of a rule that repeats forever far beyond the default limit', function (): void {
+    it('finds occurrences of a rule that repeats forever far beyond the default limit', function () {
         $recurrences = ArrayTransformer::getRecurrences(
             dailyRule(),
             new AfterConstraint(utc('2046-03-01 12:00')),
@@ -177,7 +177,7 @@ describe('getRecurrences', function (): void {
         ]);
     });
 
-    it('returns the limit despite exclusions', function (): void {
+    it('returns the limit despite exclusions', function () {
         $rule = dailyRule()->setExDates(['20260301', '20260302', '20260303']);
 
         expect(recurrenceTimes(ArrayTransformer::getRecurrences($rule, limit: 2)))->toBe([
@@ -186,7 +186,7 @@ describe('getRecurrences', function (): void {
         ]);
     });
 
-    it('counts inclusions toward the limit', function (): void {
+    it('counts inclusions toward the limit', function () {
         $rule = dailyRule()->setRDates(['2026-02-20']);
 
         expect(recurrenceTimes(ArrayTransformer::getRecurrences($rule, limit: 2)))->toBe([
@@ -195,7 +195,7 @@ describe('getRecurrences', function (): void {
         ]);
     });
 
-    it('can reuse a constraint', function (): void {
+    it('can reuse a constraint', function () {
         $constraint = new BetweenConstraint(utc('2026-03-03'), utc('2026-03-05'));
 
         // the first run passes the end of the constraint, which makes Recurr set stopsTransformer

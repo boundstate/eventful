@@ -2,7 +2,7 @@
 
 use boundstate\eventful\enums\Color;
 
-it('returns the color at the given index', function (int $index, Color $expected): void {
+it('returns the color at the given index', function (int $index, Color $expected) {
     expect(Color::at($index))->toBe($expected->value);
 })->with([
     'first' => [0, Color::BEETROOT],
@@ -10,7 +10,7 @@ it('returns the color at the given index', function (int $index, Color $expected
     'last' => [23, Color::BIRCH],
 ]);
 
-it('wraps around once the palette is exhausted', function (): void {
+it('wraps around once the palette is exhausted', function () {
     $count = count(Color::cases());
 
     expect(Color::at($count))->toBe(Color::at(0))

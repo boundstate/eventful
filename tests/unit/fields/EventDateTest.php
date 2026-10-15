@@ -2,29 +2,29 @@
 
 use boundstate\eventful\fields\EventDate;
 
-describe('settings', function (): void {
-    it('converts the legacy all day setting', function (bool $allDay, string $allDayMode): void {
+describe('settings', function () {
+    it('converts the legacy all day setting', function (bool $allDay, string $allDayMode) {
         expect((new EventDate(['allDay' => $allDay]))->allDayMode)->toBe($allDayMode);
     })->with([
         [true, EventDate::ALL_DAY_ALWAYS],
         [false, EventDate::ALL_DAY_NEVER],
     ]);
 
-    it('does not save the legacy all day setting', function (): void {
+    it('does not save the legacy all day setting', function () {
         expect((new EventDate(['allDay' => true]))->getSettings())
             ->not->toHaveKey('allDay')
             ->toHaveKey('allDayMode', EventDate::ALL_DAY_ALWAYS);
     });
 });
 
-describe('normalizeValue', function (): void {
+describe('normalizeValue', function () {
     $timed = [
         'start' => '2026-03-02 15:00:00',
         'end' => '2026-03-02 16:00:00',
         'timezone' => 'America/Toronto',
     ];
 
-    it('uses the field setting unless all day is optional', function (string $allDayMode, ?bool $stored, bool $expected) use ($timed): void {
+    it('uses the field setting unless all day is optional', function (string $allDayMode, ?bool $stored, bool $expected) use ($timed) {
         $field = new EventDate(['allDayMode' => $allDayMode]);
         $value = $stored === null ? $timed : [...$timed, 'allDay' => $stored];
 
@@ -37,7 +37,7 @@ describe('normalizeValue', function (): void {
         [EventDate::ALL_DAY_OPTIONAL, null, false],
     ]);
 
-    it('ignores the time inputs of an all day event from the request', function (): void {
+    it('ignores the time inputs of an all day event from the request', function () {
         Craft::$app->setTimeZone('America/Los_Angeles');
         $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
 
@@ -55,8 +55,8 @@ describe('normalizeValue', function (): void {
     });
 });
 
-describe('serializeValue', function (): void {
-    it('stores whether the event is all day', function (bool $allDay): void {
+describe('serializeValue', function () {
+    it('stores whether the event is all day', function (bool $allDay) {
         $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
         $value = $field->normalizeValue([
             'start' => '2026-03-02 15:00:00',

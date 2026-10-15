@@ -7,14 +7,14 @@ function torontoDate(string $date): DateTime
     return new DateTime($date, new DateTimeZone('America/Toronto'));
 }
 
-describe('setTime', function (): void {
-    it('combines the date of one value with the time of another', function (): void {
+describe('setTime', function () {
+    it('combines the date of one value with the time of another', function () {
         $result = DateHelper::setTime(torontoDate('2026-03-05 08:15'), torontoDate('2020-01-01 17:45'));
 
         expect($result->format('Y-m-d H:i'))->toBe('2026-03-05 17:45');
     });
 
-    it('does not mutate the given date', function (): void {
+    it('does not mutate the given date', function () {
         $date = torontoDate('2026-03-05 08:15');
 
         DateHelper::setTime($date, torontoDate('2020-01-01 17:45'));
@@ -23,14 +23,14 @@ describe('setTime', function (): void {
     });
 });
 
-describe('endOfDay', function (): void {
-    it('returns the last microsecond of the day', function (): void {
+describe('endOfDay', function () {
+    it('returns the last microsecond of the day', function () {
         $result = DateHelper::endOfDay(torontoDate('2026-03-05'));
 
         expect($result->format('Y-m-d H:i:s.u'))->toBe('2026-03-05 23:59:59.999999');
     });
 
-    it('does not mutate the given date', function (): void {
+    it('does not mutate the given date', function () {
         $date = torontoDate('2026-03-05');
 
         DateHelper::endOfDay($date);
@@ -39,22 +39,22 @@ describe('endOfDay', function (): void {
     });
 });
 
-describe('formatDate', function (): void {
-    it('formats a date', function (string $format, string $expected): void {
+describe('formatDate', function () {
+    it('formats a date', function (string $format, string $expected) {
         expect(DateHelper::formatDate(torontoDate('2026-03-05 10:00'), $format))->toBe($expected);
     })->with([
         'medium' => ['medium', 'Mar 5, 2026'],
         'long' => ['long', 'March 5, 2026'],
     ]);
 
-    it('formats in the given timezone', function (): void {
+    it('formats in the given timezone', function () {
         expect(DateHelper::formatDate(torontoDate('2026-03-05 23:30'), timezone: 'Europe/Paris'))
             ->toBe('Mar 6, 2026');
     });
 });
 
-describe('formatDateRange', function (): void {
-    it('collapses the range', function (string $start, ?string $end, string $format, string $expected): void {
+describe('formatDateRange', function () {
+    it('collapses the range', function (string $start, ?string $end, string $format, string $expected) {
         $endDate = $end ? torontoDate($end) : null;
 
         expect(DateHelper::formatDateRange(torontoDate($start), $endDate, $format))->toBe($expected);
@@ -69,7 +69,7 @@ describe('formatDateRange', function (): void {
         'next day, less than 24 hours' => ['2026-03-05 14:00', '2026-03-06 13:00', 'medium', 'Mar 5 - 6, 2026'],
     ]);
 
-    it('compares dates in the given timezone', function (): void {
+    it('compares dates in the given timezone', function () {
         $utc = new DateTimeZone('UTC');
 
         // Feb 28, 10PM - Mar 3, 10AM in Toronto
@@ -81,18 +81,18 @@ describe('formatDateRange', function (): void {
     });
 });
 
-describe('formatTimeRange', function (): void {
-    it('omits minutes on the hour for the medium format', function (): void {
+describe('formatTimeRange', function () {
+    it('omits minutes on the hour for the medium format', function () {
         expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
             ->toBe('10AM – 11:30AM');
     });
 
-    it('always includes minutes for other formats', function (): void {
+    it('always includes minutes for other formats', function () {
         expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:00'), 'long'))
             ->toBe('10:00AM – 11:00AM');
     });
 
-    it('optionally displays the timezone', function (): void {
+    it('optionally displays the timezone', function () {
         expect(DateHelper::formatTimeRange(
             torontoDate('2026-03-05 10:00'),
             torontoDate('2026-03-05 11:00'),
@@ -100,7 +100,7 @@ describe('formatTimeRange', function (): void {
         ))->toBe('10AM – 11AM EST');
     });
 
-    it('formats in the given timezone', function (): void {
+    it('formats in the given timezone', function () {
         expect(DateHelper::formatTimeRange(
             torontoDate('2026-03-05 10:00'),
             torontoDate('2026-03-05 11:00'),
@@ -109,13 +109,13 @@ describe('formatTimeRange', function (): void {
     });
 });
 
-describe('formatDatetimeRange', function (): void {
-    it('shows the date once when start and end are on the same day', function (): void {
+describe('formatDatetimeRange', function () {
+    it('shows the date once when start and end are on the same day', function () {
         expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
             ->toBe('Mar 5, 2026 ⋅ 10AM – 11:30AM');
     });
 
-    it('shows both dates when the range spans multiple days', function (): void {
+    it('shows both dates when the range spans multiple days', function () {
         expect(DateHelper::formatDatetimeRange(
             torontoDate('2026-03-05 22:00'),
             torontoDate('2026-03-06 01:00'),
@@ -124,7 +124,7 @@ describe('formatDatetimeRange', function (): void {
         ))->toBe('March 5, 2026 ⋅ 10:00PM – March 6, 2026 ⋅ 1:00AM EST');
     });
 
-    it('determines whether it is the same day in the given timezone', function (): void {
+    it('determines whether it is the same day in the given timezone', function () {
         expect(DateHelper::formatDatetimeRange(
             torontoDate('2026-03-05 23:30'),
             torontoDate('2026-03-06 00:30'),
@@ -132,7 +132,7 @@ describe('formatDatetimeRange', function (): void {
         ))->toBe('Mar 5, 2026 ⋅ 8:30PM – 9:30PM');
     });
 
-    it('delegates to the time or date range formatter', function (string $format, string $expected): void {
+    it('delegates to the time or date range formatter', function (string $format, string $expected) {
         expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-08 11:30'), $format))
             ->toBe($expected);
     })->with([

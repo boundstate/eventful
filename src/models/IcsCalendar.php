@@ -21,6 +21,11 @@ class IcsCalendar extends Model
     private array $_events = [];
 
     /**
+     * Timezones that Sabre serializes as UTC (e.g. `20260302T100000Z`), so they don't need a definition.
+     */
+    private const UTC_TIMEZONES = ['UTC', 'GMT', 'Z'];
+
+    /**
      * How many years after the latest event (or now) to include timezone transitions for.
      */
     private const TZ_HORIZON_YEARS = 10;
@@ -71,13 +76,21 @@ class IcsCalendar extends Model
         $starts = [];
         foreach ($this->_events as $event) {
             $start = $event->getStart();
-            // all day events don't have times, and fixed offsets are converted to UTC, so don't need a timezone
-            if ($start instanceof DateTime && ! $event->isAllDay() && ! DateHelper::hasFixedOffset($start)) {
-                $tz = $start->getTimezone()->getName();
-                // the timezone must also cover inclusions before the start
-                $firstStarts[$tz][] = $event->getFirstStart();
-                $starts[$tz][] = $start;
+            // all day events don't have times
+            // and UTC (including fixed offsets, which are converted to UTC) doesn't need a timezone
+            if (
+                ! $start instanceof DateTime ||
+                $event->isAllDay() ||
+                DateHelper::hasFixedOffset($start) ||
+                in_array($start->getTimezone()->getName(), self::UTC_TIMEZONES, true)
+            ) {
+                continue;
             }
+
+            $tz = $start->getTimezone()->getName();
+            // the timezone must also cover inclusions before the start
+            $firstStarts[$tz][] = $event->getFirstStart();
+            $starts[$tz][] = $start;
         }
 
         foreach ($starts as $tz => $tzStarts) {

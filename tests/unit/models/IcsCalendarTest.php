@@ -230,6 +230,17 @@ describe('addTimezones', function (): void {
         expect(implode("\n", icsLines($calendar)))->not->toContain('VTIMEZONE');
     });
 
+    it('does not add a timezone for UTC', function (string $timezone): void {
+        $calendar = new IcsCalendar;
+        $calendar->addEvent()->setStart(new DateTime('2026-03-02 10:00', new DateTimeZone($timezone)));
+        $calendar->addTimezones();
+
+        $lines = icsLines($calendar);
+
+        expect($lines)->toContain('DTSTART:20260302T100000Z')
+            ->and(implode("\n", $lines))->not->toContain('VTIMEZONE');
+    })->with(['UTC', 'GMT', 'Z']);
+
     it('defines repeating daylight saving transitions', function (): void {
         $calendar = new IcsCalendar;
         $calendar->addEvent()->setStart(torontoTime('2026-03-02 10:00'));

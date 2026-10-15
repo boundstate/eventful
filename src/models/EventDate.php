@@ -346,7 +346,7 @@ class EventDate extends Model
         return $this->toOccurrences(
             $this->getArrayTransformer()->transform(
                 $this->rule,
-                $constraint,
+                clone $constraint,
                 countConstraintFailures: $this->rule->getCount() !== null,
             ),
         );

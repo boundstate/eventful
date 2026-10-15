@@ -437,6 +437,21 @@ describe('occurrences', function (): void {
             $occurrences->toArray(),
         ))->toBe(['2046-03-05 10:00', '2046-03-07 10:00']);
     });
+
+    it('can reuse a constraint for several events', function (): void {
+        $constraint = new BetweenConstraint(new DateTime('2026-03-04'), new DateTime('2026-03-10'));
+
+        // the first event passes the end of the constraint, which makes Recurr
+        // set stopsTransformer on it, so the next event would stop at its
+        // first occurrence before the constraint
+        weeklyEventDate()->getOccurrences($constraint);
+        $occurrences = weeklyEventDate(['ends' => null, 'count' => null])->getOccurrences($constraint);
+
+        expect(array_map(
+            fn ($recurrence) => $recurrence->getStart()->format('Y-m-d H:i'),
+            $occurrences->toArray(),
+        ))->toBe(['2026-03-04 10:00', '2026-03-09 10:00']);
+    });
 });
 
 describe('getNextOccurrence', function (): void {

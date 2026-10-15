@@ -20,7 +20,6 @@ use craft\helpers\StringHelper;
 use craft\web\Controller;
 use DateTime;
 use Recurr\Recurrence;
-use Recurr\Transformer\Constraint\BetweenConstraint;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -205,8 +204,6 @@ class DefaultController extends Controller
             user: $currentUser,
         );
 
-        $constraint = new BetweenConstraint($startDate, $endDate, true);
-
         $events = [];
 
         foreach ($elementsBySource as $sourceKey => $elements) {
@@ -219,7 +216,7 @@ class DefaultController extends Controller
                 /** @var EventDate $date */
                 $date = $element->getFieldValue($source->type->dateFieldHandle);
 
-                foreach ($date->getOccurrences($constraint) as $recurrence) {
+                foreach ($date->getOccurrencesInRange($startDate, $endDate, includeInProgress: true) as $recurrence) {
                     /** @var Recurrence $recurrence */
                     $events[] = [
                         // event properties used by FullCalendar

@@ -227,6 +227,22 @@ public getNextOccurrence(bool $includeInProgress = false): ?Occurrence
 | `$includeInProgress` | <span class="code">bool</span>                                                                      |     |
 | **return**           | <span class="code">?[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')</span> |     |
 
+### getOccurrencesInRange
+
+Returns the occurrences that start in the range (inclusive), or with `$includeInProgress`,
+also those that started before the range and end after its start.
+
+```php
+public getOccurrencesInRange(DateTimeInterface $start, DateTimeInterface $end, bool $includeInProgress = false): \Recurr\RecurrenceCollection<array-key,Occurrence>
+```
+
+|                      |                                                                                                                                                  |     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --- |
+| `$start`             | <span class="code">DateTimeInterface</span>                                                                                                      |     |
+| `$end`               | <span class="code">DateTimeInterface</span>                                                                                                      |     |
+| `$includeInProgress` | <span class="code">bool</span>                                                                                                                   |     |
+| **return**           | <span class="code">\Recurr\RecurrenceCollection&lt;array-key,[Occurrence](Occurrence.md '\\boundstate\\eventful\\models\\Occurrence')&gt;</span> |     |
+
 ### getFirstStartDate
 
 ```php

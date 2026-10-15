@@ -9,8 +9,10 @@ use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\validators\DateTimeValidator;
+use DateInterval;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Recurr\DateExclusion;
 use Recurr\DateInclusion;
@@ -19,6 +21,7 @@ use Recurr\RecurrenceCollection;
 use Recurr\Rule;
 use Recurr\Transformer\ArrayTransformerConfig;
 use Recurr\Transformer\Constraint\AfterConstraint;
+use Recurr\Transformer\Constraint\BetweenConstraint;
 use Recurr\Transformer\ConstraintInterface;
 use Recurr\Transformer\TextTransformer;
 
@@ -359,11 +362,21 @@ class EventDate extends Model
         // Occurrences that fail the constraint must still count toward the
         // rule's count, but otherwise shouldn't count toward the virtual limit,
         // so occurrences of long-running events can be found
+        $count = $this->rule->getCount();
+        $transformer = $this->getArrayTransformer();
+        if ($count !== null) {
+            // occurrences that fail the constraint count toward the limit too,
+            // so raise it to the count to reach the last occurrences
+            $config = new ArrayTransformerConfig;
+            $config->setVirtualLimit(max($count, $config->getVirtualLimit()));
+            $transformer = new ArrayTransformer($config);
+        }
+
         return $this->toOccurrences(
-            $this->getArrayTransformer()->transform(
+            $transformer->transform(
                 $this->rule,
                 clone $constraint,
-                countConstraintFailures: $this->rule->getCount() !== null,
+                countConstraintFailures: $count !== null,
             ),
         );
     }
@@ -389,14 +402,57 @@ class EventDate extends Model
             if ($includeInProgress) {
                 // constraints only test the start, but every occurrence has the same duration,
                 // so an occurrence ends after now if it starts after now minus the duration
-                $start = $this->rule->getStartDate();
-                $after = $now->sub($start->diff($this->rule->getEndDate() ?? $start));
+                $after = $now->sub($this->getDuration());
             }
 
             $this->_nextOccurrences[$key] = $this->getFirstOccurrence(new AfterConstraint($after));
         }
 
         return $this->_nextOccurrences[$key];
+    }
+
+    /**
+     * Returns the occurrences that start in the range (inclusive), or with `$includeInProgress`,
+     * also those that started before the range and end after its start.
+     *
+     * @return RecurrenceCollection<array-key, Occurrence>
+     */
+    public function getOccurrencesInRange(
+        DateTimeInterface $start,
+        DateTimeInterface $end,
+        bool $includeInProgress = false,
+    ): RecurrenceCollection {
+        if (! $this->start instanceof DateTime) {
+            return new RecurrenceCollection;
+        }
+
+        $start = DateTimeImmutable::createFromInterface($start);
+        $end = DateTimeImmutable::createFromInterface($end);
+
+        if (! $this->rule) {
+            // event does not repeat
+            $inRange = $this->start <= $end && ($includeInProgress
+                ? ($this->end ?? $this->start) > $start || $this->start >= $start
+                : $this->start >= $start);
+
+            return $inRange ? $this->getOccurrences() : new RecurrenceCollection;
+        }
+
+        if (! $includeInProgress) {
+            return $this->getOccurrences(new BetweenConstraint($start, $end, true));
+        }
+
+        // constraints only test the start, but every occurrence has the same duration,
+        // so an occurrence ends after the range starts if it starts after that minus the duration
+        $occurrences = $this->getOccurrences(
+            new BetweenConstraint($start->sub($this->getDuration()), $end, true),
+        );
+
+        // the inclusive constraint also keeps an occurrence that ends exactly when the range starts
+        return new RecurrenceCollection(array_values(array_filter(
+            $occurrences->toArray(),
+            fn (Occurrence $occurrence): bool => $occurrence->getEnd() > $start || $occurrence->getStart() >= $start,
+        )));
     }
 
     public function getFirstStartDate(): ?DateTime
@@ -500,6 +556,16 @@ class EventDate extends Model
         $lastEndDate = $this->getLastEndDate();
 
         return $lastEndDate instanceof DateTime && $lastEndDate < new DateTime;
+    }
+
+    /**
+     * Returns the duration of each occurrence of a rule.
+     */
+    private function getDuration(): DateInterval
+    {
+        $start = $this->rule->getStartDate();
+
+        return $start->diff($this->rule->getEndDate() ?? $start);
     }
 
     private function toDateTime(

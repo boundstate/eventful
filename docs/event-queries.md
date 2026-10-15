@@ -22,7 +22,35 @@ you can query all ongoing and upcoming meetings in your template as follows:
 | `{ lastEnd: '< now' }`                     | Past (all occurrences have ended)                 |
 | `{ firstStart: '> now' }`                  | Only future (no occurrence has started)           |
 
-!!! note
+## Events in a range
 
-    Events that repeat forever have no last end date, so `lastEnd` is empty for them.
-    Include `':empty:'` in `lastEnd` criteria to match these events.
+Use the `inRange` query filter to find events that start in a range, or started before the range but are still in progress:
+
+```twig
+{% set start = date('monday this week') %}
+{% set end = start|date_modify('+1 week') %}
+
+{% set meetings = craft.entries()
+    .section('meetings')
+    .eventDate({ inRange: [start, end] })
+    .orderBy('eventDate ASC')
+    .all() %}
+```
+
+The `inRange` query filter compares against each event's first start and last end,
+so it may return repeating events without any occurrences actually in the range.
+
+To list the occurrences that are actually in the range, use `getOccurrencesInRange()`.
+
+```twig
+{% for meeting in meetings %}
+    {% for occurrence in meeting.eventDate.getOccurrencesInRange(start, end, includeInProgress: true) %}
+        <p>{{ meeting.title }}: {{ occurrence|eventDate }}</p>
+    {% endfor %}
+{% endfor %}
+```
+
+!!! tip ""
+
+    Both ends of the range are inclusive, so an occurrence that starts exactly at the end of the range is included.
+    An occurrence that ends exactly at the start of the range isn't in progress, so it's excluded.

@@ -30,6 +30,32 @@ function occurrenceStarts(EventDate $eventDate): array
     );
 }
 
+/**
+ * Daily, 10AM-12PM (UTC), starting Sunday, March 1, 2026.
+ */
+function dailyEventDate(array $config = []): EventDate
+{
+    return new EventDate(array_merge([
+        'start' => '2026-03-01 10:00:00',
+        'end' => '2026-03-01 12:00:00',
+        'timezone' => 'UTC',
+        'repeat' => true,
+        'freq' => EventDate::FREQ_DAILY,
+        'ends' => EventDate::ENDS_COUNT,
+        'count' => 10,
+    ], $config));
+}
+
+function startsOf(iterable $occurrences): array
+{
+    $starts = [];
+    foreach ($occurrences as $occurrence) {
+        $starts[] = $occurrence->getStart()->format('Y-m-d H:i');
+    }
+
+    return $starts;
+}
+
 describe('constructor', function (): void {
     it('converts UTC dates to the event timezone', function (): void {
         $eventDate = weeklyEventDate();
@@ -426,6 +452,14 @@ describe('occurrences', function (): void {
         ))->toBe(['2046-03-05 10:00', '2046-03-07 10:00']);
     });
 
+    it('applies constraints after more occurrences than the virtual limit', function (): void {
+        $occurrences = dailyEventDate(['count' => 1000])->getOccurrences(
+            new BetweenConstraint(new DateTime('2028-05-10'), new DateTime('2028-05-11')),
+        );
+
+        expect(startsOf($occurrences))->toBe(['2028-05-10 10:00']);
+    });
+
     it('can reuse a constraint for several events', function (): void {
         $constraint = new BetweenConstraint(new DateTime('2026-03-04'), new DateTime('2026-03-10'));
 
@@ -531,6 +565,92 @@ describe('getNextOccurrence', function (): void {
     })->with([
         'excluding in progress' => [false],
         'including in progress' => [true],
+    ]);
+});
+
+describe('getOccurrencesInRange', function (): void {
+    it('returns occurrences in the range, optionally including those in progress', function (bool $includeInProgress, array $expected): void {
+        $occurrences = dailyEventDate()->getOccurrencesInRange(
+            new DateTime('2026-03-03 11:00', new DateTimeZone('UTC')),
+            new DateTime('2026-03-05 10:00', new DateTimeZone('UTC')),
+            $includeInProgress,
+        );
+
+        expect($occurrences)->each->toBeInstanceOf(Occurrence::class)
+            ->and(startsOf($occurrences))->toBe($expected);
+    })->with([
+        'excluding in progress' => [false, ['2026-03-04 10:00', '2026-03-05 10:00']],
+        'including in progress' => [true, ['2026-03-03 10:00', '2026-03-04 10:00', '2026-03-05 10:00']],
+    ]);
+
+    it('excludes an occurrence that ends when the range starts', function (bool $includeInProgress): void {
+        $occurrences = dailyEventDate()->getOccurrencesInRange(
+            new DateTime('2026-03-03 12:00', new DateTimeZone('UTC')),
+            new DateTime('2026-03-04 10:00', new DateTimeZone('UTC')),
+            $includeInProgress,
+        );
+
+        expect(startsOf($occurrences))->toBe(['2026-03-04 10:00']);
+    })->with([
+        'excluding in progress' => [false],
+        'including in progress' => [true],
+    ]);
+
+    it('includes an all day occurrence in progress when including in progress', function (bool $includeInProgress, array $expected): void {
+        $eventDate = dailyEventDate([
+            'start' => new DateTime('2026-03-01 00:00'),
+            'end' => null,
+            'timezone' => null,
+            'allDay' => true,
+        ]);
+
+        $occurrences = $eventDate->getOccurrencesInRange(
+            new DateTime('2026-03-03 12:00'),
+            new DateTime('2026-03-03 18:00'),
+            $includeInProgress,
+        );
+
+        expect(startsOf($occurrences))->toBe($expected);
+    })->with([
+        'excluding in progress' => [false, []],
+        'including in progress' => [true, ['2026-03-03 00:00']],
+    ]);
+
+    it('returns occurrences after more past occurrences than the virtual limit', function (): void {
+        $occurrences = dailyEventDate(['count' => 1000])->getOccurrencesInRange(
+            new DateTime('2028-05-10 11:00', new DateTimeZone('UTC')),
+            new DateTime('2028-05-10 18:00', new DateTimeZone('UTC')),
+            true,
+        );
+
+        expect(startsOf($occurrences))->toBe(['2028-05-10 10:00']);
+    });
+
+    it('returns an event that does not repeat if it is in the range', function (string $start, bool $includeInProgress, bool $expected): void {
+        $eventDate = new EventDate([
+            'start' => "2026-03-03 $start:00",
+            'end' => (new DateTime("2026-03-03 $start:00"))->modify('+2 hours')->format('Y-m-d H:i:s'),
+            'timezone' => 'UTC',
+        ]);
+
+        $occurrences = $eventDate->getOccurrencesInRange(
+            new DateTime('2026-03-03 11:00', new DateTimeZone('UTC')),
+            new DateTime('2026-03-03 13:00', new DateTimeZone('UTC')),
+            $includeInProgress,
+        );
+
+        expect(startsOf($occurrences))->toBe($expected ? ["2026-03-03 $start"] : []);
+    })->with([
+        'ends when the range starts' => ['09:00', false, false],
+        'in progress' => ['10:00', false, false],
+        'starts in the range' => ['12:00', false, true],
+        'starts when the range ends' => ['13:00', false, true],
+        'after' => ['14:00', false, false],
+        'ends when the range starts, including in progress' => ['09:00', true, false],
+        'in progress, including in progress' => ['10:00', true, true],
+        'starts in the range, including in progress' => ['12:00', true, true],
+        'starts when the range ends, including in progress' => ['13:00', true, true],
+        'after, including in progress' => ['14:00', true, false],
     ]);
 });
 

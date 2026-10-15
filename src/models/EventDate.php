@@ -287,7 +287,7 @@ class EventDate extends Model
             ],
             [
                 'until',
-                'validateUntil',
+                $this->validateUntil(...),
                 'skipOnError' => true,
                 'when' => fn (EventDate $model): bool => (bool) $model->freq && $model->repeatsUntil(),
             ],

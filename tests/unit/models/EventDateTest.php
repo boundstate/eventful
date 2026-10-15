@@ -238,24 +238,12 @@ describe('getRule', function (): void {
             ->and($rule->getUntil()->format('Y-m-d'))->toBe('2026-03-31');
     });
 
-    it('caches the rule unless refreshed', function (): void {
+    it('caches the rule', function (): void {
         $eventDate = weeklyEventDate();
         $rule = $eventDate->getRule();
         $eventDate->count = 10;
 
-        expect($eventDate->getRule())->toBe($rule)
-            ->and($eventDate->getRule(true)->getCount())->toBe(10);
-    });
-
-    it('refreshes the occurrences and description with the rule', function (): void {
-        $eventDate = weeklyEventDate();
-        $eventDate->getOccurrences();
-        $eventDate->getRepeatDescription();
-        $eventDate->count = 10;
-        $eventDate->getRule(true);
-
-        expect($eventDate->getOccurrences())->toHaveCount(10)
-            ->and($eventDate->getRepeatDescription())->toContain('10 times');
+        expect($eventDate->getRule())->toBe($rule);
     });
 });
 

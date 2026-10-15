@@ -216,13 +216,13 @@ class EventDate extends Model
         return $this->freq === self::FREQ_MONTHLY;
     }
 
-    public function getRule(?bool $forceRefresh = false): ?Rule
+    public function getRule(): ?Rule
     {
         if (! $this->repeat || ! $this->start instanceof DateTime || ! $this->end instanceof DateTime) {
             return null;
         }
 
-        if (! $this->_rule instanceof Rule || $forceRefresh) {
+        if (! $this->_rule instanceof Rule) {
             $rule = (new Rule(null, $this->start, $this->end))
                 ->setFreq($this->freq)
                 ->setRDates($this->inDates)
@@ -244,10 +244,6 @@ class EventDate extends Model
             }
 
             $this->_rule = $rule;
-
-            // these are generated from the rule, so are stale once it's rebuilt
-            $this->_allRecurrences = null;
-            $this->_repeatDescription = null;
         }
 
         return $this->_rule;

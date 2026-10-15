@@ -172,13 +172,12 @@ public repeatsMonthly(): bool
 ### getRule
 
 ```php
-public getRule(?bool $forceRefresh = false): ?Rule
+public getRule(): ?Rule
 ```
 
-|                 |                                                                                                                        |     |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------- | --- |
-| `$forceRefresh` | <span class="code">?bool</span>                                                                                        |     |
-| **return**      | <span class="code">?[Rule](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/Rule.php '\\Recurr\\Rule')</span> |     |
+|            |                                                                                                                        |     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------- | --- |
+| **return** | <span class="code">?[Rule](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/Rule.php '\\Recurr\\Rule')</span> |     |
 
 ### rules
 

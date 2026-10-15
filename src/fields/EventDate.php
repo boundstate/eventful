@@ -388,6 +388,3 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         return new EventDateModel($value);
     }
 }
-
-// @phpstan-ignore-next-line
-class_alias(EventDate::class, \events\fields\EventDate::class);

@@ -365,10 +365,12 @@ class EventDate extends Model
 
         $now = new DateTime;
 
-        $occurrence = $this->getOccurrences(new AfterConstraint($now))->first();
+        if (! $this->rule) {
+            // event does not repeat
+            return $this->start > $now ? $this->getOccurrences()->first() : null;
+        }
 
-        // the constraint is ignored when the event doesn't repeat, so check the start too
-        return $occurrence && $occurrence->getStart() > $now ? $occurrence : null;
+        return $this->getFirstOccurrence(new AfterConstraint($now));
     }
 
     public function getFirstStartDate(): ?DateTime
@@ -378,9 +380,33 @@ class EventDate extends Model
             return $this->start ?: null;
         }
 
-        $firstOccurrence = $this->getOccurrences()->first();
+        $start = $this->getFirstOccurrence()?->getStart();
 
-        return $firstOccurrence ? $firstOccurrence->getStart() : null;
+        return $start ? DateTime::createFromInterface($start) : null;
+    }
+
+    /**
+     * Returns the first occurrence of a rule that passes the constraint, without generating them all.
+     */
+    private function getFirstOccurrence(?ConstraintInterface $constraint = null): ?Occurrence
+    {
+        $count = $this->rule->getCount();
+
+        $config = new ArrayTransformerConfig;
+        $config->setVirtualLimit(
+            $constraint instanceof ConstraintInterface && $count !== null
+                // occurrences that fail the constraint count toward the limit too
+                ? $count
+                // exclusions are removed after the limit is applied, and each removes at most one
+                // occurrence (they're at most daily), so one more than that is always enough
+                : count($this->rule->getExDates()) + 1,
+        );
+
+        $recurrence = (new ArrayTransformer($config))
+            ->transform($this->rule, $constraint, countConstraintFailures: $count !== null)
+            ->first();
+
+        return $recurrence ? $this->toOccurrence($recurrence) : null;
     }
 
     public function getLastEndDate(): ?DateTime

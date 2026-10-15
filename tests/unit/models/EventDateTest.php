@@ -462,6 +462,38 @@ describe('getNextOccurrence', function (): void {
         'in progress' => ['-1 hour', 4],
     ]);
 
+    it('skips excluded occurrences', function (): void {
+        $start = new DateTime('-3 days +1 hour');
+        $eventDate = new EventDate([
+            'start' => $start,
+            'end' => (clone $start)->modify('+2 hours'),
+            'repeat' => true,
+            'freq' => EventDate::FREQ_DAILY,
+            'exDates' => [
+                (clone $start)->modify('+3 days')->format('Y-m-d'),
+                (clone $start)->modify('+4 days')->format('Y-m-d'),
+            ],
+        ]);
+
+        expect($eventDate->getNextOccurrence()->getStart()->format('Y-m-d H:i:s'))
+            ->toBe((clone $start)->modify('+5 days')->format('Y-m-d H:i:s'));
+    });
+
+    it('returns the next occurrence after more past occurrences than the virtual limit', function (): void {
+        $start = new DateTime('-800 days +1 hour');
+        $eventDate = new EventDate([
+            'start' => $start,
+            'end' => (clone $start)->modify('+2 hours'),
+            'repeat' => true,
+            'freq' => EventDate::FREQ_DAILY,
+            'ends' => EventDate::ENDS_COUNT,
+            'count' => 1000,
+        ]);
+
+        expect($eventDate->getNextOccurrence()->getStart()->format('Y-m-d H:i:s'))
+            ->toBe((clone $start)->modify('+800 days')->format('Y-m-d H:i:s'));
+    });
+
     it('returns an event that does not repeat if it starts after now', function (string $start, bool $expected): void {
         $start = new DateTime($start);
         $eventDate = new EventDate(['start' => $start, 'end' => (clone $start)->modify('+2 hours')]);

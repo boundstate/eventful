@@ -116,12 +116,24 @@ class ArrayTransformer extends BaseArrayTransformer
     ): array {
         $addedInclusion = false;
 
+        // an inclusion can be on a date the rule already repeats on (e.g. if the rule changed after it was added),
+        // or be repeated, which shouldn't duplicate the occurrence
+        $starts = array_flip(array_map(
+            fn (Recurrence $recurrence): int => $recurrence->getStart()->getTimestamp(),
+            $recurrences,
+        ));
+
         foreach ($inclusions as $inclusion) {
             $start = DateTime::createFromInterface($inclusion->date)->modify(
                 $this->start->format('H:i'),
             );
 
+            if (isset($starts[$start->getTimestamp()])) {
+                continue;
+            }
+
             if (! $this->constraint instanceof ConstraintInterface || $this->constraint->test($start)) {
+                $starts[$start->getTimestamp()] = true;
                 $recurrences[] = new Recurrence(
                     $start,
                     // keep the rule's duration, in case the event ends on a later day

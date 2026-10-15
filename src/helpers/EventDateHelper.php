@@ -16,7 +16,7 @@ abstract class EventDateHelper
      * Formats a `Recurrence` as a date (and times if not all day).
      * All day dates aren't converted to the given timezone, since they don't have times.
      *
-     * @param  'medium'|'long'  $format
+     * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
      * @param  ?bool  $allDay  Defaults to whether the occurrence is all day, if it's an {@link Occurrence}
      */
     public static function formatDate(

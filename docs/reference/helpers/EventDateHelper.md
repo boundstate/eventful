@@ -15,13 +15,13 @@ Formats a `Recurrence` as a date (and times if not all day).
 All day dates aren't converted to the given timezone, since they don't have times.
 
 ```php
-public static formatDate(Recurrence $event, "medium"|"long" $format = 'medium', ?string $timezone = null, ?bool $allDay = null, bool $displayTimezone = false): string
+public static formatDate(Recurrence $event, "medium"|"long"|"mediumDate"|"longDate"|"mediumTime"|"longTime" $format = 'medium', ?string $timezone = null, ?bool $allDay = null, bool $displayTimezone = false): string
 ```
 
 |                    |                                                                                                                                         |                                                                              |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `$event`           | <span class="code">[Recurrence](https://github.com/simshaun/recurr/blob/v5.0.3/src/Recurr/Recurrence.php '\\Recurr\\Recurrence')</span> |                                                                              |
-| `$format`          | <span class="code">"medium"\|"long"</span>                                                                                              |                                                                              |
+| `$format`          | <span class="code">"medium"\|"long"\|"mediumDate"\|"longDate"\|"mediumTime"\|"longTime"</span>                                          |                                                                              |
 | `$timezone`        | <span class="code">?string</span>                                                                                                       |                                                                              |
 | `$allDay`          | <span class="code">?bool</span>                                                                                                         | Defaults to whether the occurrence is all day, if it's an {@link Occurrence} |
 | `$displayTimezone` | <span class="code">bool</span>                                                                                                          |                                                                              |

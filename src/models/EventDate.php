@@ -5,6 +5,7 @@ namespace boundstate\eventful\models;
 use boundstate\eventful\helpers\DateHelper;
 use boundstate\eventful\transformers\ArrayTransformer;
 use boundstate\eventful\translators\Translator;
+use Craft;
 use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
@@ -214,12 +215,13 @@ class EventDate extends Model
 
         parent::__construct($config);
 
-        // all day events end at the end of their end date, or the start day if there isn't one
-        // (the dates may not have been converted above, since the timezone isn't posted for all day events)
+        // all day events are dates without times, so keep their days (in whatever timezone they were given)
+        // in the system timezone they're stored in, ending at the end of their end date, or the start day if there isn't one
         if ($this->allDay && $this->start instanceof DateTime) {
-            $this->end = DateHelper::endOfDay(
-                DateTime::createFromInterface($this->end ?? $this->start)->setTime(0, 0),
-            );
+            $timezone = new DateTimeZone(Craft::$app->getTimeZone());
+            $end = $this->end ?? $this->start;
+            $this->start = new DateTime($this->start->format('Y-m-d'), $timezone);
+            $this->end = DateHelper::endOfDay(new DateTime($end->format('Y-m-d'), $timezone));
         }
     }
 

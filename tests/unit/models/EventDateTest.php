@@ -1,5 +1,6 @@
 <?php
 
+use boundstate\eventful\fields\EventDate as EventDateField;
 use boundstate\eventful\models\EventDate;
 use boundstate\eventful\models\Occurrence;
 use Recurr\Rule;
@@ -161,7 +162,25 @@ describe('constructor', function () {
             'allDay' => true,
         ]);
 
-        expect($eventDate->end->format('Y-m-d H:i:s T'))->toBe('2026-10-07 23:59:59 PDT');
+        expect($eventDate->start->format('Y-m-d H:i T'))->toBe('2026-10-07 00:00 UTC')
+            ->and($eventDate->end->format('Y-m-d H:i:s T'))->toBe('2026-10-07 23:59:59 UTC');
+    });
+
+    it('keeps the days of all day events in the system timezone', function () {
+        Craft::$app->setTimeZone('America/Los_Angeles');
+        $field = new EventDateField(['handle' => 'date', 'allDayMode' => EventDateField::ALL_DAY_ALWAYS]);
+
+        // created from the calendar for Tuesday, March 3 in Tokyo, which is still Monday in Los Angeles
+        $eventDate = $field->normalizeValue([
+            'start' => '2026-03-02T15:30:00Z',
+            'timezone' => 'Asia/Tokyo',
+        ], null);
+        $reloaded = $field->normalizeValue($field->serializeValue($eventDate, null), null);
+
+        foreach ([$eventDate, $reloaded] as $value) {
+            expect($value->start->format('Y-m-d H:i T'))->toBe('2026-03-03 00:00 PST')
+                ->and($value->end->format('Y-m-d H:i:s T'))->toBe('2026-03-03 23:59:59 PST');
+        }
     });
 
     it('ends all day events from the request at the end of the start day', function () {

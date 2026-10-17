@@ -1,0 +1,64 @@
+name: Release
+
+# Started manually, so unreleased commits on main can be tested as dev-main
+# first. Only releases if CI has passed on the commit.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  # Never cancel a release halfway through
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      actions: read # to be able to check the CI status
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
+      pull-requests: write # to be able to comment on released pull requests
+    runs-on: ubuntu-latest
+    steps:
+      # semantic-release refuses to release if main has moved on since, so the
+      # commit checked here is the one that's released
+      - name: Check CI passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$GITHUB_SHA&event=push&per_page=1" \
+            --jq '.workflow_runs[0].conclusion // ""')
+          if [ "$conclusion" != success ]; then
+            echo "::error::CI hasn't passed on $GITHUB_SHA (${conclusion:-not finished or not run})"
+            exit 1
+          fi
+
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          npx --yes \
+            --package semantic-release@25 \
+            --package @semantic-release/git@11 \
+            --package @semantic-release/changelog@7 \
+            --package conventional-changelog-conventionalcommits@9 \
+            semantic-release

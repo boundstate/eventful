@@ -361,14 +361,20 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
         };
         $value['allowNeverEnding'] = $this->allowNeverEnding;
 
-        if ($fromRequest && $value['allDay']) {
-            // the time inputs are only hidden when "All day" is checked,
-            // so ignore them like the date only input of an always all day field
-            // (all day events are in the system timezone, rather than the one selected)
-            unset($value['end'], $value['timezone']);
-            if (is_array($value['start'] ?? null)) {
-                unset($value['start']['time']);
-                $value['start']['timezone'] = Craft::$app->getTimeZone();
+        if ($fromRequest) {
+            // every input is posted (the ones that don't apply are only hidden), but all day events
+            // only use the dates (in the system timezone, rather than the one selected),
+            // and timed events only use the start date (the end time is on the same or next day)
+            if ($value['allDay']) {
+                unset($value['timezone']);
+                foreach (['start', 'end'] as $attribute) {
+                    if (is_array($value[$attribute] ?? null)) {
+                        unset($value[$attribute]['time']);
+                        $value[$attribute]['timezone'] = Craft::$app->getTimeZone();
+                    }
+                }
+            } elseif (is_array($value['end'] ?? null)) {
+                unset($value['end']['date']);
             }
         }
 

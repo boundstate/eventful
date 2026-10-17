@@ -224,9 +224,14 @@ class DefaultController extends Controller
                     $events[] = [
                         // event properties used by FullCalendar
                         // https://fullcalendar.io/docs/event-object
-                        'start' => $recurrence->getStart()->format(DateTime::ATOM),
-                        // all day events end at the end of the day, but FullCalendar expects an exclusive end date
-                        'end' => $date->allDay ? null : $recurrence->getEnd()?->format(DateTime::ATOM),
+                        // all day events are given as dates, so they aren't shifted to the browser's timezone
+                        'start' => $date->allDay
+                            ? $recurrence->getStart()->format('Y-m-d')
+                            : $recurrence->getStart()->format(DateTime::ATOM),
+                        // all day events end at the end of their last day, but FullCalendar expects an exclusive end date
+                        'end' => $date->allDay
+                            ? DateTime::createFromInterface($recurrence->getEnd())->modify('+1 day')->format('Y-m-d')
+                            : $recurrence->getEnd()?->format(DateTime::ATOM),
                         'allDay' => $date->allDay,
                         'editable' => false,
                         'title' => EventRenderer::render($element, EventProp::TITLE),

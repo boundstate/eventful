@@ -56,6 +56,11 @@
     }
   }
 
+  /* and the end date input is only shown when it is */
+  &:not(.all-day) .end-date-input {
+    display: none;
+  }
+
   .timezone-field {
     width: 9.5rem !important;
   }

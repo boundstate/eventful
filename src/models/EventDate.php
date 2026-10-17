@@ -214,11 +214,11 @@ class EventDate extends Model
 
         parent::__construct($config);
 
-        // all day events don't have an end input, so they end at the end of the start day
-        // (the start may not have been converted above, since the timezone isn't posted for all day events)
+        // all day events end at the end of their end date, or the start day if there isn't one
+        // (the dates may not have been converted above, since the timezone isn't posted for all day events)
         if ($this->allDay && $this->start instanceof DateTime) {
             $this->end = DateHelper::endOfDay(
-                DateTime::createFromInterface($this->start)->setTime(0, 0),
+                DateTime::createFromInterface($this->end ?? $this->start)->setTime(0, 0),
             );
         }
     }
@@ -282,6 +282,12 @@ class EventDate extends Model
             ['start', 'required'],
             [['start', 'end', 'until'], DateTimeValidator::class],
             [['end', 'timezone'], 'required', 'when' => fn (EventDate $model): bool => ! $model->allDay],
+            [
+                'end',
+                $this->validateEndDate(...),
+                'skipOnError' => true,
+                'when' => fn (EventDate $model): bool => $model->allDay,
+            ],
             ['repeat', 'boolean'],
             [['interval'], 'required', 'when' => fn (EventDate $model): bool => $model->repeat],
             [
@@ -327,6 +333,17 @@ class EventDate extends Model
             $until->format('Y-m-d') < $start->format('Y-m-d')
         ) {
             $this->addError('until', 'Until cannot be before start date');
+        }
+    }
+
+    public function validateEndDate(): void
+    {
+        if (
+            $this->start instanceof DateTime &&
+            $this->end instanceof DateTime &&
+            $this->end < $this->start
+        ) {
+            $this->addError('end', 'End date cannot be before start date');
         }
     }
 

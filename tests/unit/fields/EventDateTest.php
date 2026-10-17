@@ -53,6 +53,50 @@ describe('normalizeValue', function () {
             ->and($value->end->format('Y-m-d H:i:s'))->toBe('2026-03-02 23:59:59')
             ->and($value->validate())->toBeTrue();
     });
+
+    it('uses the end date of an all day event from the request', function () {
+        Craft::$app->setTimeZone('America/Los_Angeles');
+        $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
+
+        $value = $field->normalizeValueFromRequest([
+            'allDay' => '1',
+            'start' => ['date' => '2026-03-02', 'time' => '10:00', 'timezone' => 'America/Toronto'],
+            'end' => ['date' => '2026-03-04', 'time' => '11:00', 'timezone' => 'America/Toronto'],
+            'timezone' => 'America/Toronto',
+        ], null);
+
+        expect($value->start->format('Y-m-d H:i'))->toBe('2026-03-02 00:00')
+            ->and($value->end->format('Y-m-d H:i:s'))->toBe('2026-03-04 23:59:59')
+            ->and($value->validate())->toBeTrue();
+    });
+
+    it('ignores the end date of an event from the request unless all day', function () {
+        $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
+
+        $value = $field->normalizeValueFromRequest([
+            'start' => ['date' => '2026-03-02', 'time' => '10:00', 'timezone' => 'America/Toronto'],
+            'end' => ['date' => '2026-03-04', 'time' => '11:00', 'timezone' => 'America/Toronto'],
+            'timezone' => 'America/Toronto',
+        ], null);
+
+        expect($value->end->format('Y-m-d H:i'))->toBe('2026-03-02 11:00');
+    });
+
+    it('ignores the time inputs of an always all day field from the request', function () {
+        Craft::$app->setTimeZone('America/Los_Angeles');
+        $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_ALWAYS]);
+
+        $value = $field->normalizeValueFromRequest([
+            'start' => ['date' => '2026-03-02', 'time' => '10:00', 'timezone' => 'America/Toronto'],
+            'end' => ['date' => '2026-03-02', 'time' => '11:00', 'timezone' => 'America/Toronto'],
+            'timezone' => 'America/Toronto',
+        ], null);
+
+        expect($value->allDay)->toBeTrue()
+            ->and($value->start->format('Y-m-d H:i T'))->toBe('2026-03-02 00:00 PST')
+            ->and($value->end->format('Y-m-d H:i:s T'))->toBe('2026-03-02 23:59:59 PST')
+            ->and($value->validate())->toBeTrue();
+    });
 });
 
 describe('serializeValue', function () {

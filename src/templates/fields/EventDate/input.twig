@@ -8,53 +8,56 @@
     class="event-date-input loading {{ readonly ? 'readonly' }} {{ value.allDay ? 'all-day' }}"
 >
     <div class="row flex">
-        {% if field.allDayMode == constant('ALL_DAY_ALWAYS', field) %}
+        {{
+            forms.dateTimeField({
+                id: 'start'|namespaceInputId(id),
+                name: 'start'|namespaceInputName(name),
+                fieldClass: 'start-field',
+                value: value.start,
+                disabled: readonly,
+            })
+        }}
+        <div class="time-inputs flex">
+            -
             {{
-                forms.dateField({
-                    id: 'start'|namespaceInputId(id),
-                    name: 'start'|namespaceInputName(name),
-                    value: value.start,
+                forms.timeField({
+                    id: 'end'|namespaceInputId(id),
+                    name: 'end'|namespaceInputName(name),
+                    value: value.end,
                     disabled: readonly,
                 })
             }}
-        {% else %}
-            {{
-                forms.dateTimeField({
-                    id: 'start'|namespaceInputId(id),
-                    name: 'start'|namespaceInputName(name),
-                    fieldClass: 'start-field',
-                    value: value.start,
-                    disabled: readonly,
-                })
-            }}
-            <div class="time-inputs flex">
-                -
-                {{
-                    forms.timeField({
-                        id: 'end'|namespaceInputId(id),
-                        name: 'end'|namespaceInputName(name),
-                        value: value.end,
-                        disabled: readonly,
-                    })
-                }}
 
-                {{
-                    forms.selectizeField({
-                        id: 'timezone'|namespaceInputId(id),
-                        name: 'timezone'|namespaceInputName(name),
-                        class: 'timezone-field',
-                        options: [
-                            {
-                                label: '',
-                                value: null
-                            }
-                        ]|merge(craft.cp.getTimeZoneOptions(value.start)),
-                        value: value.timezone,
-                        disabled: readonly,
-                    })
-                }}
-            </div>
-        {% endif %}
+            {{
+                forms.selectizeField({
+                    id: 'timezone'|namespaceInputId(id),
+                    name: 'timezone'|namespaceInputName(name),
+                    class: 'timezone-field',
+                    options: [
+                        {
+                            label: '',
+                            value: null
+                        }
+                    ]|merge(craft.cp.getTimeZoneOptions(value.start)),
+                    value: value.timezone,
+                    disabled: readonly,
+                })
+            }}
+        </div>
+        <div class="end-date-input flex">
+            -
+            {# the end time input already posts the end timezone & locale #}
+            {{
+                forms.date({
+                    id: 'end'|namespaceInputId(id),
+                    name: 'end'|namespaceInputName(name),
+                    value: value.allDay ? value.end,
+                    outputTzParam: false,
+                    outputLocaleParam: false,
+                    disabled: readonly,
+                })
+            }}
+        </div>
         {% if field.allDayMode == constant('ALL_DAY_OPTIONAL', field) %}
             &nbsp;
             {{

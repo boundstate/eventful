@@ -44,7 +44,7 @@ See [`EventDateHelper::formatDate()`](reference/helpers/EventDateHelper.md#forma
   </ul> #}
 ```
 
-Occurrences of all day events are displayed without times.
+Occurrences of all day events are displayed without times, as a range of dates if they last several days (e.g. `Jul 30 - Aug 1, 2026`).
 
 ## eventTitle
 

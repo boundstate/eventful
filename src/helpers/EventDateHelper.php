@@ -29,9 +29,10 @@ abstract class EventDateHelper
         $allDay ??= $event instanceof Occurrence && $event->allDay;
 
         return $allDay
-            ? DateHelper::formatDate(
+            ? DateHelper::formatDateRange(
                 $event->getStart(),
-                format: $format,
+                $event->getEnd(),
+                format: str_replace('Date', '', $format),
             )
             : DateHelper::formatDatetimeRange(
                 $event->getStart(),

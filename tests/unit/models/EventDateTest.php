@@ -176,6 +176,44 @@ describe('constructor', function () {
             ->and($eventDate->end->format('Y-m-d H:i:s'))->toBe('2026-10-07 23:59:59');
     });
 
+    it('ends all day events at the end of the end date', function () {
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-10-07', 'timezone' => 'UTC'],
+            'end' => ['date' => '2026-10-09', 'timezone' => 'UTC'],
+            'allDay' => true,
+        ]);
+
+        expect($eventDate->validate())->toBeTrue()
+            ->and($eventDate->end->format('Y-m-d H:i:s'))->toBe('2026-10-09 23:59:59');
+    });
+
+    it('does not allow all day events to end before the start date', function () {
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-10-07', 'timezone' => 'UTC'],
+            'end' => ['date' => '2026-10-06', 'timezone' => 'UTC'],
+            'allDay' => true,
+        ]);
+
+        expect($eventDate->validate())->toBeFalse()
+            ->and($eventDate->getErrors())->toHaveKey('end');
+    });
+
+    it('repeats all day events that last several days', function () {
+        $eventDate = new EventDate([
+            'start' => ['date' => '2026-03-02', 'timezone' => 'UTC'],
+            'end' => ['date' => '2026-03-03', 'timezone' => 'UTC'],
+            'allDay' => true,
+            'repeat' => true,
+            'freq' => EventDate::FREQ_WEEKLY,
+            'byDay' => ['MO'],
+            'ends' => EventDate::ENDS_COUNT,
+            'count' => 3,
+        ]);
+
+        expect(occurrenceStarts($eventDate))->toBe(['2026-03-02 00:00', '2026-03-09 00:00', '2026-03-16 00:00'])
+            ->and($eventDate->getLastEndDate()->format('Y-m-d H:i:s'))->toBe('2026-03-17 23:59:59');
+    });
+
     it('repeats all day events', function () {
         $eventDate = new EventDate([
             'start' => '2026-03-02 05:00:00',

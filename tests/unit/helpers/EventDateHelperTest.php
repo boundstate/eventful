@@ -57,6 +57,13 @@ describe('formatDate', function () {
         expect(EventDateHelper::formatDate($occurrence))->toBe('Mar 2, 2026');
     });
 
+    it('formats the range of dates for occurrences of all day events that last several days', function () {
+        $occurrence = allDayTorontoEventDate(['end' => '2026-03-04 05:00:00'])->getOccurrences()->first();
+
+        expect(EventDateHelper::formatDate($occurrence))->toBe('Mar 2 - 4, 2026')
+            ->and(EventDateHelper::formatDate($occurrence, 'longDate'))->toBe('March 2 - 4, 2026');
+    });
+
     it('does not convert all day dates to the given timezone', function () {
         $occurrence = allDayTorontoEventDate()->getOccurrences()->first();
 
@@ -82,6 +89,11 @@ describe('formatDateRange', function () {
         'longDate' => ['longDate', 'March 2, 2026'],
         'mediumTime' => ['mediumTime', 'All day'],
     ]);
+
+    it('formats an all day event that lasts several days as the range of dates', function () {
+        expect(EventDateHelper::formatDateRange(allDayTorontoEventDate(['end' => '2026-03-04 05:00:00'])))
+            ->toBe('Mar 2 - 4, 2026');
+    });
 
     it('formats a repeating all day event as the range of dates', function () {
         $eventDate = allDayTorontoEventDate([

@@ -381,7 +381,6 @@ Craft.Eventful ??= {};
         data: {
           [dateFieldHandle]: {
             start: start.toISOString(),
-            end: addMinutes(start, 60),
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           },
         },
@@ -644,12 +643,6 @@ Craft.Eventful ??= {};
     },
   });
 })(jQuery);
-
-function addMinutes(date, minutes) {
-  let result = new Date(date);
-  result.setMinutes(result.getMinutes() + minutes);
-  return result;
-}
 
 function setTime(date, time, step) {
   let result = new Date(date);

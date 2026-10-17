@@ -17,6 +17,7 @@ Craft.Eventful ??= {};
     $startTimeInput: null,
     $allDayCheckbox: null,
     $endTimeInput: null,
+    $endDateInput: null,
     $untilDateInput: null,
     $countInput: null,
     $intervalInput: null,
@@ -38,6 +39,7 @@ Craft.Eventful ??= {};
       this.$startDateInput = $('#' + Craft.namespaceId('start-date', inputId));
       this.$startTimeInput = $('#' + Craft.namespaceId('start-time', inputId));
       this.$endTimeInput = $('#' + Craft.namespaceId('end-time', inputId));
+      this.$endDateInput = $('#' + Craft.namespaceId('end-date', inputId));
       this.$allDayCheckbox = $('#' + Craft.namespaceId('all-day', inputId));
       this.$timezoneSelectize = $(
         '#' + Craft.namespaceId('timezone', inputId),
@@ -62,20 +64,18 @@ Craft.Eventful ??= {};
       this.addListener(this.$countInput, 'change', 'updateCountLabel');
       this.addListener(this.$intervalInput, 'change', 'updateFrequencyLabels');
       this.addListener(this.$startDateInput, 'change', 'onStartDateChange');
+      this.addListener(this.$endDateInput, 'change', 'onEndDateChange');
       this.addListener(this.$allDayCheckbox, 'change', 'onAllDayChange');
       this.addListener(this.$chips.find('.add input'), 'change', 'addDate');
       this.addListener(this.$chips.find('.delete'), 'click', 'removeDate');
 
-      // start time & timezone inputs will only exist if event field is not "all day"
-      if (this.$startTimeInput.length) {
-        this.addListener(this.$startTimeInput, 'change', 'onStartTimeChange');
-        this.addListener(this.$endTimeInput, 'change', 'onEndTimeChange');
-        this.addListener(
-          this.$timezoneSelectize.$input,
-          'change',
-          'updateTimezone',
-        );
-      }
+      this.addListener(this.$startTimeInput, 'change', 'onStartTimeChange');
+      this.addListener(this.$endTimeInput, 'change', 'onEndTimeChange');
+      this.addListener(
+        this.$timezoneSelectize.$input,
+        'change',
+        'updateTimezone',
+      );
 
       this.$actionMenu.find('.menu-item').each((index, element) => {
         let $menuItem = $(element);
@@ -100,17 +100,21 @@ Craft.Eventful ??= {};
           });
       });
 
+      // the times of all day events are only placeholders, so clear them
+      // to be filled like a new event's if "All day" is unchecked
+      if (this.$container.hasClass('all-day')) {
+        this.$startTimeInput.val('');
+        this.$endTimeInput.val('');
+      }
+
       this.$startDateInput.trigger('change');
 
-      // start time & timezone inputs will only exist if event field is not "all day"
-      if (this.$startTimeInput.length) {
-        this.$startTimeInput.trigger('change');
+      this.$startTimeInput.trigger('change');
 
-        if (!this.$timezoneSelectize.getValue() && this.defaultTimezone) {
-          this.$timezoneSelectize.setValue(this.defaultTimezone);
-        } else {
-          this.$timezoneSelectize.$input.trigger('change');
-        }
+      if (!this.$timezoneSelectize.getValue() && this.defaultTimezone) {
+        this.$timezoneSelectize.setValue(this.defaultTimezone);
+      } else {
+        this.$timezoneSelectize.$input.trigger('change');
       }
 
       this.$container.removeClass('loading');
@@ -195,15 +199,13 @@ Craft.Eventful ??= {};
       if (date) {
         // always fill the start time once there's a date,
         // so what's autosaved in a draft is what the user sees
-        if (
-          this.$startTimeInput.length &&
-          !getTimeInputVal(this.$startTimeInput)
-        ) {
+        if (!getTimeInputVal(this.$startTimeInput)) {
           setTimeInputVal(this.$startTimeInput, getNextHalfHour());
           this.onStartTimeChange();
         }
 
         this.$untilDateInput.datepicker('option', 'minDate', date);
+        this.updateEndDate(date);
 
         if (
           (this.previousStartDate && date !== this.previousStartDate) ||
@@ -216,6 +218,36 @@ Craft.Eventful ??= {};
       }
 
       this.previousStartDate = date;
+    },
+
+    updateEndDate(startDate) {
+      if (this.$endDateInput.prop('disabled')) {
+        return;
+      }
+
+      this.$endDateInput.datepicker('option', 'minDate', startDate);
+
+      // keep the same number of days when the start date changes
+      let endDate = getDateInputVal(this.$endDateInput);
+      if (endDate && this.previousStartDate) {
+        endDate = addDays(
+          endDate,
+          getDaysBetween(this.previousStartDate, startDate),
+        );
+      }
+      if (!endDate) {
+        endDate = startDate;
+      }
+      setDateInputVal(this.$endDateInput, endDate);
+    },
+
+    onEndDateChange() {
+      let startDate = getDateInputVal(this.$startDateInput);
+
+      // don't allow the end date to be cleared while there's a start date
+      if (startDate && !getDateInputVal(this.$endDateInput)) {
+        setDateInputVal(this.$endDateInput, startDate);
+      }
     },
 
     onStartTimeChange() {
@@ -400,6 +432,11 @@ function addDays(date, days) {
   return result;
 }
 
+function getDaysBetween(startDate, endDate) {
+  // round, since a day isn't 24 hours when the clocks change
+  return Math.round((endDate - startDate) / (24 * 60 * 60 * 1000));
+}
+
 function addMinutes(date, minutes) {
   let result = new Date(date);
   result.setMinutes(result.getMinutes() + minutes);
@@ -432,6 +469,14 @@ function getDateInputVal($input) {
   } else {
     let val = $input.val();
     return val ? new Date(Date.parse(val)) : null;
+  }
+}
+
+function setDateInputVal($input, date) {
+  if ($input.hasClass('hasDatepicker')) {
+    $input.datepicker('setDate', date);
+  } else {
+    $input.val(formatISODate(date));
   }
 }
 

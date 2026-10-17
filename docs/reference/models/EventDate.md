@@ -205,6 +205,12 @@ public rules(): array
 public validateUntil(): void
 ```
 
+### validateEndDate
+
+```php
+public validateEndDate(): void
+```
+
 ### getRepeatDescription
 
 ```php

@@ -2,6 +2,7 @@
 
 namespace boundstate\eventful\fields;
 
+use boundstate\eventful\fields\conditions\EventDateFieldConditionRule;
 use boundstate\eventful\models\EventDate as EventDateModel;
 use boundstate\eventful\web\assets\CpEventDateAsset;
 use Craft;
@@ -216,12 +217,54 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
                 );
             }
 
+            if (isset($value['repeats'])) {
+                $conditions[] = Db::parseParam(
+                    self::storedValueSql($instances, 'freq'),
+                    $value['repeats'] ? 'not :empty:' : ':empty:',
+                );
+            }
+
+            if (isset($value['allDay'])) {
+                $conditions[] = Db::parseBooleanParam(
+                    self::storedValueSql($instances, 'allDay'),
+                    (bool) $value['allDay'],
+                    false,
+                    Schema::TYPE_JSON,
+                );
+            }
+
             if ($conditions !== []) {
                 return ['and', ...$conditions];
             }
         }
 
         return parent::queryCondition($instances, $value, $params);
+    }
+
+    /**
+     * Unlike `valueSql()`, this is null when the key isn't stored, rather than falling back to the whole value
+     * (`freq` is only stored for repeating events, and `allDay` wasn't stored by older versions).
+     *
+     * @param  static[]  $instances
+     */
+    private static function storedValueSql(array $instances, string $key): string
+    {
+        $qb = Craft::$app->getDb()->getQueryBuilder();
+        $valuesSql = array_map(
+            fn (self $field) => $qb->jsonExtract('elements_sites.content', [$field->layoutElement->uid, $key]),
+            array_filter($instances, fn (self $field): bool => isset($field->layoutElement)),
+        );
+
+        return match (count($valuesSql)) {
+            0 => 'NULL',
+            1 => reset($valuesSql),
+            default => sprintf('COALESCE(%s)', implode(',', $valuesSql)),
+        };
+    }
+
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EventDateFieldConditionRule::class;
     }
 
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed

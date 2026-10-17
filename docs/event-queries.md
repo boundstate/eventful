@@ -15,12 +15,18 @@ you can query all ongoing and upcoming meetings in your template as follows:
     .all() %}
 ```
 
+Criteria can be combined, e.g. `{ repeats: true, firstStart: '> now' }`.
+
 | Criteria                                   | Result                                            |
 | ------------------------------------------ | ------------------------------------------------- |
 | `{ lastEnd: ['or', '>= now', ':empty:'] }` | Ongoing and future (last occurrence hasn't ended) |
 | `{ lastEnd: '>= now' }`                    | Ongoing and future, excluding never-ending events |
 | `{ lastEnd: '< now' }`                     | Past (all occurrences have ended)                 |
 | `{ firstStart: '> now' }`                  | Only future (no occurrence has started)           |
+| `{ repeats: true }`                        | Repeating events                                  |
+| `{ repeats: false }`                       | One-time events                                   |
+| `{ allDay: true }`                         | All day events                                    |
+| `{ allDay: false }`                        | Timed events                                      |
 
 ## Events in a range
 

@@ -124,6 +124,16 @@ public static queryCondition(array $instances, mixed $value, array& $params): ar
 | `$params`    | <span class="code">array</span>                                                                                                                                                   |     |
 | **return**   | <span class="code">array\|string\|[ExpressionInterface](https://www.yiiframework.com/doc/api/2.0/yii-db-expressioninterface '\\yii\\db\\ExpressionInterface')\|false\|null</span> |     |
 
+### getElementConditionRuleType
+
+```php
+public getElementConditionRuleType(): array|string|null
+```
+
+|            |                                               |     |
+| ---------- | --------------------------------------------- | --- |
+| **return** | <span class="code">array\|string\|null</span> |     |
+
 ### normalizeValue
 
 ```php

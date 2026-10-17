@@ -54,7 +54,7 @@ abstract class DateHelper
 
         return $formatter->asDate(
             $startDate,
-            $format === 'long' ? 'MMMM d, yyyy' : 'MMM d, yyyy',
+            DateIntervalFormatter::pattern($formatter->locale, self::dateSkeleton($format)),
         );
     }
 
@@ -67,35 +67,16 @@ abstract class DateHelper
         string $format = 'medium',
         ?string $timezone = null,
     ): string {
+        if (! $endDate instanceof DateTimeInterface) {
+            return self::formatDate($startDate, $format, $timezone);
+        }
+
         $formatter = self::getFormatter(
             $timezone ?: $startDate->getTimezone()->getName(),
         );
 
-        // compare calendar dates, since an event can end the next day in less than 24 hours
-        $isSameDay = $endDate instanceof DateTimeInterface &&
-            $formatter->asDate($startDate, 'yyyy-MM-dd') === $formatter->asDate($endDate, 'yyyy-MM-dd');
-
-        $startDateFormat = $format === 'long' ? 'MMMM d, yyyy' : 'MMM d, yyyy';
-        $endDateFormat = $startDateFormat;
-
-        if ($endDate instanceof DateTimeInterface && ! $isSameDay) {
-            $isSameYear = $formatter->asDate($startDate, 'yyyy') === $formatter->asDate($endDate, 'yyyy');
-            if ($isSameYear) {
-                $startDateFormat = $format === 'long' ? 'MMMM d' : 'MMM d';
-                $isSameMonth = $formatter->asDate($startDate, 'yyyy-MM') === $formatter->asDate($endDate, 'yyyy-MM');
-                if ($isSameMonth) {
-                    $endDateFormat = 'd, yyyy';
-                }
-            }
-        }
-
-        $formatted = $formatter->asDate($startDate, $startDateFormat);
-
-        if (! $isSameDay && $endDate instanceof DateTimeInterface) {
-            $formatted .= ' - '.$formatter->asDate($endDate, $endDateFormat);
-        }
-
-        return $formatted;
+        // compares calendar dates, since an event can end the next day in less than 24 hours
+        return DateIntervalFormatter::format($formatter, $startDate, $endDate, self::dateSkeleton($format));
     }
 
     public static function formatDatetimeRange(
@@ -128,14 +109,10 @@ abstract class DateHelper
             $timezone ?: $startDate->getTimezone()->getName(),
         );
 
-        $formattedStartDate = $formatter->asDate($startDate, $format);
-        $formattedEndDate = $formatter->asDate($endDate, $format);
-
-        $isSameDay = $formattedStartDate === $formattedEndDate;
+        $isSameDay = $formatter->asDate($startDate, 'yyyy-MM-dd') === $formatter->asDate($endDate, 'yyyy-MM-dd');
 
         if ($isSameDay) {
-            $formatted =
-                $formattedStartDate.
+            return self::formatDate($startDate, $format, $timezone).
                 ' ⋅ '.
                 self::formatTimeRange(
                     $startDate,
@@ -144,19 +121,16 @@ abstract class DateHelper
                     timezone: $timezone,
                     displayTimezone: $displayTimezone,
                 );
-        } else {
-            $formatted =
-                $formattedStartDate.
-                ' ⋅ '.
-                self::formatTime($formatter, $startDate, $format).
-                ' – '.
-                $formattedEndDate.
-                ' ⋅ '.
-                self::formatTime($formatter, $endDate, $format);
+        }
 
-            if ($displayTimezone) {
-                $formatted .= ' '.self::formatTimezone($formatter, $startDate);
-            }
+        $formatted = DateIntervalFormatter::join(
+            $formatter->locale,
+            self::formatDatetime($formatter, $startDate, $format),
+            self::formatDatetime($formatter, $endDate, $format),
+        );
+
+        if ($displayTimezone) {
+            $formatted .= ' '.self::formatTimezone($formatter, $startDate);
         }
 
         return $formatted;
@@ -173,9 +147,12 @@ abstract class DateHelper
             $timezone ?: $startDate->getTimezone()->getName(),
         );
 
-        $formatted = self::formatTime($formatter, $startDate, $format).
-            ' – '.
-            self::formatTime($formatter, $endDate, $format);
+        $formatted = DateIntervalFormatter::format(
+            $formatter,
+            $startDate,
+            $endDate,
+            self::timeSkeleton($formatter, $format, $startDate, $endDate),
+        );
 
         if ($displayTimezone) {
             $formatted .= ' '.self::formatTimezone($formatter, $startDate);
@@ -184,17 +161,44 @@ abstract class DateHelper
         return $formatted;
     }
 
-    private static function formatTime(
+    private static function formatDatetime(
         Formatter $formatter,
         DateTimeInterface $date,
-        ?string $format = 'medium',
+        string $format,
     ): string {
-        $format =
-            $format === 'medium' && $formatter->asTime($date, 'mm') == '00'
-                ? 'ha'
-                : 'h:mma';
+        return $formatter->asDate($date, DateIntervalFormatter::pattern($formatter->locale, self::dateSkeleton($format))).
+            ' ⋅ '.
+            $formatter->asDate($date, DateIntervalFormatter::pattern(
+                $formatter->locale,
+                self::timeSkeleton($formatter, $format, $date),
+            ));
+    }
 
-        return $formatter->asTime($date, $format);
+    private static function dateSkeleton(string $format): string
+    {
+        return $format === 'long' ? 'yMMMMd' : 'yMMMd';
+    }
+
+    /**
+     * Returns the skeleton for the locale's 12 or 24 hour clock, without minutes for
+     * the medium format if all the times are on the hour (e.g. "10 – 11 AM").
+     */
+    private static function timeSkeleton(
+        Formatter $formatter,
+        ?string $format,
+        DateTimeInterface ...$dates,
+    ): string {
+        // the locale's preferred hour pattern, without quoted text (e.g. "HH 'Uhr'" in German)
+        $hourPattern = preg_replace("/'[^']*'/", '', DateIntervalFormatter::pattern($formatter->locale, 'j'));
+        $skeleton = preg_match('/[hK]/', (string) $hourPattern) ? 'h' : 'H';
+
+        foreach ($dates as $date) {
+            if ($format !== 'medium' || $formatter->asTime($date, 'mm') !== '00') {
+                return $skeleton.'m';
+            }
+        }
+
+        return $skeleton;
     }
 
     private static function formatTimezone(Formatter $formatter, DateTimeInterface $date): string
@@ -205,7 +209,6 @@ abstract class DateHelper
     private static function getFormatter(?string $timezone): Formatter
     {
         $formatter = clone Craft::$app->getFormatter();
-        $formatter->locale = 'en-US'; //  "AM" and "PM" instead of "a.m." and "p.m."
         $formatter->timeZone = $timezone;
 
         return $formatter;

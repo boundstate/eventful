@@ -41,7 +41,7 @@ describe('endOfDay', function () {
 
 describe('formatDate', function () {
     it('formats a date', function (string $format, string $expected) {
-        expect(DateHelper::formatDate(torontoDate('2026-03-05 10:00'), $format))->toBe($expected);
+        expect(DateHelper::formatDate(torontoDate('2026-03-05 10:00'), $format))->toBeFormattedAs($expected);
     })->with([
         'medium' => ['medium', 'Mar 5, 2026'],
         'long' => ['long', 'March 5, 2026'],
@@ -57,16 +57,16 @@ describe('formatDateRange', function () {
     it('collapses the range', function (string $start, ?string $end, string $format, string $expected) {
         $endDate = $end ? torontoDate($end) : null;
 
-        expect(DateHelper::formatDateRange(torontoDate($start), $endDate, $format))->toBe($expected);
+        expect(DateHelper::formatDateRange(torontoDate($start), $endDate, $format))->toBeFormattedAs($expected);
     })->with([
         'no end date' => ['2026-03-05 10:00', null, 'medium', 'Mar 5, 2026'],
         'same day' => ['2026-03-05 10:00', '2026-03-05 18:00', 'medium', 'Mar 5, 2026'],
-        'same month' => ['2026-03-05 10:00', '2026-03-08 10:00', 'medium', 'Mar 5 - 8, 2026'],
-        'same year' => ['2026-03-05 10:00', '2026-04-07 10:00', 'medium', 'Mar 5 - Apr 7, 2026'],
-        'same year (long)' => ['2026-03-05 10:00', '2026-04-07 10:00', 'long', 'March 5 - April 7, 2026'],
-        'different years' => ['2026-12-30 10:00', '2027-01-02 10:00', 'medium', 'Dec 30, 2026 - Jan 2, 2027'],
-        'overnight' => ['2026-03-05 23:30', '2026-03-06 00:30', 'medium', 'Mar 5 - 6, 2026'],
-        'next day, less than 24 hours' => ['2026-03-05 14:00', '2026-03-06 13:00', 'medium', 'Mar 5 - 6, 2026'],
+        'same month' => ['2026-03-05 10:00', '2026-03-08 10:00', 'medium', 'Mar 5 – 8, 2026'],
+        'same year' => ['2026-03-05 10:00', '2026-04-07 10:00', 'medium', 'Mar 5 – Apr 7, 2026'],
+        'same year (long)' => ['2026-03-05 10:00', '2026-04-07 10:00', 'long', 'March 5 – April 7, 2026'],
+        'different years' => ['2026-12-30 10:00', '2027-01-02 10:00', 'medium', 'Dec 30, 2026 – Jan 2, 2027'],
+        'overnight' => ['2026-03-05 23:30', '2026-03-06 00:30', 'medium', 'Mar 5 – 6, 2026'],
+        'next day, less than 24 hours' => ['2026-03-05 14:00', '2026-03-06 13:00', 'medium', 'Mar 5 – 6, 2026'],
     ]);
 
     it('compares dates in the given timezone', function () {
@@ -77,19 +77,29 @@ describe('formatDateRange', function () {
             new DateTime('2026-03-01 03:00', $utc),
             new DateTime('2026-03-03 15:00', $utc),
             timezone: 'America/Toronto',
-        ))->toBe('Feb 28 - Mar 3, 2026');
+        ))->toBeFormattedAs('Feb 28 – Mar 3, 2026');
     });
 });
 
 describe('formatTimeRange', function () {
-    it('omits minutes on the hour for the medium format', function () {
+    it('omits minutes when both times are on the hour for the medium format', function () {
+        expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:00')))
+            ->toBeFormattedAs('10 – 11 AM');
+    });
+
+    it('includes minutes for both times unless both are on the hour', function () {
         expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
-            ->toBe('10AM – 11:30AM');
+            ->toBeFormattedAs('10:00 – 11:30 AM');
+    });
+
+    it('shows AM/PM for both times when they differ', function () {
+        expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 11:30'), torontoDate('2026-03-05 13:00')))
+            ->toBeFormattedAs('11:30 AM – 1:00 PM');
     });
 
     it('always includes minutes for other formats', function () {
         expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:00'), 'long'))
-            ->toBe('10:00AM – 11:00AM');
+            ->toBeFormattedAs('10:00 – 11:00 AM');
     });
 
     it('optionally displays the timezone', function () {
@@ -97,7 +107,7 @@ describe('formatTimeRange', function () {
             torontoDate('2026-03-05 10:00'),
             torontoDate('2026-03-05 11:00'),
             displayTimezone: true,
-        ))->toBe('10AM – 11AM EST');
+        ))->toBeFormattedAs('10 – 11 AM EST');
     });
 
     it('formats in the given timezone', function () {
@@ -105,14 +115,14 @@ describe('formatTimeRange', function () {
             torontoDate('2026-03-05 10:00'),
             torontoDate('2026-03-05 11:00'),
             timezone: 'America/Vancouver',
-        ))->toBe('7AM – 8AM');
+        ))->toBeFormattedAs('7 – 8 AM');
     });
 });
 
 describe('formatDatetimeRange', function () {
     it('shows the date once when start and end are on the same day', function () {
         expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
-            ->toBe('Mar 5, 2026 ⋅ 10AM – 11:30AM');
+            ->toBeFormattedAs('Mar 5, 2026 ⋅ 10:00 – 11:30 AM');
     });
 
     it('shows both dates when the range spans multiple days', function () {
@@ -121,7 +131,7 @@ describe('formatDatetimeRange', function () {
             torontoDate('2026-03-06 01:00'),
             'long',
             displayTimezone: true,
-        ))->toBe('March 5, 2026 ⋅ 10:00PM – March 6, 2026 ⋅ 1:00AM EST');
+        ))->toBeFormattedAs('March 5, 2026 ⋅ 10:00 PM – March 6, 2026 ⋅ 1:00 AM EST');
     });
 
     it('determines whether it is the same day in the given timezone', function () {
@@ -129,16 +139,48 @@ describe('formatDatetimeRange', function () {
             torontoDate('2026-03-05 23:30'),
             torontoDate('2026-03-06 00:30'),
             timezone: 'America/Vancouver',
-        ))->toBe('Mar 5, 2026 ⋅ 8:30PM – 9:30PM');
+        ))->toBeFormattedAs('Mar 5, 2026 ⋅ 8:30 – 9:30 PM');
     });
 
     it('delegates to the time or date range formatter', function (string $format, string $expected) {
         expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-08 11:30'), $format))
-            ->toBe($expected);
+            ->toBeFormattedAs($expected);
     })->with([
-        'mediumTime' => ['mediumTime', '10AM – 11:30AM'],
-        'longTime' => ['longTime', '10:00AM – 11:30AM'],
-        'mediumDate' => ['mediumDate', 'Mar 5 - 8, 2026'],
-        'longDate' => ['longDate', 'March 5 - 8, 2026'],
+        'mediumTime' => ['mediumTime', '10:00 AM – 11:30 AM'],
+        'longTime' => ['longTime', '10:00 AM – 11:30 AM'],
+        'mediumDate' => ['mediumDate', 'Mar 5 – 8, 2026'],
+        'longDate' => ['longDate', 'March 5 – 8, 2026'],
     ]);
+});
+
+describe('formatting in other locales', function () {
+    it('formats with the locale\'s clock, order and range patterns', function (string $locale, array $expected) {
+        Craft::$app->getFormatter()->locale = $locale;
+
+        expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
+            ->toBeFormattedAs($expected[0])
+            ->and(DateHelper::formatTimeRange(torontoDate('2026-03-05 11:30'), torontoDate('2026-03-05 13:00')))
+            ->toBeFormattedAs($expected[1])
+            ->and(DateHelper::formatDateRange(torontoDate('2026-03-05'), torontoDate('2026-03-08')))
+            ->toBeFormattedAs($expected[2]);
+    })->with([
+        'en-CA' => ['en-CA', ['10:00–11:30 a.m.', '11:30 a.m.–1:00 p.m.', 'Mar 5–8, 2026']],
+        'de' => ['de', ['10:00–11:30 Uhr', '11:30–13:00 Uhr', '5.–8. März 2026']],
+        'ko' => ['ko', ['오전 10:00~11:30', '오전 11:30 ~ 오후 1:00', '2026년 3월 5일~8일']],
+    ]);
+
+    it('falls back to the patterns of parent locales', function () {
+        // en-GB gets its time range patterns from en-001
+        Craft::$app->getFormatter()->locale = 'en-GB';
+
+        expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:30')))
+            ->toBeFormattedAs('10:00–11:30');
+    });
+
+    it('joins dates and times on different days with the locale\'s separator', function () {
+        Craft::$app->getFormatter()->locale = 'ja';
+
+        expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 22:00'), torontoDate('2026-03-06 01:00')))
+            ->toBeFormattedAs('2026年3月5日 ⋅ 22時～2026年3月6日 ⋅ 1時');
+    });
 });

@@ -47,3 +47,15 @@ uses()->beforeEach(function () {
         ],
     ]);
 })->in('unit');
+
+/*
+|--------------------------------------------------------------------------
+| Expectations
+|--------------------------------------------------------------------------
+|
+| ICU separates date and time ranges with thin spaces, and times from AM/PM
+| with narrow no-break spaces, so compare formatted dates with plain spaces.
+|
+*/
+
+expect()->extend('toBeFormattedAs', fn (string $expected) => expect(str_replace(["\u{2009}", "\u{202F}"], ' ', $this->value))->toBe($expected));

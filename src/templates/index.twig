@@ -59,7 +59,7 @@
 {% endblock %}
 
 {% block sidebar %}
-  {% set showOrganizers = craft.app.editionHandle != 'solo' and settings.organizerFilterEnabled and sources|find(source => source.type.canViewPeers(currentUser)) is not empty %}
+  {% set showOrganizers = craft.app.editionHandle != 'solo' and settings.organizerFilterEnabled and organizers is not empty and sources|find(source => source.type.canViewPeers(currentUser)) is not empty %}
   {% if sources|length > 1 or showOrganizers %}
     <nav>
         <form id="calendar-form" class="calendar-filters">
@@ -82,7 +82,6 @@
                 <span>{{ settings.organizerFilterLabel }}</span>
               </div>
 
-              {% set organizers = craft.users.group(settings.organizerFilterGroup).orderBy('fullName').all() %}
               {{ forms.checkboxSelectField({
                 name: 'organizers',
                 class: 'calendar-filter',

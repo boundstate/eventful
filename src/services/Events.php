@@ -5,6 +5,8 @@ namespace boundstate\eventful\services;
 use boundstate\eventful\base\EventType;
 use boundstate\eventful\db\Table;
 use boundstate\eventful\enums\Color;
+use boundstate\eventful\Eventful;
+use boundstate\eventful\events\DefineOrganizerQueryEvent;
 use boundstate\eventful\events\RegisterEventSourcesEvent;
 use boundstate\eventful\events\RegisterEventTypesEvent;
 use boundstate\eventful\fields\EventDate as EventDateField;
@@ -32,6 +34,11 @@ class Events extends Component
      * @see RegisterEventSourcesEvent
      */
     const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @see DefineOrganizerQueryEvent
+     */
+    const EVENT_DEFINE_ORGANIZER_QUERY = 'defineOrganizerQuery';
 
     /**
      * @var ?array<class-string<EventType>>
@@ -145,6 +152,24 @@ class Events extends Component
         }
 
         return $elementsBySource;
+    }
+
+    /**
+     * Returns the users listed in the organizer filter on the control panel calendar.
+     *
+     * @return User[]
+     */
+    public function getOrganizers(): array
+    {
+        $query = User::find()
+            ->group(Eventful::getInstance()->settings->organizerFilterGroup)
+            ->orderBy('fullName');
+
+        $this->trigger(self::EVENT_DEFINE_ORGANIZER_QUERY, new DefineOrganizerQueryEvent([
+            'query' => $query,
+        ]));
+
+        return $query->all();
     }
 
     public function updateICalendarSequence(int $elementId): void

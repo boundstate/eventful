@@ -41,6 +41,7 @@ You can optionally enable the ability to filter the calendar by organizer.
 
 By default this will list all users and filter events by their `authorId`,
 but you can customize the filter label, user group, and organizer field handle.
+To further customize which users are listed, use the [define organizer query](triggered-events.md#define-organizer-query) event.
 
 !!! warning ""
 

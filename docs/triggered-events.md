@@ -45,6 +45,21 @@ Event::on(
 );
 ```
 
+### [Define organizer query](reference/services/Events.md#event_define_organizer_query)
+
+Event triggered before querying the users listed in the organizer filter on the control panel calendar.
+By default the query returns the users in the configured organizer user group.
+
+```php
+Event::on(
+    Events::class,
+    Events::EVENT_DEFINE_ORGANIZER_QUERY,
+    function (DefineOrganizerQueryEvent $e) {
+        $e->query->admin();
+    }
+);
+```
+
 ## Exporter
 
 ### [After build ICS](reference/services/Exporter.md#event_after_build_ics)

@@ -16,6 +16,10 @@ See <span class="code">[RegisterEventTypesEvent](../events/RegisterEventTypesEve
 
 See <span class="code">[RegisterEventSourcesEvent](../events/RegisterEventSourcesEvent.md '\\boundstate\\eventful\\events\\RegisterEventSourcesEvent'){ data-preview }</span>
 
+### EVENT_DEFINE_ORGANIZER_QUERY
+
+See <span class="code">[DefineOrganizerQueryEvent](../events/DefineOrganizerQueryEvent.md '\\boundstate\\eventful\\events\\DefineOrganizerQueryEvent'){ data-preview }</span>
+
 ## Methods
 
 ### findDateField
@@ -73,6 +77,18 @@ public getEvents(mixed $date = null, ?array $extraQueryParams = null, string[]|n
 | `$sourceKeys`       | <span class="code">string[]\|null</span>                                                                                                                                |                                        |
 | `$user`             | <span class="code">[User](https://docs.craftcms.com/api/v5/craft-elements-user.html '\\craft\\elements\\User')\|null</span>                                             | only return events the user can access |
 | **return**          | <span class="code">array&lt;string,[ElementInterface](https://docs.craftcms.com/api/v5/craft-base-elementinterface.html '\\craft\\base\\ElementInterface')[]&gt;</span> |                                        |
+
+### getOrganizers
+
+Returns the users listed in the organizer filter on the control panel calendar.
+
+```php
+public getOrganizers(): User[]
+```
+
+|            |                                                                                                                         |     |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- | --- |
+| **return** | <span class="code">[User](https://docs.craftcms.com/api/v5/craft-elements-user.html '\\craft\\elements\\User')[]</span> |     |
 
 ### updateICalendarSequence
 

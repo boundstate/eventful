@@ -76,6 +76,9 @@ class DefaultController extends Controller
             'initialDate' => $initialDate->format('c'),
             'sources' => $viewableSources,
             'creatableTypes' => $creatableTypes,
+            'organizers' => $settings->organizerFilterEnabled
+                ? Eventful::getInstance()->events->getOrganizers()
+                : [],
             'icsUrl' => $calendarSecret ? "$calendarSecret.ics" : null,
             'extraEventSources' => array_map(fn (array $source): array => [
                 ...$source,

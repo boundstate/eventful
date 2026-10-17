@@ -4,7 +4,7 @@
   {% for event in events %}
     <li>
       <strong>{{ event.title }}</strong><br/>
-      {{ event.date |eventDateRange }}<br/>
+      {{ event.date|eventDate }}<br/>
       {% if event.date.repeatDescription %}
         {{ event.date.repeatDescription }}<br/>
       {% endif %}<br/>

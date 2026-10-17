@@ -5,6 +5,7 @@ namespace boundstate\eventful\helpers;
 use boundstate\eventful\models\EventDate;
 use boundstate\eventful\models\Occurrence;
 use Craft;
+use DateTimeInterface;
 use Recurr\Recurrence;
 
 /**
@@ -13,42 +14,51 @@ use Recurr\Recurrence;
 abstract class EventDateHelper
 {
     /**
-     * Formats a `Recurrence` as a date (and times if not all day).
-     * All day dates aren't converted to the given timezone, since they don't have times.
+     * Formats the date (and times, unless all day) of an `EventDate` or one of its occurrences.
+     * A repeating `EventDate` is formatted from its first start to its last end (or only its first start if it
+     * repeats forever), with the times of each occurrence. All day dates are formatted without times
+     * (or as "All day" for the time formats), and aren't converted to the given timezone.
      *
      * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
-     * @param  ?bool  $allDay  Defaults to whether the occurrence is all day, if it's an {@link Occurrence}
+     * @param  ?bool  $allDay  Whether a `Recurrence` that isn't an {@link Occurrence} is all day
      */
     public static function formatDate(
-        Recurrence $event,
+        EventDate|Recurrence $event,
         string $format = 'medium',
         ?string $timezone = null,
         ?bool $allDay = null,
         bool $displayTimezone = false,
     ): string {
+        if ($event instanceof EventDate) {
+            if ($event->repeat) {
+                return self::formatRepeating($event, $format, $timezone, $displayTimezone);
+            }
+
+            // a non-repeating event is formatted the same as its only occurrence
+            $event = new Occurrence($event->start, $event->end, allDay: $event->allDay);
+        }
+
         $allDay ??= $event instanceof Occurrence && $event->allDay;
 
-        return $allDay
-            ? DateHelper::formatDateRange(
-                $event->getStart(),
-                $event->getEnd(),
-                format: str_replace('Date', '', $format),
-            )
-            : DateHelper::formatDatetimeRange(
-                $event->getStart(),
-                $event->getEnd(),
-                format: $format,
-                timezone: $timezone,
-                displayTimezone: $displayTimezone,
-            );
+        if ($allDay) {
+            return self::formatAllDay($event->getStart(), $event->getEnd(), $format);
+        }
+
+        return DateHelper::formatDatetimeRange(
+            $event->getStart(),
+            $event->getEnd(),
+            format: $format,
+            timezone: $timezone,
+            displayTimezone: $displayTimezone,
+        );
     }
 
     /**
-     * Formats the value of an `EventDate` field as a date range.
-     * All day events are formatted without times (or as "All day" for the time formats),
-     * and aren't converted to the given timezone.
+     * Formats the value of an `EventDate` field.
      *
      * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
+     *
+     * @deprecated in 2.2.0. Use `formatDate()` instead.
      */
     public static function formatDateRange(
         EventDate $event,
@@ -56,54 +66,37 @@ abstract class EventDateHelper
         ?string $timezone = null,
         bool $displayTimezone = false,
     ): string {
-        if ($event->allDay) {
-            if (str_contains($format, 'Time')) {
-                return Craft::t('eventful', 'All day');
-            }
+        Craft::$app->getDeprecator()->log(
+            'eventful.formatDateRange',
+            '`EventDateHelper::formatDateRange()` has been deprecated. Use `formatDate()` instead.',
+        );
 
-            return DateHelper::formatDateRange(
+        return self::formatDate($event, $format, $timezone, displayTimezone: $displayTimezone);
+    }
+
+    private static function formatRepeating(
+        EventDate $event,
+        string $format,
+        ?string $timezone,
+        bool $displayTimezone,
+    ): string {
+        if ($event->allDay) {
+            return self::formatAllDay($event->getFirstStartDate(), $event->getLastEndDate(), $format);
+        }
+
+        $parts = [];
+
+        if (! str_contains($format, 'Time')) {
+            $parts[] = DateHelper::formatDateRange(
                 $event->getFirstStartDate(),
                 $event->getLastEndDate(),
-                format: str_replace('Date', '', $format),
-            );
-        }
-
-        if ($event->repeat) {
-            $parts = [];
-
-            if (! str_contains($format, 'Time')) {
-                $parts[] = DateHelper::formatDateRange(
-                    $event->getFirstStartDate(),
-                    $event->getLastEndDate(),
-                    format: str_replace('Date', '', $format),
-                    timezone: $timezone,
-                );
-            }
-
-            if (! str_contains($format, 'Date')) {
-                $parts[] = DateHelper::formatTimeRange(
-                    $event->start,
-                    $event->end,
-                    format: str_replace('Time', '', $format),
-                    timezone: $timezone,
-                    displayTimezone: $displayTimezone,
-                );
-            }
-
-            return implode(' ⋅ ', $parts);
-        }
-
-        if (str_contains($format, 'Date')) {
-            return DateHelper::formatDateRange(
-                $event->start,
-                $event->end,
                 format: str_replace('Date', '', $format),
                 timezone: $timezone,
             );
         }
 
-        if (str_contains($format, 'Time')) {
-            return DateHelper::formatTimeRange(
+        if (! str_contains($format, 'Date')) {
+            $parts[] = DateHelper::formatTimeRange(
                 $event->start,
                 $event->end,
                 format: str_replace('Time', '', $format),
@@ -112,11 +105,21 @@ abstract class EventDateHelper
             );
         }
 
-        return DateHelper::formatDatetimeRange(
-            $event->start,
-            $event->end,
-            timezone: $timezone,
-            displayTimezone: $displayTimezone,
-        );
+        return implode(' ⋅ ', $parts);
+    }
+
+    /**
+     * All day dates aren't converted to a timezone, since they don't have times.
+     */
+    private static function formatAllDay(
+        DateTimeInterface $start,
+        ?DateTimeInterface $end,
+        string $format,
+    ): string {
+        if (str_contains($format, 'Time')) {
+            return Craft::t('eventful', 'All day');
+        }
+
+        return DateHelper::formatDateRange($start, $end, format: str_replace('Date', '', $format));
     }
 }

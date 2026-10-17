@@ -6,29 +6,33 @@ icon: lucide/sprout
 
 This plugin provides the following filters for use in Twig templates:
 
-## eventDateRange
-
-Formats the value of an [`EventDate`](reference/fields/EventDate.md) field, displaying the first and last dates along with the time range.
-See [`EventDateHelper::formatDateRange()`](reference/helpers/EventDateHelper.md#formatdaterange){ data-preview }
-
-```twig
-{{ entry.date|eventDateRange }}
-{# Output: Jul 30 - Aug 28, 2026 ⋅ 10AM – 11AM #}
-
-{{ entry.date|eventDateRange('longDate') }}
-{# Output: July 30 - August 28, 2026 #}
-```
-
-All day events are displayed without times (the time formats display `All day`).
-
-!!! tip ""
-
-    You can display the repeat rule description using [`EventDate::getRepeatDescription()`](reference/models/EventDate.md#getrepeatdescription){ data-preview }.
-
 ## eventDate
 
-Formats a specific occurrence of an `EventDate`.
+Formats the date (and times, unless all day) of an [`EventDate`](reference/fields/EventDate.md) field or one of its occurrences.
 See [`EventDateHelper::formatDate()`](reference/helpers/EventDateHelper.md#formatdate){ data-preview }
+
+```twig
+{{ entry.date|eventDate }}
+{# Output: Jul 30, 2026 ⋅ 10AM – 11AM #}
+
+{{ entry.date|eventDate('longDate') }}
+{# Output: July 30, 2026 #}
+
+{{ entry.date|eventDate('mediumTime') }}
+{# Output: 10AM – 11AM #}
+```
+
+The format can be `medium` or `long`, optionally followed by `Date` or `Time` to display only the dates or the times.
+
+All day events are displayed without times, as a range of dates if they last several days (e.g. `Jul 30 - Aug 1, 2026`).
+The time formats display `All day`.
+
+### Repeating events
+
+When applied to a repeating `EventDate` field, the filter displays its very first start and very last end, along with the times of each occurrence (e.g. `Jul 30 - Aug 28, 2026 ⋅ 10AM – 11AM`).
+If it repeats forever, only the first date is displayed.
+
+To display each occurrence, apply the filter to the occurrences instead:
 
 ```twig
 <ul>
@@ -44,7 +48,9 @@ See [`EventDateHelper::formatDate()`](reference/helpers/EventDateHelper.md#forma
   </ul> #}
 ```
 
-Occurrences of all day events are displayed without times, as a range of dates if they last several days (e.g. `Jul 30 - Aug 1, 2026`).
+!!! tip ""
+
+    You can display the repeat rule description using [`EventDate::getRepeatDescription()`](reference/models/EventDate.md#getrepeatdescription){ data-preview }.
 
 ## eventTitle
 

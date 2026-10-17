@@ -111,6 +111,7 @@ abstract class DateHelper
                 $endDate,
                 str_replace('Time', '', $format),
                 $timezone,
+                $displayTimezone,
             );
         }
 

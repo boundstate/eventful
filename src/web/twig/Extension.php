@@ -7,6 +7,7 @@ use boundstate\eventful\Eventful;
 use boundstate\eventful\helpers\EventDateHelper;
 use boundstate\eventful\helpers\EventRenderer;
 use boundstate\eventful\models\EventDate;
+use Craft;
 use craft\base\ElementInterface;
 use craft\web\View;
 use Recurr\Recurrence;
@@ -29,9 +30,12 @@ class Extension extends AbstractExtension
         ];
     }
 
+    /**
+     * Formats the date of an `EventDate` or one of its occurrences.
+     */
     public function eventDateFilter(
-        Recurrence $event,
-        ?string $format = 'medium',
+        EventDate|Recurrence $event,
+        string $format = 'medium',
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {
@@ -45,19 +49,20 @@ class Extension extends AbstractExtension
         );
     }
 
+    /**
+     * @deprecated in 2.2.0. Use the `eventDate` filter instead.
+     */
     public function eventDateRangeFilter(
         EventDate $event,
         string $format = 'medium',
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {
-        $settings = Eventful::getInstance()->settings;
-
-        return EventDateHelper::formatDateRange(
-            $event,
-            format: $format,
-            timezone: $timezone,
-            displayTimezone: $displayTimezone ?? $settings->displayTimezone,
+        Craft::$app->getDeprecator()->log(
+            'eventful.eventDateRange',
+            'The `eventDateRange` filter has been deprecated. Use `eventDate` instead.',
         );
+
+        return $this->eventDateFilter($event, $format, $timezone, $displayTimezone);
     }
 }

@@ -7,9 +7,11 @@ fieldLayouts:
     cardView:
       - 'layoutElement:0b8793fd-0b1a-41e0-b38a-30aa745dad39'
     tabs:
-      - elementCondition: null
+      -
+        elementCondition: null
         elements:
-          - autocapitalize: true
+          -
+            autocapitalize: true
             autocomplete: false
             autocorrect: true
             class: null
@@ -36,7 +38,8 @@ fieldLayouts:
             userCondition: null
             warning: null
             width: 100
-          - dateAdded: '2026-07-30T15:32:02+00:00'
+          -
+            dateAdded: '2026-07-30T15:32:02+00:00'
             editCondition: null
             elementCondition: null
             elementEditCondition: null
@@ -44,6 +47,7 @@ fieldLayouts:
             handle: null
             instructions: null
             label: null
+            oldFieldUid: null
             required: true
             tip: null
             type: craft\fieldlayoutelements\CustomField
@@ -51,6 +55,25 @@ fieldLayouts:
             userCondition: null
             warning: null
             width: 100
+          -
+            dateAdded: '2026-10-17T15:26:05+00:00'
+            dismissible: false
+            elementCondition:
+              class: craft\elements\conditions\entries\EntryCondition
+              conditionRules:
+                -
+                  class: boundstate\eventful\fields\conditions\EventDateFieldConditionRule
+                  fieldUid: b696196d-1035-401a-a42f-f809dab2071b # Date
+                  layoutElementUid: 0b8793fd-0b1a-41e0-b38a-30aa745dad39
+                  operator: repeats
+                  uid: c75274f4-0fea-4eb9-abff-c5662250d231
+              elementType: craft\elements\Entry
+              fieldContext: global
+            style: tip
+            tip: 'This tip is only shown for repeating events'
+            type: craft\fieldlayoutelements\Tip
+            uid: bc80c986-6d52-4ebf-9534-d620f726d02b
+            userCondition: null
         name: Content
         uid: b4913898-4ea6-4618-8de4-f5cdf7f466ba
         userCondition: null

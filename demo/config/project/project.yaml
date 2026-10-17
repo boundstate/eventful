@@ -1,14 +1,17 @@
-dateModified: 1791574144
+dateModified: 1792250765
 elementSources:
   craft\elements\Entry:
-    - key: '*'
+    -
+      key: '*'
       page: Entries
       type: native
-    - heading: Channels
+    -
+      heading: Channels
       key: 'heading:903a8214-1e6a-4973-955e-13eb66c96336'
       page: Entries
       type: heading
-    - defaultSort:
+    -
+      defaultSort:
         - 'field:b696196d-1035-401a-a42f-f809dab2071b' # Date
         - desc
       defaultViewMode: ''
@@ -19,7 +22,8 @@ elementSources:
         - status
         - 'field:b696196d-1035-401a-a42f-f809dab2071b' # Date
       type: native
-    - defaultSort:
+    -
+      defaultSort:
         - 'field:b696196d-1035-401a-a42f-f809dab2071b' # Date
         - desc
       defaultViewMode: ''

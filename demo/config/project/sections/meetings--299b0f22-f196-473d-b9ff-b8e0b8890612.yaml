@@ -1,7 +1,8 @@
 defaultPlacement: end
 enableVersioning: true
 entryTypes:
-  - uid: 65e75b6f-8a8e-42e4-8e0a-56b3e1def767 # Meeting
+  -
+    uid: 65e75b6f-8a8e-42e4-8e0a-56b3e1def767 # Meeting
 handle: meetings
 maxAuthors: 1
 minAuthors: 1

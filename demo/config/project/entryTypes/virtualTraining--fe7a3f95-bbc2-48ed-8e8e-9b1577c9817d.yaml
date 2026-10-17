@@ -7,9 +7,11 @@ fieldLayouts:
     cardView:
       - 'layoutElement:6f3ae229-e274-4690-bb05-669ec19ad333'
     tabs:
-      - elementCondition: null
+      -
+        elementCondition: null
         elements:
-          - autocapitalize: true
+          -
+            autocapitalize: true
             autocomplete: false
             autocorrect: true
             class: null
@@ -36,7 +38,8 @@ fieldLayouts:
             userCondition: null
             warning: null
             width: 100
-          - dateAdded: '2026-07-30T15:55:05+00:00'
+          -
+            dateAdded: '2026-07-30T15:55:05+00:00'
             editCondition: null
             elementCondition: null
             elementEditCondition: null

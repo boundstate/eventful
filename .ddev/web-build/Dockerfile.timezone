@@ -1,0 +1,22 @@
+# Use a later version of timezone data
+# Keep in sync with the version in the project Dockerfile
+ARG TZDATA_VERSION=2026e
+
+# PHP's date functions (which use the system timezone data in Debian)
+ADD https://data.iana.org/time-zones/releases/tzdata${TZDATA_VERSION}.tar.gz /tmp/tzdata.tar.gz
+RUN mkdir /tmp/tzdata \
+    && tar -xzf /tmp/tzdata.tar.gz -C /tmp/tzdata \
+    && cd /tmp/tzdata \
+    && zic -d /usr/share/zoneinfo -b fat africa antarctica asia australasia europe northamerica southamerica etcetera backward \
+    && rm -rf /tmp/tzdata /tmp/tzdata.tar.gz
+
+# intl (ICU)
+ARG ICU_TZDATA_URL=https://raw.githubusercontent.com/unicode-org/icu-data/main/tzdata/icunew/${TZDATA_VERSION}/44/le
+ENV ICU_TIMEZONE_FILES_DIR=/usr/local/share/icu-tzdata
+RUN mkdir -p ${ICU_TIMEZONE_FILES_DIR}
+ADD --chmod=644 \
+    ${ICU_TZDATA_URL}/metaZones.res \
+    ${ICU_TZDATA_URL}/timezoneTypes.res \
+    ${ICU_TZDATA_URL}/windowsZones.res \
+    ${ICU_TZDATA_URL}/zoneinfo64.res \
+    ${ICU_TIMEZONE_FILES_DIR}/

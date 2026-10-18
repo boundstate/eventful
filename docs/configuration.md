@@ -13,6 +13,10 @@ Once you add an Event Date field to something, you'll likely want to define othe
 You can customize how event titles, descriptions, and locations are rendered by modifying the relevant [object templates].
 The templates are passed the element `object`, and an `ics` variable that is `true` when rendering in an ICS file.
 
+In ICS files, any HTML is converted to plain text, keeping paragraphs, line breaks, list items and links.
+Text without any HTML tags is kept as is.
+So a template should output either plain text or HTML: if it includes any HTML (e.g. a rich text field), write the rest of it as HTML too, using `<p>` or `<br>` for line breaks.
+
 ## Public calendar
 
 If you want to have a public iCalendar format URL, you can configure a **calendar secret**,

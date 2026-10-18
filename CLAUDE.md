@@ -17,6 +17,10 @@ Any text the plugin outputs on the front end (e.g. via Twig filters or helpers l
 - Don't unit test plain `Craft::t()` calls (that's just testing Craft, and breaks whenever a translation is improved). Only test our own translation logic, like `Translator`.
 - Control panel strings aren't translated for now, so don't add them to the translation files. Existing `|t('app')` calls only reuse Craft's own translations.
 
+## Twig extension
+
+- Twig filters and functions (`web/twig/Extension.php`) can only have scalar, array or `null` defaults. When a template skips an argument with named arguments (e.g. `eventDate(timezone: 'UTC')`), Twig compiles the skipped parameter's default into the template, which throws for an enum or other object. Default to the enum's value instead (e.g. `DateFormat|string $format = 'medium'`). `ExtensionTest` checks this for every filter and function.
+
 ## Docs
 
 - Admonitions need a blank line between the `!!! type` line and the indented body. Otherwise Prettier (run by lint-staged) treats the body as a paragraph continuation, strips its indentation, and the box renders empty.

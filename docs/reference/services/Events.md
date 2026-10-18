@@ -112,6 +112,11 @@ public getOrganizers(): User[]
 
 ### updateICalendarSequence
 
+Increments the iCalendar sequence of an event.
+
+Events don't get a metadata row until they're first changed, and a missing row means sequence 0,
+so the row is created with sequence 1.
+
 ```php
 public updateICalendarSequence(int $elementId): void
 ```

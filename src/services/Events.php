@@ -203,13 +203,19 @@ class Events extends Component
         return $query->all();
     }
 
+    /**
+     * Increments the iCalendar sequence of an event.
+     *
+     * Events don't get a metadata row until they're first changed, and a missing row means sequence 0,
+     * so the row is created with sequence 1.
+     */
     public function updateICalendarSequence(int $elementId): void
     {
         Db::upsert(
             Table::METADATA,
             [
                 'id' => $elementId,
-                'iCalendarSequence' => 0,
+                'iCalendarSequence' => 1,
             ],
             [
                 'iCalendarSequence' => new Expression('[[iCalendarSequence]] + 1'),

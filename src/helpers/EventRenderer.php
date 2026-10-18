@@ -6,6 +6,7 @@ use boundstate\eventful\enums\EventProp;
 use boundstate\eventful\Eventful;
 use Craft;
 use craft\base\ElementInterface;
+use Soundasleep\Html2Text;
 
 /**
  * Helper class for rendering event properties.
@@ -27,6 +28,19 @@ abstract class EventRenderer
             ['ics' => $ics],
         );
 
-        return $ics ? strip_tags($value) : $value;
+        return $ics ? self::toPlainText($value) : $value;
+    }
+
+    /**
+     * Converts HTML to plain text, keeping paragraphs, line breaks, list items and links.
+     * Text without any HTML tags is returned as is.
+     */
+    private static function toPlainText(string $html): string
+    {
+        if (strip_tags($html) === $html) {
+            return $html;
+        }
+
+        return Html2Text::convert($html, ['ignore_errors' => true]);
     }
 }

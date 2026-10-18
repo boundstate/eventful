@@ -9,11 +9,12 @@
     }
   ],
   "require": {
-    "ext-zip": "*",
     "php": ">=8.2",
+    "ext-zip": "*",
     "craftcms/cms": "^5.10",
     "sabre/vobject": "^4.5",
-    "simshaun/recurr": "^5.0"
+    "simshaun/recurr": "^5.0",
+    "soundasleep/html2text": "^2.1"
   },
   "require-dev": {
     "craftcms/commerce": "^5",

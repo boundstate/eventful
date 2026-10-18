@@ -27,7 +27,7 @@ class Exporter extends Component
     /**
      * @see AfterBuildIcsEvent
      */
-    const EVENT_AFTER_BUILD_ICS = 'beforeExport';
+    const EVENT_AFTER_BUILD_ICS = 'afterBuildIcs';
 
     /**
      * Returns ICS file contents.

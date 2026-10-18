@@ -75,3 +75,16 @@ Event::on(
     }
 );
 ```
+
+The organizer is `noreply@` your site's hostname by default, named after the current site.
+To use a different organizer, replace it with `setOrganizers()`:
+
+```php
+Event::on(
+    Exporter::class,
+    Exporter::EVENT_AFTER_BUILD_ICS,
+    function (AfterBuildIcsEvent $event) {
+        $event->icsEvent->setOrganizers(['events@example.com' => 'Example Events']);
+    }
+);
+```

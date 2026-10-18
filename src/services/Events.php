@@ -20,6 +20,7 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
+use InvalidArgumentException;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -105,9 +106,12 @@ class Events extends Component
         return $this->_sources;
     }
 
+    /**
+     * @throws InvalidArgumentException if there's no source with the key
+     */
     public function findSourceByKey(string $key): EventSource
     {
-        return $this->getSources()[$key];
+        return $this->getSources()[$key] ?? throw new InvalidArgumentException("Unknown event source \"$key\".");
     }
 
     /**

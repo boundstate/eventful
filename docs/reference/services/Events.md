@@ -59,10 +59,11 @@ public getSources(): array<string,EventSource>
 public findSourceByKey(string $key): EventSource
 ```
 
-|            |                                                                                                                 |     |
-| ---------- | --------------------------------------------------------------------------------------------------------------- | --- |
-| `$key`     | <span class="code">string</span>                                                                                |     |
-| **return** | <span class="code">[EventSource](../models/EventSource.md '\\boundstate\\eventful\\models\\EventSource')</span> |     |
+|            |                                                                                                                 |                                   |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `$key`     | <span class="code">string</span>                                                                                |                                   |
+| **return** | <span class="code">[EventSource](../models/EventSource.md '\\boundstate\\eventful\\models\\EventSource')</span> |                                   |
+| **throws** | <span class="code">InvalidArgumentException</span>                                                              | if there's no source with the key |
 
 ### getEvents
 

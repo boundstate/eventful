@@ -533,6 +533,17 @@ describe('occurrences', function () {
         expect(startsOf($occurrences))->toBe(['2028-05-10 10:00']);
     });
 
+    it('applies constraints to events that do not repeat', function () {
+        $eventDate = weeklyEventDate(['repeat' => false]);
+
+        expect(startsOf($eventDate->getOccurrences(
+            new BetweenConstraint(new DateTime('2026-03-01'), new DateTime('2026-03-03')),
+        )))->toBe(['2026-03-02 10:00'])
+            ->and(startsOf($eventDate->getOccurrences(
+                new BetweenConstraint(new DateTime('2026-03-04'), new DateTime('2026-12-31')),
+            )))->toBe([]);
+    });
+
     it('can reuse a constraint for several events', function () {
         $constraint = new BetweenConstraint(new DateTime('2026-03-04'), new DateTime('2026-03-10'));
 

@@ -373,6 +373,14 @@ class EventDate extends Model
         ?ConstraintInterface $constraint = null,
     ): RecurrenceCollection {
         if (! $this->rule) {
+            // event does not repeat
+            if (
+                $constraint instanceof ConstraintInterface &&
+                (! $this->start instanceof DateTime || ! $constraint->test($this->start))
+            ) {
+                return new RecurrenceCollection;
+            }
+
             return new RecurrenceCollection([
                 new Occurrence($this->start, $this->end, allDay: $this->allDay),
             ]);
@@ -451,7 +459,7 @@ class EventDate extends Model
             $occurrences = $this->getOccurrences();
         }
 
-        // the constraint is ignored when the event doesn't repeat, and keeps an occurrence
+        // the constraint isn't used when the event doesn't repeat, and keeps an occurrence
         // in progress that ends exactly when the range starts
         return new RecurrenceCollection(array_values(array_filter(
             $occurrences->toArray(),

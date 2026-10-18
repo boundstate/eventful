@@ -6,6 +6,7 @@ use boundstate\eventful\models\EventDate;
 use boundstate\eventful\models\Occurrence;
 use Craft;
 use DateTimeInterface;
+use InvalidArgumentException;
 use Recurr\Recurrence;
 
 /**
@@ -13,6 +14,8 @@ use Recurr\Recurrence;
  */
 abstract class EventDateHelper
 {
+    private const FORMATS = ['medium', 'long', 'mediumDate', 'longDate', 'mediumTime', 'longTime'];
+
     /**
      * Formats the date (and times, unless all day) of an `EventDate` or one of its occurrences.
      * A repeating `EventDate` is formatted from its first start to its last end (or only its first start if it
@@ -21,6 +24,8 @@ abstract class EventDateHelper
      *
      * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
      * @param  ?bool  $allDay  Whether a `Recurrence` that isn't an {@link Occurrence} is all day
+     *
+     * @throws InvalidArgumentException if the format isn't one of the above
      */
     public static function formatDate(
         EventDate|Recurrence $event,
@@ -29,6 +34,14 @@ abstract class EventDateHelper
         ?bool $allDay = null,
         bool $displayTimezone = false,
     ): string {
+        // Twig templates can pass any string
+        // @phpstan-ignore function.alreadyNarrowedType
+        if (! in_array($format, self::FORMATS, true)) {
+            throw new InvalidArgumentException(
+                "Invalid event date format \"$format\". Use one of: ".implode(', ', self::FORMATS).'.',
+            );
+        }
+
         if ($event instanceof EventDate) {
             if ($event->repeat) {
                 return self::formatRepeating($event, $format, $timezone, $displayTimezone);

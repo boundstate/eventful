@@ -28,6 +28,7 @@ public static formatDate(EventDate|Recurrence $event, "medium"|"long"|"mediumDat
 | `$allDay`          | <span class="code">?bool</span>                                                                                                                                                                                          | Whether a `Recurrence` that isn't an {@link Occurrence} is all day |
 | `$displayTimezone` | <span class="code">bool</span>                                                                                                                                                                                           |                                                                    |
 | **return**         | <span class="code">string</span>                                                                                                                                                                                         |                                                                    |
+| **throws**         | <span class="code">InvalidArgumentException</span>                                                                                                                                                                       | if the format isn't one of the above                               |
 
 ### formatDateRange
 

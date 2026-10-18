@@ -80,6 +80,10 @@ describe('formatDate of an occurrence', function () {
 });
 
 describe('formatDate of an EventDate', function () {
+    it('throws an exception for an invalid format', function () {
+        EventDateHelper::formatDate(torontoEventDate(), 'America/Toronto');
+    })->throws(InvalidArgumentException::class);
+
     it('formats a non-repeating event the same as its occurrence', function (EventDate $eventDate, string $format) {
         expect(EventDateHelper::formatDate($eventDate, $format, displayTimezone: true))
             ->toBe(EventDateHelper::formatDate($eventDate->getOccurrences()->first(), $format, displayTimezone: true));

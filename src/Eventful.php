@@ -145,7 +145,9 @@ class Eventful extends Plugin
             $element = $e->sender;
             if (
                 ! ElementHelper::isDraftOrRevision($element) &&
+                ! $element->firstSave &&
                 ! $element->resaving &&
+                ! $element->propagating &&
                 $this->events->findDateField($element)
             ) {
                 $this->events->updateICalendarSequence($element->id);

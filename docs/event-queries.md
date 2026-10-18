@@ -60,3 +60,38 @@ To list the occurrences that are actually in the range, use `getOccurrencesInRan
 
     Both ends of the range are inclusive, so an occurrence that starts exactly at the end of the range is included.
     An occurrence that ends exactly at the start of the range isn't in progress, so it's excluded.
+
+## Events from all sources
+
+To query the events of every source shown on the control panel calendar (e.g. for a calendar on the front end),
+use `getEventQueries()`. It returns a new query for each source, keyed by source, with the source's custom query params
+and the given date criteria applied, which you can modify before getting the events:
+
+```php
+use boundstate\eventful\Eventful;
+use boundstate\eventful\models\ProductEventType;
+
+$events = Eventful::getInstance()->events;
+$elementsBySource = [];
+
+foreach ($events->getEventQueries(date: ['inRange' => [$start, $end]]) as $key => $query) {
+    $source = $events->findSourceByKey($key);
+
+    if ($source->type instanceof ProductEventType) {
+        // products don't have an author, so use a field instead
+        $query->andRelatedTo(['targetElement' => $currentUser, 'field' => 'hosts']);
+    } else {
+        $query->andRelatedTo($currentUser);
+    }
+
+    $elementsBySource[$key] = $query->all();
+}
+```
+
+Use `andRelatedTo()` and `andWhere()` rather than `relatedTo()` and `where()`,
+which would replace any criteria from the source's custom query params.
+
+You can also limit the queries to some sources with `sourceKeys`, or to the events a user can access with `user`.
+The `user` criteria are applied to the queries you get, so changing the author criteria could give access to more events.
+
+If you don't need to modify the queries, `getEvents()` takes the same arguments and returns the events of each source.

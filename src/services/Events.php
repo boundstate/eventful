@@ -16,6 +16,7 @@ use boundstate\eventful\models\ProductEventType;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -115,17 +116,22 @@ class Events extends Component
     }
 
     /**
+     * Returns a new query for the events of each source (or the given sources), keyed by source,
+     * with the source's custom query params, the date criteria and the extra query params applied.
+     *
      * @param  string[]|null  $sourceKeys
-     * @param  User|null  $user  only return events the user can access
-     * @return array<string, ElementInterface[]>
+     * @param  User|null  $user  only query events the user can access
+     * @return array<string, ElementQuery>
+     *
+     * @phpstan-ignore missingType.generics
      */
-    public function getEvents(
+    public function getEventQueries(
         mixed $date = null,
         ?array $extraQueryParams = null,
         ?array $sourceKeys = null,
         ?User $user = null,
     ): array {
-        $elementsBySource = [];
+        $queriesBySource = [];
 
         foreach ($this->getSources() as $key => $source) {
             if (
@@ -151,11 +157,32 @@ class Events extends Component
 
                 Craft::configure($query, $queryParams);
 
-                $elementsBySource[$key] = $query->all();
+                $queriesBySource[$key] = $query;
             }
         }
 
-        return $elementsBySource;
+        return $queriesBySource;
+    }
+
+    /**
+     * Returns the events of each source (or the given sources), keyed by source.
+     *
+     * @param  string[]|null  $sourceKeys
+     * @param  User|null  $user  only return events the user can access
+     * @return array<string, ElementInterface[]>
+     *
+     * @see getEventQueries()
+     */
+    public function getEvents(
+        mixed $date = null,
+        ?array $extraQueryParams = null,
+        ?array $sourceKeys = null,
+        ?User $user = null,
+    ): array {
+        return array_map(
+            fn (ElementQuery $query): array => $query->all(),
+            $this->getEventQueries($date, $extraQueryParams, $sourceKeys, $user),
+        );
     }
 
     /**

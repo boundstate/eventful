@@ -65,7 +65,26 @@ public findSourceByKey(string $key): EventSource
 | **return** | <span class="code">[EventSource](../models/EventSource.md '\\boundstate\\eventful\\models\\EventSource')</span> |                                   |
 | **throws** | <span class="code">InvalidArgumentException</span>                                                              | if there's no source with the key |
 
+### getEventQueries
+
+Returns a new query for the events of each source (or the given sources), keyed by source,
+with the source's custom query params, the date criteria and the extra query params applied.
+
+```php
+public getEventQueries(mixed $date = null, ?array $extraQueryParams = null, string[]|null $sourceKeys = null, User|null $user = null): array<string,ElementQuery>
+```
+
+|                     |                                                                                                                                                                          |                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `$date`             | <span class="code">mixed</span>                                                                                                                                          |                                       |
+| `$extraQueryParams` | <span class="code">?array</span>                                                                                                                                         |                                       |
+| `$sourceKeys`       | <span class="code">string[]\|null</span>                                                                                                                                 |                                       |
+| `$user`             | <span class="code">[User](https://docs.craftcms.com/api/v5/craft-elements-user.html '\\craft\\elements\\User')\|null</span>                                              | only query events the user can access |
+| **return**          | <span class="code">array&lt;string,[ElementQuery](https://docs.craftcms.com/api/v5/craft-elements-db-elementquery.html '\\craft\\elements\\db\\ElementQuery')&gt;</span> |                                       |
+
 ### getEvents
+
+Returns the events of each source (or the given sources), keyed by source.
 
 ```php
 public getEvents(mixed $date = null, ?array $extraQueryParams = null, string[]|null $sourceKeys = null, User|null $user = null): array<string,ElementInterface[]>

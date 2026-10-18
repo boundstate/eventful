@@ -2,6 +2,7 @@
 
 namespace boundstate\eventful\web\twig;
 
+use boundstate\eventful\enums\DateFormat;
 use boundstate\eventful\enums\EventProp;
 use boundstate\eventful\Eventful;
 use boundstate\eventful\helpers\EventDateHelper;
@@ -35,7 +36,7 @@ class Extension extends AbstractExtension
      */
     public function eventDateFilter(
         EventDate|Recurrence $event,
-        string $format = 'medium',
+        DateFormat|string $format = DateFormat::MEDIUM,
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {
@@ -54,7 +55,7 @@ class Extension extends AbstractExtension
      */
     public function eventDateRangeFilter(
         EventDate $event,
-        string $format = 'medium',
+        DateFormat|string $format = DateFormat::MEDIUM,
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {

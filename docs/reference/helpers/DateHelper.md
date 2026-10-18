@@ -49,57 +49,69 @@ public static endOfDay(DateTimeInterface $date): DateTime
 
 ### formatDate
 
+Formats a date (without a time).
+
 ```php
-public static formatDate(DateTimeInterface $startDate, "medium"|"long" $format = 'medium', ?string $timezone = null): string
+public static formatDate(DateTimeInterface $startDate, FormatLength|string $format = \boundstate\eventful\enums\FormatLength::MEDIUM, ?string $timezone = null): string
 ```
 
-|              |                                             |     |
-| ------------ | ------------------------------------------- | --- |
-| `$startDate` | <span class="code">DateTimeInterface</span> |     |
-| `$format`    | <span class="code">"medium"\|"long"</span>  |     |
-| `$timezone`  | <span class="code">?string</span>           |     |
-| **return**   | <span class="code">string</span>            |     |
+|              |                                                                                                                          |                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `$startDate` | <span class="code">DateTimeInterface</span>                                                                              |                                       |
+| `$format`    | <span class="code">[FormatLength](../enums/FormatLength.md '\\boundstate\\eventful\\enums\\FormatLength')\|string</span> | A length or its value (e.g. `'long'`) |
+| `$timezone`  | <span class="code">?string</span>                                                                                        |                                       |
+| **return**   | <span class="code">string</span>                                                                                         |                                       |
+| **throws**   | <span class="code">InvalidArgumentException</span>                                                                       | if the format isn't valid             |
 
 ### formatDateRange
 
+Formats a range of dates (without times).
+
 ```php
-public static formatDateRange(DateTimeInterface $startDate, ?DateTimeInterface $endDate, "medium"|"long" $format = 'medium', ?string $timezone = null): string
+public static formatDateRange(DateTimeInterface $startDate, ?DateTimeInterface $endDate, FormatLength|string $format = \boundstate\eventful\enums\FormatLength::MEDIUM, ?string $timezone = null): string
 ```
 
-|              |                                              |     |
-| ------------ | -------------------------------------------- | --- |
-| `$startDate` | <span class="code">DateTimeInterface</span>  |     |
-| `$endDate`   | <span class="code">?DateTimeInterface</span> |     |
-| `$format`    | <span class="code">"medium"\|"long"</span>   |     |
-| `$timezone`  | <span class="code">?string</span>            |     |
-| **return**   | <span class="code">string</span>             |     |
+|              |                                                                                                                          |                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `$startDate` | <span class="code">DateTimeInterface</span>                                                                              |                                       |
+| `$endDate`   | <span class="code">?DateTimeInterface</span>                                                                             |                                       |
+| `$format`    | <span class="code">[FormatLength](../enums/FormatLength.md '\\boundstate\\eventful\\enums\\FormatLength')\|string</span> | A length or its value (e.g. `'long'`) |
+| `$timezone`  | <span class="code">?string</span>                                                                                        |                                       |
+| **return**   | <span class="code">string</span>                                                                                         |                                       |
+| **throws**   | <span class="code">InvalidArgumentException</span>                                                                       | if the format isn't valid             |
 
 ### formatDatetimeRange
 
+Formats a range of dates and times, or only the dates or the times, depending on the format.
+
 ```php
-public static formatDatetimeRange(DateTimeInterface $startDate, DateTimeInterface $endDate, string $format = 'medium', ?string $timezone = null, bool $displayTimezone = false): string
+public static formatDatetimeRange(DateTimeInterface $startDate, DateTimeInterface $endDate, DateFormat|string $format = \boundstate\eventful\enums\DateFormat::MEDIUM, ?string $timezone = null, bool $displayTimezone = false): string
 ```
 
-|                    |                                             |     |
-| ------------------ | ------------------------------------------- | --- |
-| `$startDate`       | <span class="code">DateTimeInterface</span> |     |
-| `$endDate`         | <span class="code">DateTimeInterface</span> |     |
-| `$format`          | <span class="code">string</span>            |     |
-| `$timezone`        | <span class="code">?string</span>           |     |
-| `$displayTimezone` | <span class="code">bool</span>              |     |
-| **return**         | <span class="code">string</span>            |     |
+|                    |                                                                                                                    |                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `$startDate`       | <span class="code">DateTimeInterface</span>                                                                        |                           |
+| `$endDate`         | <span class="code">DateTimeInterface</span>                                                                        |                           |
+| `$format`          | <span class="code">[DateFormat](../enums/DateFormat.md '\\boundstate\\eventful\\enums\\DateFormat')\|string</span> |                           |
+| `$timezone`        | <span class="code">?string</span>                                                                                  |                           |
+| `$displayTimezone` | <span class="code">bool</span>                                                                                     |                           |
+| **return**         | <span class="code">string</span>                                                                                   |                           |
+| **throws**         | <span class="code">InvalidArgumentException</span>                                                                 | if the format isn't valid |
 
 ### formatTimeRange
 
+Formats a range of times (without dates).
+
 ```php
-public static formatTimeRange(DateTimeInterface $startDate, DateTimeInterface $endDate, ?string $format = 'medium', ?string $timezone = null, bool $displayTimezone = false): string
+public static formatTimeRange(DateTimeInterface $startDate, DateTimeInterface $endDate, FormatLength|string $format = \boundstate\eventful\enums\FormatLength::MEDIUM, ?string $timezone = null, bool $displayTimezone = false): string
 ```
 
-|                    |                                             |     |
-| ------------------ | ------------------------------------------- | --- |
-| `$startDate`       | <span class="code">DateTimeInterface</span> |     |
-| `$endDate`         | <span class="code">DateTimeInterface</span> |     |
-| `$format`          | <span class="code">?string</span>           |     |
-| `$timezone`        | <span class="code">?string</span>           |     |
-| `$displayTimezone` | <span class="code">bool</span>              |     |
-| **return**         | <span class="code">string</span>            |     |
+|                    |                                                                                                                          |                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
+| `$startDate`       | <span class="code">DateTimeInterface</span>                                                                              |                                       |
+| `$endDate`         | <span class="code">DateTimeInterface</span>                                                                              |                                       |
+| `$format`          | <span class="code">[FormatLength](../enums/FormatLength.md '\\boundstate\\eventful\\enums\\FormatLength')\|string</span> | A length or its value (e.g. `'long'`) |
+| `$timezone`        | <span class="code">?string</span>                                                                                        |                                       |
+| `$displayTimezone` | <span class="code">bool</span>                                                                                           |                                       |
+| **return**         | <span class="code">string</span>                                                                                         |                                       |
+| **throws**         | <span class="code">InvalidArgumentException</span>                                                                       | if the format isn't valid             |

@@ -2,6 +2,7 @@
 
 namespace boundstate\eventful\helpers;
 
+use boundstate\eventful\enums\DateFormat;
 use boundstate\eventful\models\EventDate;
 use boundstate\eventful\models\Occurrence;
 use Craft;
@@ -14,33 +15,25 @@ use Recurr\Recurrence;
  */
 abstract class EventDateHelper
 {
-    private const FORMATS = ['medium', 'long', 'mediumDate', 'longDate', 'mediumTime', 'longTime'];
-
     /**
      * Formats the date (and times, unless all day) of an `EventDate` or one of its occurrences.
      * A repeating `EventDate` is formatted from its first start to its last end (or only its first start if it
      * repeats forever), with the times of each occurrence. All day dates are formatted without times
      * (or as "All day" for the time formats), and aren't converted to the given timezone.
      *
-     * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
+     * @param  DateFormat|string  $format  A format or its value (e.g. `'mediumDate'`)
      * @param  ?bool  $allDay  Whether a `Recurrence` that isn't an {@link Occurrence} is all day
      *
-     * @throws InvalidArgumentException if the format isn't one of the above
+     * @throws InvalidArgumentException if the format isn't valid
      */
     public static function formatDate(
         EventDate|Recurrence $event,
-        string $format = 'medium',
+        DateFormat|string $format = DateFormat::MEDIUM,
         ?string $timezone = null,
         ?bool $allDay = null,
         bool $displayTimezone = false,
     ): string {
-        // Twig templates can pass any string
-        // @phpstan-ignore function.alreadyNarrowedType
-        if (! in_array($format, self::FORMATS, true)) {
-            throw new InvalidArgumentException(
-                "Invalid event date format \"$format\". Use one of: ".implode(', ', self::FORMATS).'.',
-            );
-        }
+        $format = DateFormat::parse($format);
 
         if ($event instanceof EventDate) {
             if ($event->repeat) {
@@ -69,13 +62,11 @@ abstract class EventDateHelper
     /**
      * Formats the value of an `EventDate` field.
      *
-     * @param  'medium'|'long'|'mediumDate'|'longDate'|'mediumTime'|'longTime'  $format
-     *
      * @deprecated in 2.2.0. Use `formatDate()` instead.
      */
     public static function formatDateRange(
         EventDate $event,
-        string $format = 'medium',
+        DateFormat|string $format = DateFormat::MEDIUM,
         ?string $timezone = null,
         bool $displayTimezone = false,
     ): string {
@@ -89,7 +80,7 @@ abstract class EventDateHelper
 
     private static function formatRepeating(
         EventDate $event,
-        string $format,
+        DateFormat $format,
         ?string $timezone,
         bool $displayTimezone,
     ): string {
@@ -99,20 +90,20 @@ abstract class EventDateHelper
 
         $parts = [];
 
-        if (! str_contains($format, 'Time')) {
+        if ($format->hasDates()) {
             $parts[] = DateHelper::formatDateRange(
                 $event->getFirstStartDate(),
                 $event->getLastEndDate(),
-                format: str_replace('Date', '', $format),
+                format: $format->length(),
                 timezone: $timezone,
             );
         }
 
-        if (! str_contains($format, 'Date')) {
+        if ($format->hasTimes()) {
             $parts[] = DateHelper::formatTimeRange(
                 $event->start,
                 $event->end,
-                format: str_replace('Time', '', $format),
+                format: $format->length(),
                 timezone: $timezone,
                 displayTimezone: $displayTimezone,
             );
@@ -127,12 +118,12 @@ abstract class EventDateHelper
     private static function formatAllDay(
         DateTimeInterface $start,
         ?DateTimeInterface $end,
-        string $format,
+        DateFormat $format,
     ): string {
-        if (str_contains($format, 'Time')) {
+        if (! $format->hasDates()) {
             return Craft::t('eventful', 'All day');
         }
 
-        return DateHelper::formatDateRange($start, $end, format: str_replace('Date', '', $format));
+        return DateHelper::formatDateRange($start, $end, format: $format->length());
     }
 }

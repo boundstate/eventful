@@ -33,20 +33,21 @@ class Extension extends AbstractExtension
 
     /**
      * Formats the date of an `EventDate` or one of its occurrences.
+     *
+     * The format defaults to a string, since Twig compiles the defaults of skipped arguments
+     * into the template (e.g. for `eventDate(timezone: 'UTC')`), which doesn't work for enums.
      */
     public function eventDateFilter(
         EventDate|Recurrence $event,
-        DateFormat|string $format = DateFormat::MEDIUM,
+        DateFormat|string $format = 'medium',
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {
-        $settings = Eventful::getInstance()->settings;
-
         return EventDateHelper::formatDate(
             $event,
             format: $format,
             timezone: $timezone,
-            displayTimezone: $displayTimezone ?? $settings->displayTimezone,
+            displayTimezone: $displayTimezone ?? Eventful::getInstance()->settings->displayTimezone,
         );
     }
 
@@ -55,7 +56,7 @@ class Extension extends AbstractExtension
      */
     public function eventDateRangeFilter(
         EventDate $event,
-        DateFormat|string $format = DateFormat::MEDIUM,
+        DateFormat|string $format = 'medium',
         ?string $timezone = null,
         ?bool $displayTimezone = null,
     ): string {

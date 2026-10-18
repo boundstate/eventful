@@ -11,7 +11,6 @@ use boundstate\eventful\helpers\EventRenderer;
 use boundstate\eventful\helpers\UrlHelper;
 use boundstate\eventful\models\EventDate;
 use boundstate\eventful\models\IcsCalendar;
-use boundstate\eventful\records\Metadata;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
@@ -113,12 +112,10 @@ class Exporter extends Component
         /** @var EventDate $date */
         $date = $element->getFieldValue($dateField->handle);
 
-        $metadata = Metadata::findOne(['id' => $element->id]);
-
         $event = $calendar
             ->addEvent()
             ->setUid($element->uid)
-            ->setSequence($metadata->iCalendarSequence ?? 0)
+            ->setSequence(Eventful::getInstance()->events->getICalendarSequence($element->id))
             ->setStatus($status)
             ->setAllDay($date->allDay)
             ->setStart($date->start)

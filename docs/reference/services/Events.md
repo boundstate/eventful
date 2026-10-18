@@ -124,3 +124,18 @@ public updateICalendarSequence(int $elementId): void
 |              |                               |     |
 | ------------ | ----------------------------- | --- |
 | `$elementId` | <span class="code">int</span> |     |
+
+### getICalendarSequence
+
+Returns the iCalendar sequence of an event.
+
+For an event hard-deleted in the current request, returns its last sequence.
+
+```php
+public getICalendarSequence(int $elementId): int
+```
+
+|              |                               |     |
+| ------------ | ----------------------------- | --- |
+| `$elementId` | <span class="code">int</span> |     |
+| **return**   | <span class="code">int</span> |     |

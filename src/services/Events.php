@@ -13,6 +13,7 @@ use boundstate\eventful\fields\EventDate as EventDateField;
 use boundstate\eventful\models\EntryEventType;
 use boundstate\eventful\models\EventSource;
 use boundstate\eventful\models\ProductEventType;
+use boundstate\eventful\records\Metadata;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
@@ -56,6 +57,14 @@ class Events extends Component
      * @var ?array<string, EventSource>
      */
     private ?array $_sources = null;
+
+    /**
+     * The iCalendar sequences updated in the current request,
+     * used once an event is hard-deleted along with its metadata row.
+     *
+     * @var array<int, int>
+     */
+    private array $_updatedSequences = [];
 
     public function findDateField(ElementInterface|FieldLayoutProviderInterface $type): ?EventDateField
     {
@@ -221,6 +230,27 @@ class Events extends Component
                 'iCalendarSequence' => new Expression('[[iCalendarSequence]] + 1'),
             ]
         );
+
+        $this->_updatedSequences[$elementId] = $this->getICalendarSequence($elementId);
+    }
+
+    /**
+     * Returns the iCalendar sequence of an event.
+     *
+     * For an event hard-deleted in the current request, returns its last sequence.
+     */
+    public function getICalendarSequence(int $elementId): int
+    {
+        $sequence = Metadata::find()
+            ->select('iCalendarSequence')
+            ->where(['id' => $elementId])
+            ->scalar();
+
+        if ($sequence === false) {
+            return $this->_updatedSequences[$elementId] ?? 0;
+        }
+
+        return (int) $sequence;
     }
 
     private function getTypeClasses(): array

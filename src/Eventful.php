@@ -153,5 +153,26 @@ class Eventful extends Plugin
                 $this->events->updateICalendarSequence($element->id);
             }
         });
+
+        // Increment sequence before deleting or restoring events, so cancellations have a higher sequence than the
+        // last update, and updates after restoring have a higher sequence than the cancellation.
+        // Not after deleting, because hard deleting the element also deletes its metadata.
+        Event::on(Element::class, Element::EVENT_BEFORE_DELETE, $this->updateICalendarSequence(...));
+        Event::on(Element::class, Element::EVENT_BEFORE_RESTORE, $this->updateICalendarSequence(...));
+    }
+
+    /**
+     * Increments the iCalendar sequence of the event element that triggered the event.
+     */
+    private function updateICalendarSequence(ModelEvent $e): void
+    {
+        /** @var Element $element */
+        $element = $e->sender;
+        if (
+            ! ElementHelper::isDraftOrRevision($element) &&
+            $this->events->findDateField($element)
+        ) {
+            $this->events->updateICalendarSequence($element->id);
+        }
     }
 }

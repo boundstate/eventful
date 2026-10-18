@@ -26,6 +26,7 @@ Any text the plugin outputs on the front end (e.g. via Twig filters or helpers l
 Releases are made with semantic-release by the manual `.github/workflows/release.yml` workflow, so unreleased commits on `main` can be tested in other projects as `dev-main` first. To release, run it on `main` (`gh workflow run release.yml --ref main`, or "Run workflow" in the Actions tab). It releases everything since the last tag in one version.
 
 - Commit messages must follow Conventional Commits; they decide the next version (`fix:` → patch, `feat:` → minor, `!`/`BREAKING CHANGE` → major). `chore:`, `docs:` etc. don't release.
+- Only the commit subject (and `BREAKING CHANGE` footers) appear in `CHANGELOG.md`, not the body. So write the subject to tell users what changed, including anything they need to act on (e.g. "rename the after build ICS event from `beforeExport` to `afterBuildIcs`"). Use the body for the reasoning.
 - The release workflow doesn't run lint and tests itself, but fails unless the CI workflow (`.github/workflows/ci.yml`) has passed on the commit being released. So push, wait for CI, then release.
 - The release workflow never cancels an in-progress release. CI concurrency only cancels in-progress runs on pull requests, so every commit on `main` gets a CI status.
 - The version comes from the git tag only. Don't add `"version"` to `composer.json`.

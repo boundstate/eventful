@@ -18,8 +18,9 @@ class Install extends Migration
     public function safeUp(): bool
     {
         $this->createTable(Table::METADATA, [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'iCalendarSequence' => $this->integer()->unsigned()->defaultValue(0)->notNull(),
+            'PRIMARY KEY([[id]])',
         ]);
 
         $this->addForeignKey(

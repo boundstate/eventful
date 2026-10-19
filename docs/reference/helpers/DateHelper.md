@@ -4,6 +4,12 @@ title: DateHelper
 
 # Abstract Class DateHelper
 
+## Constants
+
+### EVENT_DEFINE_TIMEZONE_LABEL
+
+See <span class="code">[DefineTimezoneLabelEvent](../events/DefineTimezoneLabelEvent.md '\\boundstate\\eventful\\events\\DefineTimezoneLabelEvent'){ data-preview }</span>
+
 ## Methods
 
 ### setTime

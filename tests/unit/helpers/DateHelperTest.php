@@ -1,6 +1,8 @@
 <?php
 
+use boundstate\eventful\events\DefineTimezoneLabelEvent;
 use boundstate\eventful\helpers\DateHelper;
+use yii\base\Event;
 
 function torontoDate(string $date): DateTime
 {
@@ -182,5 +184,40 @@ describe('formatting in other locales', function () {
 
         expect(DateHelper::formatDatetimeRange(torontoDate('2026-03-05 22:00'), torontoDate('2026-03-06 01:00')))
             ->toBeFormattedAs('2026年3月5日 ⋅ 22時～2026年3月6日 ⋅ 1時');
+    });
+});
+
+describe('timezone label', function () {
+    afterEach(function () {
+        Event::off(DateHelper::class, DateHelper::EVENT_DEFINE_TIMEZONE_LABEL);
+    });
+
+    it('can be overridden by an event handler', function () {
+        Event::on(DateHelper::class, DateHelper::EVENT_DEFINE_TIMEZONE_LABEL, function (DefineTimezoneLabelEvent $event) {
+            $event->label = 'Toronto time';
+        });
+
+        expect(DateHelper::formatTimeRange(torontoDate('2026-03-05 10:00'), torontoDate('2026-03-05 11:00'), displayTimezone: true))
+            ->toBeFormattedAs('10 – 11 AM Toronto time');
+    });
+
+    it('gives the handler the date in the timezone it is displayed in', function () {
+        $events = [];
+        Event::on(DateHelper::class, DateHelper::EVENT_DEFINE_TIMEZONE_LABEL, function (DefineTimezoneLabelEvent $event) use (&$events) {
+            $events[] = $event;
+        });
+
+        DateHelper::formatDatetimeRange(
+            torontoDate('2026-03-05 10:00'),
+            torontoDate('2026-03-05 11:00'),
+            timezone: 'America/Vancouver',
+            displayTimezone: true,
+        );
+
+        expect($events)->toHaveCount(1)
+            ->and($events[0]->date->format('Y-m-d H:i e'))->toBe('2026-03-05 07:00 America/Vancouver')
+            ->and($events[0]->timezone)->toBe('America/Vancouver')
+            ->and($events[0]->locale)->toBe('en-US')
+            ->and($events[0]->label)->toBe('PST');
     });
 });

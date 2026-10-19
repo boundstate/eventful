@@ -88,3 +88,27 @@ Event::on(
     }
 );
 ```
+
+## Date helper
+
+### [Define timezone label](reference/helpers/DateHelper.md#event_define_timezone_label)
+
+Triggered when a timezone label is added to formatted times (e.g. with the `displayTimezone` setting).
+The label defaults to the locale's short name for the timezone (e.g. "EST"), from the Unicode locale data (CLDR) in PHP's intl extension.
+
+Use it when that name is wrong or out of date. For example, British Columbia stopped changing its clocks on November 1, 2026, but the locale data still calls its time "PDT":
+
+```php
+Event::on(
+    DateHelper::class,
+    DateHelper::EVENT_DEFINE_TIMEZONE_LABEL,
+    function (DefineTimezoneLabelEvent $event) {
+        if (
+            $event->timezone === 'America/Vancouver' &&
+            $event->date >= new DateTime('2026-11-01 02:00', new DateTimeZone('America/Vancouver'))
+        ) {
+            $event->label = 'PT';
+        }
+    }
+);
+```

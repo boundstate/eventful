@@ -4,14 +4,23 @@ namespace boundstate\eventful\helpers;
 
 use boundstate\eventful\enums\DateFormat;
 use boundstate\eventful\enums\FormatLength;
+use boundstate\eventful\events\DefineTimezoneLabelEvent;
 use Craft;
 use DateTime;
+use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use InvalidArgumentException;
+use yii\base\Event;
 use yii\i18n\Formatter;
 
 abstract class DateHelper
 {
+    /**
+     * @see DefineTimezoneLabelEvent
+     */
+    const EVENT_DEFINE_TIMEZONE_LABEL = 'defineTimezoneLabel';
+
     /**
      * Returns a new DateTime object with the time set to the given time.
      */
@@ -224,7 +233,15 @@ abstract class DateHelper
 
     private static function formatTimezone(Formatter $formatter, DateTimeInterface $date): string
     {
-        return $formatter->asTime($date, 'zzz');
+        $event = new DefineTimezoneLabelEvent([
+            'date' => DateTimeImmutable::createFromInterface($date)->setTimezone(new DateTimeZone($formatter->timeZone)),
+            'timezone' => $formatter->timeZone,
+            'locale' => $formatter->locale,
+            'label' => $formatter->asTime($date, 'zzz'),
+        ]);
+        Event::trigger(self::class, self::EVENT_DEFINE_TIMEZONE_LABEL, $event);
+
+        return $event->label;
     }
 
     private static function getFormatter(?string $timezone): Formatter

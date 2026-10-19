@@ -109,6 +109,10 @@ Craft.Eventful ??= {};
 
       this.$startDateInput.trigger('change');
 
+      // only listen after the initial change,
+      // since the timezone options are already rendered for the initial start date
+      this.addListener(this.$startDateInput, 'change', 'updateTimezoneOptions');
+
       this.$startTimeInput.trigger('change');
 
       if (!this.$timezoneSelectize.getValue() && this.defaultTimezone) {
@@ -218,6 +222,34 @@ Craft.Eventful ??= {};
       }
 
       this.previousStartDate = date;
+    },
+
+    async updateTimezoneOptions() {
+      // the offsets and abbreviations in the labels change during the year
+      let date = getDateInputVal(this.$startDateInput);
+      if (!date) {
+        return;
+      }
+
+      let response = await Craft.sendActionRequest(
+        'GET',
+        'eventful/default/timezone-options',
+        { params: { date: formatISODate(date) } },
+      );
+
+      // ignore a response for a date that's since been changed again
+      if (getDateInputVal(this.$startDateInput)?.getTime() !== date.getTime()) {
+        return;
+      }
+
+      // update the options in place, so the selected one keeps its value,
+      // and reorder them since they're sorted by offset (keeping the empty one first)
+      response.data.forEach((option, index) => {
+        this.$timezoneSelectize.updateOption(option.value, {
+          ...option,
+          $order: index + 2,
+        });
+      });
     },
 
     updateEndDate(startDate) {

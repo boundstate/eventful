@@ -535,18 +535,7 @@ Craft.Eventful ??= {};
 
       let $footer = $('<div>', {
         class: 'hud-footer flex flex-justify',
-      }).append(
-        $('<div>', { class: 'flex' }).append(
-          $('<div>', { class: 'event-hud-type' }).append(
-            $('<div>', {
-              class: 'event-hud-type-circle',
-              css: { background: info.event.backgroundColor },
-            }),
-            $('<div>', { text: extra.sourceLabel }),
-          ),
-          extra.statusLabel ? $(extra.statusLabel) : null,
-        ),
-      );
+      }).append(extra.statusLabel ? $(extra.statusLabel) : null);
 
       let $footerActions = $('<div>', { class: 'flex' });
 
@@ -597,32 +586,33 @@ Craft.Eventful ??= {};
       this.addListener($closeBtn, 'click', 'hideHud');
 
       let $body = $('<div>', { class: 'event-hud-body' }).append(
-        $('<h2>', { text: info.event.title }),
+        $('<div>', { class: 'event-hud-label', text: extra.sourceDisplayName }),
+        $('<h2>').append(
+          // the full page edit screen, unlike the Edit button's slideout
+          info.event.url
+            ? $('<a>', { href: info.event.url, text: info.event.title })
+            : info.event.title,
+        ),
         $('<div>', { class: 'event-hud-date' }).append(
           $('<div>', { text: extra.dateDescription }),
-          $('<div>', {
-            class: 'event-hud-repeat-description',
-            text: extra.repeatDescription,
-          }),
+          extra.repeatDescription
+            ? $('<div>', {
+                class: 'event-hud-repeat-description',
+                text: extra.repeatDescription,
+              })
+            : null,
         ),
       );
 
       if (extra.location) {
-        $body.append($('<div>', { html: extra.location }));
+        $body.append(
+          $('<div>', { class: 'event-hud-info', html: extra.location }),
+        );
       }
 
       if (extra.description) {
-        $body.append($('<div>', { html: extra.description }));
-      }
-
-      if (extra.zoomMeeting) {
         $body.append(
-          $('<a>', {
-            class: 'btn submit secondary',
-            href: extra.zoomMeeting,
-            target: '_blank',
-            text: 'Start Zoom meeting',
-          }),
+          $('<div>', { class: 'event-hud-info', html: extra.description }),
         );
       }
 

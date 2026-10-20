@@ -473,12 +473,18 @@
     min-width: 16rem;
     max-width: 50ch;
 
-    > * + *:not(:empty) {
-      margin-top: 1rem;
+    .event-hud-label {
+      margin: 0 2.25rem 0.125rem 0;
+      font-size: 0.8em;
     }
 
     h2 {
+      font-weight: 600;
       margin: 0 2.25rem 0 0;
+    }
+
+    .event-hud-info {
+      margin-top: 1rem;
     }
 
     p {
@@ -496,19 +502,5 @@
 
   .event-hud-repeat-description {
     color: var(--medium-text-color);
-  }
-
-  .event-hud-type {
-    display: flex;
-    gap: 0.375rem;
-    align-items: center;
-    font-size: 0.8rem;
-  }
-
-  .event-hud-type-circle {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--gray-200);
   }
 }

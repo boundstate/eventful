@@ -280,7 +280,7 @@ class DefaultController extends Controller
                         'occurrenceDate' => $recurrence->getStart()->format('Y-m-d'),
 
                         // custom properties for HUD
-                        'sourceLabel' => $source->pluralDisplayName,
+                        'sourceDisplayName' => $source->displayName,
                         'statusLabel' => $statusLabel,
                         // in the event's timezone (e.g. its local time if it's in person),
                         // so it's displayed if it isn't the calendar's (the user's preferred one),

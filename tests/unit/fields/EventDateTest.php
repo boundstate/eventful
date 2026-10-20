@@ -1,6 +1,7 @@
 <?php
 
 use boundstate\eventful\fields\EventDate;
+use craft\base\ElementInterface;
 
 describe('settings', function () {
     it('converts the legacy all day setting', function (bool $allDay, string $allDayMode) {
@@ -125,4 +126,17 @@ describe('serializeValue', function () {
 
         expect($field->serializeValue($value, null))->toHaveKey('allDay', $allDay);
     })->with([true, false]);
+});
+
+describe('getPreviewHtml', function () {
+    it('shows the date of an all day event in any user timezone', function () {
+        setSystemTimezone('America/Los_Angeles');
+        $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_ALWAYS]);
+        $value = $field->normalizeValue(['start' => '2026-03-02 08:00:00', 'timezone' => 'America/Los_Angeles'], null);
+
+        // in the control panel, Craft's timezone is the user's preferred one
+        Craft::$app->setTimeZone('Pacific/Honolulu');
+
+        expect($field->getPreviewHtml($value, $this->createMock(ElementInterface::class)))->toBe('Mar 2, 2026');
+    });
 });

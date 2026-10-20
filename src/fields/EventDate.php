@@ -299,9 +299,15 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
 
         $formatter = Craft::$app->getFormatter();
 
-        return $value->allDay
-            ? $formatter->asDate($value->start, Locale::LENGTH_MEDIUM)
-            : $formatter->asDatetime($value->start, Locale::LENGTH_SHORT);
+        if ($value->allDay) {
+            // all day events are dates without times, so they aren't converted to the user's timezone
+            $formatter = clone $formatter;
+            $formatter->timeZone = $value->start->getTimezone()->getName();
+
+            return $formatter->asDate($value->start, Locale::LENGTH_MEDIUM);
+        }
+
+        return $formatter->asDatetime($value->start, Locale::LENGTH_SHORT);
     }
 
     public function previewPlaceholderHtml(

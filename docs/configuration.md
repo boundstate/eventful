@@ -17,6 +17,15 @@ In ICS files, any HTML is converted to plain text, keeping paragraphs, line brea
 Text without any HTML tags is kept as is.
 So a template should output either plain text or HTML: if it includes any HTML (e.g. a rich text field), write the rest of it as HTML too, using `<p>` or `<br>` for line breaks.
 
+## Time zone picker
+
+Event Date fields list time zones by city and country (e.g. "Toronto, Canada"), sorted alphabetically,
+with the time zone's abbreviation or offset on the event's date (e.g. "EST" or "GMT+1").
+You can also search them by country, name (e.g. "Eastern Time") or offset (e.g. "UTC-5").
+
+By default, Craft's own time zone inputs (e.g. in user preferences, general settings and Date fields) list time zones in the same way.
+To keep Craft's list instead, turn off **Use the time zone picker everywhere**.
+
 ## Public calendar
 
 If you want to have a public iCalendar format URL, you can configure a **calendar secret**,

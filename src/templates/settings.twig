@@ -45,6 +45,14 @@
   disabled: readOnly,
 }) }}
 
+{{ forms.lightswitchField({
+  label: 'Use the time zone picker everywhere',
+  instructions: 'Whether Craft’s own time zone inputs (e.g. in user preferences, general settings and Date fields) should list time zones like Event Date fields do, by city and country.',
+  name: 'replaceCraftTimezoneOptions',
+  on: settings.replaceCraftTimezoneOptions,
+  disabled: readOnly,
+}) }}
+
 <hr/>
 
 <h2>{{ 'Calendar'|t('app') }}</h2>

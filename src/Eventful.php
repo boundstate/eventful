@@ -7,6 +7,7 @@ use boundstate\eventful\models\Settings;
 use boundstate\eventful\services\Events;
 use boundstate\eventful\services\Exporter;
 use boundstate\eventful\web\twig\Extension;
+use boundstate\eventful\web\twig\variables\Cp;
 use Craft;
 use craft\base\Element;
 use craft\base\Model;
@@ -18,6 +19,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Fields;
+use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use yii\base\Event;
 
@@ -105,6 +107,17 @@ class Eventful extends Plugin
                 $e->rules['<secret>.ics'] = 'eventful/default/calendar-ics';
             },
         );
+
+        // Craft's timezone inputs, with the same options as the Event Date field
+        Event::on(CraftVariable::class, CraftVariable::EVENT_INIT, function (Event $e): void {
+            if (! $this->settings->replaceCraftTimezoneOptions) {
+                return;
+            }
+
+            /** @var CraftVariable $variable */
+            $variable = $e->sender;
+            $variable->set('cp', Cp::class);
+        });
 
         // Custom fields
         Event::on(Fields::class, Fields::EVENT_REGISTER_FIELD_TYPES, function (

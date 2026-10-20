@@ -15,6 +15,11 @@ class Settings extends Model
 
     public bool $displayTimezone = false;
 
+    /**
+     * Whether Craft's timezone inputs (e.g. in the user's preferences) use the Event Date field's options
+     */
+    public bool $replaceCraftTimezoneOptions = true;
+
     public ?string $calendarSecret = null;
 
     public array $extraEventSources = [];
@@ -37,7 +42,7 @@ class Settings extends Model
         return [
             [['eventTitleTemplate', 'eventDescriptionTemplate', 'eventLocationTemplate'], 'string'],
             [['calendarSecret'], 'string'],
-            [['displayTimezone', 'organizerFilterEnabled'], 'boolean'],
+            [['displayTimezone', 'replaceCraftTimezoneOptions', 'organizerFilterEnabled'], 'boolean'],
             [['organizerFilterLabel', 'organizerFilterGroup', 'organizerQueryParam'], 'string'],
         ];
     }

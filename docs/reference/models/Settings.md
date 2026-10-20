@@ -32,6 +32,14 @@ public string $eventLocationTemplate
 public bool $displayTimezone
 ```
 
+### replaceCraftTimezoneOptions
+
+Whether Craft's timezone inputs (e.g. in the user's preferences) use the Event Date field's options
+
+```php
+public bool $replaceCraftTimezoneOptions
+```
+
 ### calendarSecret
 
 ```php

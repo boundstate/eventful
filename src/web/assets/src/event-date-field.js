@@ -33,7 +33,8 @@ Craft.Eventful ??= {};
       this.inputId = inputId;
       this.inputName = inputName;
       this.locale = locale;
-      this.defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      // the user's preferred timezone (or the system timezone), like the rest of the control panel
+      this.defaultTimezone = Craft.timezone;
 
       this.$container = $('#' + Craft.namespaceId(inputId));
       this.$startDateInput = $('#' + Craft.namespaceId('start-date', inputId));
@@ -151,6 +152,28 @@ Craft.Eventful ??= {};
       }
     },
 
+    /**
+     * Returns the next half hour in the event's timezone, rather than the browser's,
+     * as a time for the time inputs (which use the browser's).
+     */
+    getNextHalfHour() {
+      let timezone = this.$timezoneSelectize.getValue() || this.defaultTimezone;
+      let parts = Object.fromEntries(
+        new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          hour: 'numeric',
+          minute: 'numeric',
+          hourCycle: 'h23',
+        })
+          .formatToParts(new Date())
+          .map((part) => [part.type, part.value]),
+      );
+
+      let date = new Date();
+      date.setHours(parts.hour, Math.ceil(parts.minute / 30) * 30, 0, 0);
+      return date;
+    },
+
     updateTimezone() {
       let timezone = this.$timezoneSelectize.getValue() || this.defaultTimezone;
       if (timezone) {
@@ -224,7 +247,7 @@ Craft.Eventful ??= {};
         // always fill the start time once there's a date,
         // so what's autosaved in a draft is what the user sees
         if (!getTimeInputVal(this.$startTimeInput)) {
-          setTimeInputVal(this.$startTimeInput, getNextHalfHour());
+          setTimeInputVal(this.$startTimeInput, this.getNextHalfHour());
           this.onStartTimeChange();
         }
 
@@ -307,7 +330,7 @@ Craft.Eventful ??= {};
 
       // don't allow the start time to be cleared while there's a date
       if (!startTime && getDateInputVal(this.$startDateInput)) {
-        startTime = this.previousStartTime || getNextHalfHour();
+        startTime = this.previousStartTime || this.getNextHalfHour();
         setTimeInputVal(this.$startTimeInput, startTime);
       }
 
@@ -466,13 +489,6 @@ Craft.Eventful ??= {};
     },
   });
 })(jQuery);
-
-function getNextHalfHour() {
-  let date = new Date();
-  date.setSeconds(0, 0);
-  date.setMinutes(Math.ceil(date.getMinutes() / 30) * 30);
-  return date;
-}
 
 function getWeekOfMonth(date) {
   return Math.ceil(date.getDate() / 7);

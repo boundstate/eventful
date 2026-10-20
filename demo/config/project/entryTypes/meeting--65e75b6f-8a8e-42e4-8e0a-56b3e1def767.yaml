@@ -74,6 +74,23 @@ fieldLayouts:
             type: craft\fieldlayoutelements\Tip
             uid: bc80c986-6d52-4ebf-9534-d620f726d02b
             userCondition: null
+          -
+            dateAdded: '2026-10-20T18:27:35+00:00'
+            editCondition: null
+            elementCondition: null
+            elementEditCondition: null
+            fieldUid: c26c6e8c-76e2-4da0-afcd-3582785f1a9e # Description
+            handle: null
+            instructions: null
+            label: null
+            oldFieldUid: null
+            required: false
+            tip: null
+            type: craft\fieldlayoutelements\CustomField
+            uid: 91fb97ac-8dd9-48dc-8b93-e1715b17a885
+            userCondition: null
+            warning: null
+            width: 100
         name: Content
         uid: b4913898-4ea6-4618-8de4-f5cdf7f466ba
         userCondition: null

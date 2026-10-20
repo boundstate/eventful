@@ -1,4 +1,4 @@
-dateModified: 1792340583
+dateModified: 1792520855
 elementSources:
   craft\elements\Entry:
     -
@@ -46,6 +46,7 @@ meta:
     65e75b6f-8a8e-42e4-8e0a-56b3e1def767: Meeting # Meeting
     299b0f22-f196-473d-b9ff-b8e0b8890612: Meetings # Meetings
     b696196d-1035-401a-a42f-f809dab2071b: Date # Date
+    c26c6e8c-76e2-4da0-afcd-3582785f1a9e: Description # Description
     d2b3b644-c827-4198-a57b-a5bbb8018f60: 'Eventful Demo' # Eventful Demo
     d155de91-9a72-4b8e-97c5-85bbe06fba73: 'Virtual Training' # Virtual Training
     fe7a3f95-bbc2-48ed-8e8e-9b1577c9817d: 'Virtual Training' # Virtual Training
@@ -57,14 +58,19 @@ plugins:
     schemaVersion: 1.1.1
     settings:
       calendarSecret: null
-      displayTimezone: false
+      displayTimezone: true
       eventDescriptionTemplate: '{description}'
       eventLocationTemplate: '{{ object.location.one()|address({ html: not ics }) }}'
       eventTitleTemplate: '{title}'
+      organizerFilterEnabled: false
+      organizerFilterGroup: null
+      organizerFilterLabel: Organizers
+      organizerQueryParam: authorId
 system:
   edition: pro
   live: true
   name: 'Eventful Demo'
+  retryDuration: null
   schemaVersion: 5.11.0.2
   timeZone: America/Los_Angeles
 users:

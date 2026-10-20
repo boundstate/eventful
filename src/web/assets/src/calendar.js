@@ -141,6 +141,9 @@ Craft.Eventful ??= {};
           'dayGridMonth',
         initialDate: this.calendarOptions.initialDate,
         dayMaxEventRows: true,
+        // show timed events that end early the next morning (e.g. 11pm to 1am) on their
+        // start day only, so the month view shows them as dots rather than blocks
+        nextDayThreshold: '09:00:00',
         headerToolbar: false,
         listDayFormat: {
           weekday: 'long',

@@ -243,6 +243,12 @@
 
 {% block content %}
     <div class="calendar-wrapper">
+        {# shown by the calendar JS when the browser's timezone differs from Craft's (the user's preferred one, or the system's) #}
+        <div
+            id="calendar-timezone-notice"
+            class="calendar-timezone-notice light smalltext hidden"
+            data-has-preference="{{ currentUser.getPreference('timeZone') ? 'true' : 'false' }}"
+        ></div>
         <div
             id="calendar"
             data-initial-view="{{ initialView }}"

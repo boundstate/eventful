@@ -2,9 +2,11 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import iCalendarPlugin from '@fullcalendar/icalendar';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
+import luxonPlugin, { toLuxonDateTime } from '@fullcalendar/luxon3';
 import multiMonthPlugin from '@fullcalendar/multimonth';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { Calendar } from '@fullcalendar/core';
+import { DateTime } from 'luxon';
 
 import './calendar.css';
 
@@ -29,6 +31,7 @@ Craft.Eventful ??= {};
 
     $title: null,
     $calendar: null,
+    $timezoneNotice: null,
     $contextTrigger: null,
     $contextActions: null,
     contextMenu: null,
@@ -49,6 +52,7 @@ Craft.Eventful ??= {};
 
       this.$title = $('#calendar-title');
       this.$calendar = $('#calendar');
+      this.$timezoneNotice = $('#calendar-timezone-notice');
       this.calendarOptions = this.$calendar.data();
       this.$contextTrigger = $('#calendar-context-menu-trigger');
       this.$contextActions = $('#calendar-context-menu a');
@@ -60,6 +64,7 @@ Craft.Eventful ??= {};
       this.$subscribeBtn = $('#calendar-subscribe-btn');
 
       this.initForm();
+      this.initTimezoneNotice();
       this.initCalendar();
 
       if (this.$contextTrigger.length) {
@@ -120,7 +125,11 @@ Craft.Eventful ??= {};
           listPlugin,
           interactionPlugin,
           iCalendarPlugin,
+          luxonPlugin,
         ],
+        // like the rest of the control panel, show dates in the user's preferred timezone
+        // (or the system timezone), rather than the browser's
+        timeZone: Craft.timezone,
         locale: this.calendarOptions.locale,
         firstDay: this.calendarOptions.firstDay,
         initialView:
@@ -154,6 +163,47 @@ Craft.Eventful ??= {};
       this.onResize();
     },
 
+    initTimezoneNotice() {
+      // only if they show different times at some point
+      let browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (!browserTimezone || hasSameOffsets(browserTimezone, Craft.timezone)) {
+        return;
+      }
+
+      // e.g. "Eastern Time", with the cities if both timezones have the same name
+      // (e.g. "Pacific Time – Los Angeles" and "Pacific Time – Vancouver")
+      let locale = this.calendarOptions.locale || undefined;
+      let name = getTimezoneName(Craft.timezone, locale);
+      let browserName = getTimezoneName(browserTimezone, locale);
+      if (name === browserName) {
+        name += ` – ${getTimezoneCity(Craft.timezone)}`;
+        browserName += ` – ${getTimezoneCity(browserTimezone)}`;
+      }
+
+      // Craft's timezone is the system one if the user hasn't chosen one
+      let hasPreference = this.$timezoneNotice.data('hasPreference');
+
+      this.$timezoneNotice
+        .append(
+          hasPreference
+            ? `Times are in your preferred time zone (${name}) instead of your browser’s (${browserName}). `
+            : `Times are in the system time zone (${name}) instead of your browser’s (${browserName}). `,
+          $('<a>', {
+            href: Craft.getCpUrl('myaccount/preferences'),
+            text: 'Preferences',
+          }),
+        )
+        .removeClass('hidden');
+    },
+
+    /**
+     * Returns a date from FullCalendar in the calendar's timezone,
+     * since its `Date` objects are in the browser's.
+     */
+    toCalendarDateTime(date) {
+      return toLuxonDateTime(date, this.calendar);
+    },
+
     loadEvents(info, success) {
       $.get(
         this.calendarOptions.sourceUrl,
@@ -174,7 +224,10 @@ Craft.Eventful ??= {};
         let weekday = info.text.split(' ')[0];
         return {
           domNodes: $('<div>', { text: weekday }).append(
-            $('<div>', { class: 'day-number', text: info.date.getDate() }),
+            $('<div>', {
+              class: 'day-number',
+              text: this.toCalendarDateTime(info.date).day,
+            }),
           ),
         };
       } else {
@@ -187,14 +240,9 @@ Craft.Eventful ??= {};
         info.view.type === 'dayGridMonth' &&
         info.dayNumberText &&
         !info.isToday &&
-        info.date.getDate() === 1
+        this.toCalendarDateTime(info.date).day === 1
       ) {
-        let month = info.date.toLocaleString(
-          this.calendarOptions.locale || undefined,
-          {
-            month: 'short',
-          },
-        );
+        let month = this.calendar.formatDate(info.date, { month: 'short' });
         return info.dayNumberText + ' ' + month;
       } else {
         return true; // default
@@ -215,6 +263,7 @@ Craft.Eventful ??= {};
 
       let title = dateInfo.view.title;
       let date = dateInfo.view.currentStart;
+      let calendarDate = this.toCalendarDateTime(date);
 
       this.$title.text(title);
 
@@ -236,9 +285,9 @@ Craft.Eventful ??= {};
       url.pathname = [
         ...url.pathname.split('/').slice(0, 3),
         view,
-        date.getFullYear(),
-        date.getMonth() + 1,
-        date.getDate(),
+        calendarDate.year,
+        calendarDate.month,
+        calendarDate.day,
       ].join('/');
 
       window.history.pushState({ date }, '', url);
@@ -371,8 +420,9 @@ Craft.Eventful ??= {};
         this.contextMenu.hide();
       }
 
+      // events created on a day start at the next half hour
       let start = this.selection.allDay
-        ? setTime(this.selection.date, new Date(), 30)
+        ? setTime(this.toCalendarDateTime(this.selection.date), 30)
         : this.selection.date;
 
       let dateFieldHandle = $(event.target).data('dateFieldHandle');
@@ -381,7 +431,7 @@ Craft.Eventful ??= {};
         data: {
           [dateFieldHandle]: {
             start: start.toISOString(),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timezone: Craft.timezone,
           },
         },
       }).then(({ data }) => {
@@ -644,18 +694,51 @@ Craft.Eventful ??= {};
   });
 })(jQuery);
 
-function setTime(date, time, step) {
-  let result = new Date(date);
-  result.setHours(time.getHours(), time.getMinutes());
-  if (step) {
-    result = roundTimeUp(result, step);
-  }
-  return result;
+/**
+ * Returns the date at the current time (in its timezone), rounded up to the given number of minutes.
+ */
+function setTime(date, step) {
+  let now = DateTime.now().setZone(date.zone);
+  return date
+    .set({ hour: now.hour, minute: 0 })
+    .plus({ minutes: Math.ceil(now.minute / step) * step })
+    .toJSDate();
 }
 
-function roundTimeUp(date, step) {
-  step = 60 * 1000 * step;
-  return new Date(Math.ceil(date.getTime() / step) * step);
+/**
+ * Returns the localized generic name of a timezone (e.g. "Pacific Time"), or its identifier if there isn't one.
+ */
+function getTimezoneName(timezone, locale) {
+  return (
+    new Intl.DateTimeFormat(locale, {
+      timeZone: timezone,
+      timeZoneName: 'longGeneric',
+    })
+      .formatToParts(new Date())
+      .find((part) => part.type === 'timeZoneName')?.value ?? timezone
+  );
+}
+
+/**
+ * Returns the city of a timezone identifier (e.g. "Los Angeles" for "America/Los_Angeles").
+ */
+function getTimezoneCity(timezone) {
+  return timezone.split('/').pop().replaceAll('_', ' ');
+}
+
+/**
+ * Returns whether two timezones have the same offsets from a year ago to a year from now,
+ * so they differ if one stops or starts observing DST (e.g. Vancouver from November 2026).
+ */
+function hasSameOffsets(timezone, otherTimezone) {
+  let start = DateTime.now().startOf('month').minus({ years: 1 });
+  for (let months = 0; months <= 24; months++) {
+    let date = start.plus({ months });
+    if (date.setZone(timezone).offset !== date.setZone(otherTimezone).offset) {
+      return false;
+    }
+  }
+  return true;
 }
 
 function upperFirst(val) {

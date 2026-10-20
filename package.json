@@ -21,8 +21,10 @@
     "@fullcalendar/icalendar": "^6.1.21",
     "@fullcalendar/interaction": "^6.1.21",
     "@fullcalendar/list": "^6.1.21",
+    "@fullcalendar/luxon3": "^6.1.21",
     "@fullcalendar/multimonth": "^6.1.21",
-    "@fullcalendar/timegrid": "^6.1.21"
+    "@fullcalendar/timegrid": "^6.1.21",
+    "luxon": "^3.7.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

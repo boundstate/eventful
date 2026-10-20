@@ -28,6 +28,17 @@
 .calendar-wrapper {
   margin: calc(var(--padding) * -1);
 
+  .calendar-timezone-notice {
+    display: flex;
+    justify-content: center;
+    gap: var(--s);
+    margin: 0;
+    padding: var(--s);
+    background: var(--gray-050);
+    border-top-left-radius: var(--large-border-radius);
+    border-top-right-radius: var(--large-border-radius);
+  }
+
   /* full calendar customizations */
   .fc {
     /* https://github.com/fullcalendar/fullcalendar/blob/v6.1.15/packages/core/src/styles/vars.css */

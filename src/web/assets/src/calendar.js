@@ -166,6 +166,7 @@ Craft.Eventful ??= {};
         dayHeaderDidMount: this.onDayHeaderMounted.bind(this),
         dateClick: this.showContextMenu.bind(this),
         eventClick: this.showHud.bind(this),
+        eventDidMount: this.onEventMounted.bind(this),
         moreLinkClick: this.onClickMoreLink.bind(this),
         windowResize: this.onResize.bind(this),
       });
@@ -359,12 +360,22 @@ Craft.Eventful ??= {};
       );
     },
 
+    onEventMounted(info) {
+      // not addListener(), so the listener is removed with the element when events rerender
+      info.el.addEventListener('dblclick', () => {
+        this.openEditor(info.event);
+      });
+    },
+
     editEvent(jsEvent) {
       jsEvent.preventDefault();
+      this.openEditor(jsEvent.data.event);
+    },
 
+    openEditor(event) {
       this.hideAllHuds();
 
-      let element = jsEvent.data.event.extendedProps.element;
+      let element = event.extendedProps.element;
       Craft.createElementEditor(element.type, element).on('submit', () => {
         this.calendar.refetchEvents();
       });

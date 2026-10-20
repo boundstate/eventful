@@ -95,6 +95,7 @@
 
     .fc-event {
       color: inherit;
+      user-select: none; /* so double clicking doesn't select the title */
 
       .fc-event-title {
         font-weight: 500;

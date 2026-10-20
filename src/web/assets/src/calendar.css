@@ -96,12 +96,41 @@
     .fc-event {
       color: inherit;
 
-      &.event-disabled {
-        text-decoration: line-through !important;
-      }
-
       .fc-event-title {
         font-weight: 500;
+      }
+
+      /* show events that aren't published (e.g. disabled or pending) as hollow */
+      &.event-unpublished {
+        &.fc-h-event,
+        &.fc-v-event {
+          background-color: transparent !important; /* override the inline color */
+          border: 1px solid; /* in the inline border color */
+
+          .fc-event-main {
+            color: inherit;
+          }
+        }
+
+        &.fc-h-event .fc-event-main {
+          margin-block: -1px; /* so the border doesn't make the event taller */
+        }
+
+        .fc-daygrid-event-dot,
+        .fc-list-event-dot {
+          flex-shrink: 0;
+          border-width: 1px;
+        }
+
+        .fc-daygrid-event-dot {
+          width: calc(var(--fc-daygrid-event-dot-width) - 2px);
+          height: calc(var(--fc-daygrid-event-dot-width) - 2px);
+        }
+
+        .fc-list-event-dot {
+          width: calc(var(--fc-list-event-dot-width) - 2px);
+          height: calc(var(--fc-list-event-dot-width) - 2px);
+        }
       }
     }
 

@@ -15,6 +15,7 @@ use boundstate\eventful\web\assets\CpCalendarAsset;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\Entry;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
@@ -220,6 +221,7 @@ class DefaultController extends Controller
             foreach ($elements as $element) {
                 /** @var EventDate $date */
                 $date = $element->getFieldValue($source->type->dateFieldHandle);
+                $status = $element->getStatus();
 
                 foreach ($date->getOccurrencesInRange($startDate, $endDate, includeInProgress: true) as $recurrence) {
                     /** @var Recurrence $recurrence */
@@ -239,9 +241,13 @@ class DefaultController extends Controller
                         'title' => EventRenderer::render($element, EventProp::TITLE),
                         'backgroundColor' => $source->color,
                         'borderColor' => $source->color,
-                        'classNames' => $element->enabled
-                            ? ['event-enabled']
-                            : ['event-disabled'],
+                        // e.g. "live", "pending", "expired" or "disabled" for entries
+                        'classNames' => [
+                            "event-status-{$status}",
+                            ...in_array($status, [Element::STATUS_ENABLED, Entry::STATUS_LIVE], true)
+                                ? []
+                                : ['event-unpublished'],
+                        ],
                         'url' => $element->getCpEditUrl(),
 
                         // settings passed to Craft ElementEditorSlideout

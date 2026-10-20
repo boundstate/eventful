@@ -16,6 +16,7 @@ Any text the plugin outputs on the front end (e.g. via Twig filters or helpers l
 - Recurr's repeat descriptions go through `translators/Translator.php`, which maps Recurr's message keys onto the same files.
 - Don't unit test plain `Craft::t()` calls (that's just testing Craft, and breaks whenever a translation is improved). Only test our own translation logic, like `Translator`.
 - Control panel strings aren't translated for now, so don't add them to the translation files. Existing `|t('app')` calls only reuse Craft's own translations.
+- Likewise, don't worry about localizing other control panel text for now (e.g. the weekday names in the date field's repeat options, or the time zone names in the calendar's notice).
 
 ## Twig extension
 

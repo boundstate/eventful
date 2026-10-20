@@ -6,6 +6,7 @@ use boundstate\eventful\enums\DateFormat;
 use boundstate\eventful\enums\FormatLength;
 use boundstate\eventful\events\DefineTimezoneLabelEvent;
 use Craft;
+use craft\helpers\App;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -20,6 +21,19 @@ abstract class DateHelper
      * @see DefineTimezoneLabelEvent
      */
     const EVENT_DEFINE_TIMEZONE_LABEL = 'defineTimezoneLabel';
+
+    /**
+     * Returns the system timezone.
+     *
+     * Unlike `Craft::$app->getTimeZone()`, this isn't the user's preferred timezone in control panel requests.
+     */
+    public static function systemTimezone(): string
+    {
+        return App::parseEnv(
+            Craft::$app->getConfig()->getGeneral()->timezone
+                ?? Craft::$app->getProjectConfig()->get('system.timeZone'),
+        );
+    }
 
     /**
      * Returns a new DateTime object with the time set to the given time.

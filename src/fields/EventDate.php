@@ -3,6 +3,7 @@
 namespace boundstate\eventful\fields;
 
 use boundstate\eventful\fields\conditions\EventDateFieldConditionRule;
+use boundstate\eventful\helpers\DateHelper;
 use boundstate\eventful\models\EventDate as EventDateModel;
 use boundstate\eventful\web\assets\CpEventDateAsset;
 use Craft;
@@ -137,7 +138,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             'start' => Db::prepareDateForDb($value->start),
             'end' => Db::prepareDateForDb($value->end),
             'timezone' => $value->allDay
-                ? Craft::$app->timeZone
+                ? DateHelper::systemTimezone()
                 : $value->timezone,
             'allDay' => $value->allDay,
 
@@ -413,7 +414,7 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
                 foreach (['start', 'end'] as $attribute) {
                     if (is_array($value[$attribute] ?? null)) {
                         unset($value[$attribute]['time']);
-                        $value[$attribute]['timezone'] = Craft::$app->getTimeZone();
+                        $value[$attribute]['timezone'] = DateHelper::systemTimezone();
                     }
                 }
             } elseif (is_array($value['end'] ?? null)) {

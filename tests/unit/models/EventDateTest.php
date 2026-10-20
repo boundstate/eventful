@@ -167,7 +167,7 @@ describe('constructor', function () {
     });
 
     it('keeps the days of all day events in the system timezone', function () {
-        Craft::$app->setTimeZone('America/Los_Angeles');
+        setSystemTimezone('America/Los_Angeles');
         $field = new EventDateField(['handle' => 'date', 'allDayMode' => EventDateField::ALL_DAY_ALWAYS]);
 
         // created from the calendar for Tuesday, March 3 in Tokyo, which is still Monday in Los Angeles

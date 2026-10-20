@@ -12,6 +12,20 @@ See <span class="code">[DefineTimezoneLabelEvent](../events/DefineTimezoneLabelE
 
 ## Methods
 
+### systemTimezone
+
+Returns the system timezone.
+
+Unlike `Craft::$app->getTimeZone()`, this isn't the user's preferred timezone in control panel requests.
+
+```php
+public static systemTimezone(): string
+```
+
+|            |                                  |     |
+| ---------- | -------------------------------- | --- |
+| **return** | <span class="code">string</span> |     |
+
 ### setTime
 
 Returns a new DateTime object with the time set to the given time.

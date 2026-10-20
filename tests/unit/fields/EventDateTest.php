@@ -38,7 +38,7 @@ describe('normalizeValue', function () {
     ]);
 
     it('ignores the time inputs of an all day event from the request', function () {
-        Craft::$app->setTimeZone('America/Los_Angeles');
+        setSystemTimezone('America/Los_Angeles');
         $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
 
         $value = $field->normalizeValueFromRequest([
@@ -55,7 +55,7 @@ describe('normalizeValue', function () {
     });
 
     it('uses the end date of an all day event from the request', function () {
-        Craft::$app->setTimeZone('America/Los_Angeles');
+        setSystemTimezone('America/Los_Angeles');
         $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_OPTIONAL]);
 
         $value = $field->normalizeValueFromRequest([
@@ -82,8 +82,22 @@ describe('normalizeValue', function () {
         expect($value->end->format('Y-m-d H:i'))->toBe('2026-03-02 11:00');
     });
 
+    it('uses the system timezone rather than the user\'s preferred one for all day events from the request', function () {
+        setSystemTimezone('America/Los_Angeles');
+        // in the control panel, Craft's timezone (and the one the inputs post) is the user's preferred one
+        Craft::$app->setTimeZone('America/Toronto');
+        $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_ALWAYS]);
+
+        $value = $field->normalizeValueFromRequest([
+            'start' => ['date' => '2026-03-02', 'time' => '10:00', 'timezone' => 'America/Toronto'],
+            'end' => ['date' => '2026-03-02', 'time' => '11:00', 'timezone' => 'America/Toronto'],
+        ], null);
+
+        expect($value->start->format('Y-m-d H:i e'))->toBe('2026-03-02 00:00 America/Los_Angeles');
+    });
+
     it('ignores the time inputs of an always all day field from the request', function () {
-        Craft::$app->setTimeZone('America/Los_Angeles');
+        setSystemTimezone('America/Los_Angeles');
         $field = new EventDate(['allDayMode' => EventDate::ALL_DAY_ALWAYS]);
 
         $value = $field->normalizeValueFromRequest([

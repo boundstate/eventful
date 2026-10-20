@@ -46,7 +46,25 @@ uses()->beforeEach(function () {
             ],
         ],
     ]);
+
+    setSystemTimezone('UTC');
 })->in('unit');
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+|
+| In control panel requests, Craft's timezone is the user's preferred one,
+| so the system timezone comes from the config instead.
+|
+*/
+
+function setSystemTimezone(string $timezone): void
+{
+    Craft::$app->getConfig()->getGeneral()->timezone = $timezone;
+    Craft::$app->setTimeZone($timezone);
+}
 
 /*
 |--------------------------------------------------------------------------

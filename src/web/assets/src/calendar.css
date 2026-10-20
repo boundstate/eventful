@@ -174,10 +174,6 @@
 
         &.fc-daygrid-block-event {
           padding: 0 0.5rem;
-
-          .fc-event-title {
-            padding: 0;
-          }
         }
       }
 
@@ -188,6 +184,21 @@
       .fc-more-link {
         padding-left: 0.5rem;
         padding-right: 0.5rem;
+      }
+    }
+
+    /* displayed inside the daygrid but also in popovers */
+    .fc-daygrid-block-event {
+      padding: 0 0 0 0.5rem;
+
+      .fc-event-time {
+        flex-shrink: 0;
+        padding: 0;
+        font-weight: normal;
+      }
+
+      .fc-event-title {
+        padding: 0;
       }
     }
 

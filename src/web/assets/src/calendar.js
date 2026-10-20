@@ -288,6 +288,12 @@ Craft.Eventful ??= {};
       );
 
       this.$viewBtn.text(upperFirst(view));
+      $('[data-calendar-view]').each((index, item) => {
+        let selected = $(item).data('calendarView') === view;
+        $(item)
+          .toggleClass('sel', selected)
+          .attr('aria-current', selected ? 'true' : null);
+      });
 
       this.scrolledListToNow = false;
 

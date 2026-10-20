@@ -110,8 +110,11 @@ Craft.Eventful ??= {};
       this.addListener(this.$subscribeBtn, 'click', 'copySubscribeUrl');
 
       window.addEventListener('popstate', (event) => {
-        if (event.state.date) {
-          this.calendar.gotoDate(event.state.date);
+        if (event.state?.date) {
+          this.calendar.changeView(
+            event.state.view ?? this.calendar.view.type,
+            event.state.date,
+          );
         }
       });
     },
@@ -290,7 +293,18 @@ Craft.Eventful ??= {};
         calendarDate.day,
       ].join('/');
 
-      window.history.pushState({ date }, '', url);
+      // replace the history entry if the URL hasn't changed (e.g. when going back to it),
+      // so going forward still works, or if it's the page's first one (which has no state),
+      // so going back leaves the calendar
+      let state = { date, view: this.calendar.view.type };
+      if (
+        !window.history.state?.date ||
+        url.pathname === window.location.pathname
+      ) {
+        window.history.replaceState(state, '', url);
+      } else {
+        window.history.pushState(state, '', url);
+      }
     },
 
     onDayHeaderMounted(info) {

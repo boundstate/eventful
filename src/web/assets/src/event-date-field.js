@@ -1,3 +1,5 @@
+import { DateTime } from 'luxon';
+
 import './event-date-field.css';
 
 Craft.Eventful ??= {};
@@ -157,21 +159,12 @@ Craft.Eventful ??= {};
      * as a time for the time inputs (which use the browser's).
      */
     getNextHalfHour() {
-      let timezone = this.$timezoneSelectize.getValue() || this.defaultTimezone;
-      let parts = Object.fromEntries(
-        new Intl.DateTimeFormat('en-US', {
-          timeZone: timezone,
-          hour: 'numeric',
-          minute: 'numeric',
-          hourCycle: 'h23',
-        })
-          .formatToParts(new Date())
-          .map((part) => [part.type, part.value]),
+      let now = DateTime.now().setZone(
+        this.$timezoneSelectize.getValue() || this.defaultTimezone,
       );
-
-      let date = new Date();
-      date.setHours(parts.hour, Math.ceil(parts.minute / 30) * 30, 0, 0);
-      return date;
+      return DateTime.fromObject({ hour: now.hour })
+        .plus({ minutes: Math.ceil(now.minute / 30) * 30 })
+        .toJSDate();
     },
 
     updateTimezone() {
@@ -495,26 +488,25 @@ function getWeekOfMonth(date) {
 }
 
 function addDays(date, days) {
-  let result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
+  return DateTime.fromJSDate(date).plus({ days }).toJSDate();
 }
 
 function getDaysBetween(startDate, endDate) {
   // round, since a day isn't 24 hours when the clocks change
-  return Math.round((endDate - startDate) / (24 * 60 * 60 * 1000));
+  // (and starts after midnight if they change at midnight)
+  return Math.round(
+    DateTime.fromJSDate(endDate)
+      .startOf('day')
+      .diff(DateTime.fromJSDate(startDate).startOf('day'), 'days').days,
+  );
 }
 
 function addMinutes(date, minutes) {
-  let result = new Date(date);
-  result.setMinutes(result.getMinutes() + minutes);
-  return result;
+  return DateTime.fromJSDate(date).plus({ minutes }).toJSDate();
 }
 
 function formatISODate(date) {
-  let offset = date.getTimezoneOffset();
-  date = new Date(date.getTime() - offset * 60 * 1000);
-  return date.toISOString().split('T')[0];
+  return DateTime.fromJSDate(date).toISODate();
 }
 
 function getOrdinal(i) {
@@ -556,12 +548,7 @@ function getTimeInputVal($input) {
     if (!val) {
       return null;
     } else {
-      let [hours, minutes] = val.split(':');
-      let date = new Date();
-      date.setHours(hours);
-      date.setMinutes(minutes);
-      date.setSeconds(0);
-      return date;
+      return DateTime.fromISO(val).toJSDate();
     }
   }
 }
@@ -570,10 +557,6 @@ function setTimeInputVal($input, date) {
   if ($input.hasClass('ui-timepicker-input')) {
     $input.timepicker('setTime', date);
   } else {
-    let time =
-      String(date.getHours()).padStart(2, '0') +
-      ':' +
-      String(date.getMinutes()).padStart(2, '0');
-    $input.val(time);
+    $input.val(DateTime.fromJSDate(date).toFormat('HH:mm'));
   }
 }

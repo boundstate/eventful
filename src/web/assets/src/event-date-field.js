@@ -44,6 +44,7 @@ Craft.Eventful ??= {};
       this.$timezoneSelectize = $(
         '#' + Craft.namespaceId('timezone', inputId),
       ).data('selectize');
+      this.configureTimezoneField();
       this.$untilDateInput = $('#' + Craft.namespaceId('until-date', inputId));
       this.$countInput = $('#' + Craft.namespaceId('count', inputId));
       this.$intervalInput = $('#' + Craft.namespaceId('interval', inputId));
@@ -129,6 +130,25 @@ Craft.Eventful ??= {};
         'all-day',
         this.$allDayCheckbox.prop('checked'),
       );
+    },
+
+    configureTimezoneField() {
+      // include the city when rendering the selected item, since
+      // timezones can share an offset and abbreviation (e.g. Vancouver & Los Angeles in summer)
+      this.$timezoneSelectize.settings.render.item = ({ text = '', hint }) => {
+        let label = hint ? `${text} - ${hint}` : text;
+        return `<div class="item" title="${Craft.escapeHtml(label)}"><span>${Craft.escapeHtml(label)}</span></div>`;
+      };
+      this.$timezoneSelectize.clearCache('item');
+
+      // re-render selected option
+      let value = this.$timezoneSelectize.getValue();
+      if (value) {
+        this.$timezoneSelectize.updateOption(
+          value,
+          this.$timezoneSelectize.options[value],
+        );
+      }
     },
 
     updateTimezone() {

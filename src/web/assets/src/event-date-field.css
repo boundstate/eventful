@@ -62,7 +62,13 @@
   }
 
   .timezone-field {
-    width: 9.5rem !important;
+    width: 12rem !important;
+
+    .selectize-input > .item {
+      overflow: hidden;
+      vertical-align: top;
+      text-overflow: ellipsis;
+    }
   }
 
   .datetimewrapper .clear-btn {

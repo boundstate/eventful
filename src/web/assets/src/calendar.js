@@ -667,8 +667,7 @@ Craft.Eventful ??= {};
         : 'elements/delete';
       let data = extra.element;
       if (deleteOccurrence) {
-        // get ISO date without time
-        data.date = jsEvent.data.event.startStr.split('T')[0];
+        data.date = extra.occurrenceDate;
       }
 
       this.$deleteSubmitBtn.removeClass('loading');

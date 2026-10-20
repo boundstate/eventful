@@ -253,6 +253,8 @@ class DefaultController extends Controller
                             'canDelete' => $element->canDelete($currentUser),
                         ],
 
+                        'occurrenceDate' => $recurrence->getStart()->format('Y-m-d'),
+
                         // custom properties for HUD
                         'sourceLabel' => $source->pluralDisplayName,
                         'dateDescription' => EventDateHelper::formatDate(

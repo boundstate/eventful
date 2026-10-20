@@ -108,7 +108,7 @@ Event::on(
             $event->timezone === 'America/Vancouver' &&
             $event->date >= new DateTime('2026-11-01 02:00', new DateTimeZone('America/Vancouver'))
         ) {
-            $event->label = 'PT';
+            $event->label = 'PCT';
         }
     }
 );

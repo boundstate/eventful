@@ -529,7 +529,7 @@ function getDateInputVal($input) {
     return $input.datepicker('getDate');
   } else {
     let val = $input.val();
-    return val ? new Date(Date.parse(val)) : null;
+    return val ? DateTime.fromISO(val).toJSDate() : null;
   }
 }
 

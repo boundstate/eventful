@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 
-export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? '' : '/dist/',
+export default defineConfig({
   build: {
     outDir: 'src/web/assets/dist',
     rollupOptions: {
@@ -16,4 +15,4 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}));
+});

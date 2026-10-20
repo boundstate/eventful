@@ -248,7 +248,8 @@ Craft.Eventful ??= {};
         this.updateEndDate(date);
 
         if (
-          (this.previousStartDate && date !== this.previousStartDate) ||
+          (this.previousStartDate &&
+            date.getTime() !== this.previousStartDate.getTime()) ||
           !this.isAnyWeekdaySelected()
         ) {
           this.selectWeekday(date.getDay());

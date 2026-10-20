@@ -68,6 +68,16 @@ class DefaultController extends Controller
             fn (EventType $type): bool => $type->canCreate($currentUser),
         );
 
+        // the statuses of all the sources' element types, for the status filter
+        $statuses = [];
+        foreach ($viewableSources as $source) {
+            /** @var class-string<ElementInterface> $elementType */
+            $elementType = $source->type->find()->elementType;
+            if ($elementType::hasStatuses()) {
+                $statuses += $elementType::statuses();
+            }
+        }
+
         $this->view->registerAssetBundle(CpCalendarAsset::class);
         $this->view->registerJs('new Craft.Eventful.Calendar();');
 
@@ -79,6 +89,7 @@ class DefaultController extends Controller
             'initialDate' => $initialDate->format('c'),
             'sources' => $viewableSources,
             'creatableTypes' => $creatableTypes,
+            'statuses' => $statuses,
             'organizers' => $settings->organizerFilterEnabled
                 ? Eventful::getInstance()->events->getOrganizers()
                 : [],
@@ -192,6 +203,7 @@ class DefaultController extends Controller
         $end = Craft::$app->request->getQueryParam('end');
         $organizers = Craft::$app->request->getQueryParam('organizers');
         $sourceKeys = Craft::$app->request->getQueryParam('sources');
+        $statusFilter = Craft::$app->request->getQueryParam('status');
 
         $startDate = DateTimeHelper::toDateTime($start);
         $endDate = DateTimeHelper::toDateTime($end);
@@ -202,7 +214,8 @@ class DefaultController extends Controller
         $elementsBySource = Eventful::getInstance()->events->getEvents(
             date: ['inRange' => [$start, $end]],
             extraQueryParams: [
-                'status' => ['enabled', 'disabled'],
+                // sources whose element type doesn't support the status don't return any events
+                'status' => $statusFilter ?: ['enabled', 'disabled'],
                 $settings->organizerQueryParam => $organizers,
                 'site' => $site,
             ],

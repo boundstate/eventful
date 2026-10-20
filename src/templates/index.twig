@@ -121,55 +121,92 @@
         </div>&nbsp;<h1 class="calendar-title" id="calendar-title"></h1>
     </div>
 
-    <button
-        id="calendar-view-btn"
-        type="button"
-        class="btn menubtn"
-        aria-controls="view-menu"
-        data-disclosure-trigger
-    >
-        {{ initialView|capitalize }}
-    </button>
-    <div id="view-menu" class="menu menu--disclosure" data-disclosure-menu>
-        <ul>
-            <li>
+    <div class="flex">
+        {% if statuses|length > 1 %}
+            {# like the status menu in Craft's element indexes, but a disclosure menu like the view menu #}
+            <div>
+                <label id="calendar-status-label" class="visually-hidden">{{ 'Status'|t('app') }}</label>
                 <button
+                    id="calendar-status-btn"
                     type="button"
-                    class="menu-item"
-                    data-calendar-view="day"
+                    class="btn menubtn statusmenubtn"
+                    aria-labelledby="calendar-status-label"
+                    aria-controls="status-menu"
+                    data-disclosure-trigger
                 >
-                    Day
+                    <span class="status all"></span>{{ 'All'|t('app') }}
                 </button>
-                <button
-                    type="button"
-                    class="menu-item"
-                    data-calendar-view="week"
-                >
-                    Week
-                </button>
-                <button
-                    type="button"
-                    class="menu-item"
-                    data-calendar-view="month"
-                >
-                    Month
-                </button>
-                <button
-                    type="button"
-                    class="menu-item"
-                    data-calendar-view="year"
-                >
-                    Year
-                </button>
-                <button
-                    type="button"
-                    class="menu-item"
-                    data-calendar-view="schedule"
-                >
-                    Schedule
-                </button>
-            </li>
-        </ul>
+                <div id="status-menu" class="menu menu--disclosure" data-disclosure-menu>
+                    <ul class="padded">
+                        <li>
+                            <button type="button" class="menu-item sel" data-status="" aria-current="true">
+                                <span class="status all"></span>{{ 'All'|t('app') }}
+                            </button>
+                        </li>
+                        {% for status, info in statuses %}
+                            {% set color = info.color ?? '' %}
+                            {% set color = color is instance of ('craft\\enums\\Color') ? color.value : color %}
+                            <li>
+                                <button type="button" class="menu-item" data-status="{{ status }}">
+                                    <span class="status {{ status }} {{ color }}"></span>{{ info.label ?? info }}
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+
+        <button
+            id="calendar-view-btn"
+            type="button"
+            class="btn menubtn"
+            aria-controls="view-menu"
+            data-disclosure-trigger
+        >
+            {{ initialView|capitalize }}
+        </button>
+        <div id="view-menu" class="menu menu--disclosure" data-disclosure-menu>
+            <ul>
+                <li>
+                    <button
+                        type="button"
+                        class="menu-item"
+                        data-calendar-view="day"
+                    >
+                        Day
+                    </button>
+                    <button
+                        type="button"
+                        class="menu-item"
+                        data-calendar-view="week"
+                    >
+                        Week
+                    </button>
+                    <button
+                        type="button"
+                        class="menu-item"
+                        data-calendar-view="month"
+                    >
+                        Month
+                    </button>
+                    <button
+                        type="button"
+                        class="menu-item"
+                        data-calendar-view="year"
+                    >
+                        Year
+                    </button>
+                    <button
+                        type="button"
+                        class="menu-item"
+                        data-calendar-view="schedule"
+                    >
+                        Schedule
+                    </button>
+                </li>
+            </ul>
+        </div>
     </div>
 {% endblock %}
 

@@ -40,6 +40,8 @@ Craft.Eventful ??= {};
     $previousBtn: null,
     $nextBtn: null,
     $viewBtn: null,
+    $statusBtn: null,
+    $statusOptions: null,
     $subscribeBtn: null,
     $deleteSubmitBtn: null,
     confirmDeleteModal: null,
@@ -61,9 +63,11 @@ Craft.Eventful ??= {};
       this.$previousBtn = $('#calendar-prev-btn');
       this.$nextBtn = $('#calendar-next-btn');
       this.$viewBtn = $('#calendar-view-btn');
+      this.$statusBtn = $('#calendar-status-btn');
       this.$subscribeBtn = $('#calendar-subscribe-btn');
 
       this.initForm();
+      this.initStatusMenu();
       this.initTimezoneNotice();
       this.initCalendar();
 
@@ -408,6 +412,42 @@ Craft.Eventful ??= {};
             break;
         }
       });
+    },
+
+    initStatusMenu() {
+      if (!this.$statusBtn.length) {
+        this.setSettings({ status: '' });
+        return;
+      }
+
+      this.$statusOptions = $('#status-menu [data-status]');
+
+      this.addListener(this.$statusOptions, 'click', (event) => {
+        this.selectStatus($(event.currentTarget));
+        $(event.currentTarget)
+          .closest('[data-disclosure-menu]')
+          .data('disclosureMenu')
+          .hide();
+        Craft.setLocalStorage(this.settingsKey, this.settings);
+        this.calendar.refetchEvents();
+      });
+
+      let $option = this.$statusOptions.filter(
+        (index, option) => $(option).data('status') === this.settings.status,
+      );
+      if ($option.length) {
+        this.selectStatus($option);
+      } else {
+        // e.g. the status's element type is no longer a source
+        this.setSettings({ status: '' });
+      }
+    },
+
+    selectStatus($option) {
+      this.$statusOptions.removeClass('sel').removeAttr('aria-current');
+      $option.addClass('sel').attr('aria-current', 'true');
+      this.$statusBtn.html($option.html());
+      this.setSettings({ status: $option.data('status') });
     },
 
     onFormChange() {

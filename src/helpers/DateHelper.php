@@ -247,18 +247,23 @@ abstract class DateHelper
         $locale = Craft::$app->getFormatter()->locale;
 
         $options = array_map(function (string $timezone) use ($date, $locale): array {
-            $formatter = self::getFormatter($timezone);
+            // the offset in ASCII (e.g. "-04:00"), since the locale's can use a minus sign
+            $isoOffset = (new DateTimeImmutable('@'.$date->getTimestamp()))->setTimezone(new DateTimeZone($timezone))->format('P');
+            // a timezone that's newer than the intl extension's data, which it can't format
+            $isUnknown = IntlTimeZone::createTimeZone($timezone)->getID() === IntlTimeZone::getUnknown()->getID();
+
+            // so format it with its offset on the date instead
+            $formatter = self::getFormatter($isUnknown ? "GMT$isoOffset" : $timezone);
             [$city, $genericName, $offset] = explode("\n", (string) $formatter->asTime($date, "VVV'\n'vvvv'\n'O"));
-            $label = self::formatTimezone($formatter, $date);
+            $label = self::formatTimezone($formatter, $date, $timezone);
             $region = IntlTimeZone::getRegion($timezone);
 
             if ($timezone === 'UTC') {
                 $city = $location = 'UTC';
                 $genericName = $formatter->asTime($date, 'zzzz');
             } else {
-                if (IntlTimeZone::createTimeZone($timezone)->getID() === IntlTimeZone::getUnknown()->getID()) {
-                    // a timezone that's newer than the intl extension's data,
-                    // so use the city from its identifier (e.g. America/North_Dakota/New_Salem => New Salem)
+                if ($isUnknown) {
+                    // and use the city from its identifier (e.g. America/North_Dakota/New_Salem => New Salem)
                     $city = str_replace('_', ' ', substr($timezone, strrpos($timezone, '/') + 1));
                 }
 
@@ -268,8 +273,6 @@ abstract class DateHelper
             // the label if it isn't just the offset (e.g. "GMT+1"), or the offset (e.g. for UTC)
             $hint = preg_match('/\p{Nd}/u', $label) || $label === $location ? $offset : $label;
 
-            // the offset in ASCII (e.g. "-04:00"), since the locale's can use a minus sign
-            $isoOffset = (new DateTimeImmutable('@'.$date->getTimestamp()))->setTimezone(new DateTimeZone($timezone))->format('P');
             $shortOffset = preg_replace(['/^([+-])0/', '/:00$/'], ['$1', ''], $isoOffset);
 
             return [
@@ -336,11 +339,13 @@ abstract class DateHelper
         return $skeleton;
     }
 
-    private static function formatTimezone(Formatter $formatter, DateTimeInterface $date): string
+    private static function formatTimezone(Formatter $formatter, DateTimeInterface $date, ?string $timezone = null): string
     {
+        $timezone ??= $formatter->timeZone;
+
         $event = new DefineTimezoneLabelEvent([
-            'date' => DateTimeImmutable::createFromInterface($date)->setTimezone(new DateTimeZone($formatter->timeZone)),
-            'timezone' => $formatter->timeZone,
+            'date' => DateTimeImmutable::createFromInterface($date)->setTimezone(new DateTimeZone($timezone)),
+            'timezone' => $timezone,
             'locale' => $formatter->locale,
             'label' => $formatter->asTime($date, 'zzz'),
         ]);

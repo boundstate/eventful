@@ -383,10 +383,15 @@ Craft.Eventful ??= {};
     },
 
     updateMonthRepeatOptions(date) {
-      let dayOfMonth = date.getDate();
-      let weekDayName = date.toLocaleDateString(undefined, { weekday: 'long' });
-      let weekOfMonth = getWeekOfMonth(date);
-      let isLastWeekOfMonth = addDays(date, 7).getMonth() !== date.getMonth();
+      date = DateTime.fromJSDate(date);
+      let dayOfMonth = date.day;
+      let weekDayName = date.toLocaleString({ weekday: 'long' });
+      // RRULE weekdays (e.g. "MO"), rather than the localized name
+      let weekDay = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][
+        date.weekday - 1
+      ];
+      let weekOfMonth = Math.ceil(dayOfMonth / 7);
+      let isLastWeekOfMonth = dayOfMonth + 7 > date.daysInMonth;
 
       let currentValue = this.$monthRepeatSelect.val();
 
@@ -396,7 +401,7 @@ Craft.Eventful ??= {};
           label: 'on day ' + dayOfMonth,
         },
         {
-          value: weekOfMonth + weekDayName.slice(0, 2).toUpperCase(),
+          value: weekOfMonth + weekDay,
           label:
             'on the ' +
             weekOfMonth +
@@ -408,7 +413,7 @@ Craft.Eventful ??= {};
 
       if (isLastWeekOfMonth) {
         options.push({
-          value: '-1' + weekDayName.slice(0, 2).toUpperCase(),
+          value: '-1' + weekDay,
           label: 'on the last ' + weekDayName,
         });
       }
@@ -482,10 +487,6 @@ Craft.Eventful ??= {};
     },
   });
 })(jQuery);
-
-function getWeekOfMonth(date) {
-  return Math.ceil(date.getDate() / 7);
-}
 
 function addDays(date, days) {
   return DateTime.fromJSDate(date).plus({ days }).toJSDate();

@@ -152,3 +152,21 @@ public static formatTimeRange(DateTimeInterface $startDate, DateTimeInterface $e
 | `$displayTimezone` | <span class="code">bool</span>                                                                                           |                                       |
 | **return**         | <span class="code">string</span>                                                                                         |                                       |
 | **throws**         | <span class="code">InvalidArgumentException</span>                                                                       | if the format isn't valid             |
+
+### timezoneOptions
+
+Returns the options for a timezone input, sorted by location (e.g. "Toronto, Canada", with the city on its own),
+with the timezone's label on the given date as a hint (e.g. "EST"), or its offset if it doesn't have one
+(e.g. "GMT+1"), since they can change during the year.
+
+The label is the one added to formatted times, so it can be overridden in the same way.
+The options can also be searched by their generic name (e.g. "Eastern Time"), identifier and offset.
+
+```php
+public static timezoneOptions(?DateTimeInterface $date = null): array{value: string, label: string, data: array{city: string, hint: string, keywords: string}}[]
+```
+
+|            |                                                                                                                            |     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- | --- |
+| `$date`    | <span class="code">?DateTimeInterface</span>                                                                               |     |
+| **return** | <span class="code">array{value: string, label: string, data: array{city: string, hint: string, keywords: string}}[]</span> |     |

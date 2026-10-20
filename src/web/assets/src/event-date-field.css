@@ -106,3 +106,14 @@
     }
   }
 }
+
+/* the dropdown is appended to the body, outside the field */
+.eventful-timezone-option {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s);
+
+  .light {
+    flex-shrink: 0;
+  }
+}

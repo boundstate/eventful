@@ -4,7 +4,8 @@ title: DefineTimezoneLabelEvent
 
 # Class DefineTimezoneLabelEvent
 
-Event for customizing the timezone label added to formatted times (e.g. "EST").
+Event for customizing the timezone label added to formatted times (e.g. "EST"),
+and shown in the timezone options of Event Date fields.
 
 <small class="block">Extends <span class="code">[Event](https://www.yiiframework.com/doc/api/2.0/yii-base-event '\\yii\\base\\Event')</span></small>
 

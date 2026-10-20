@@ -6,7 +6,8 @@ use DateTimeImmutable;
 use yii\base\Event;
 
 /**
- * Event for customizing the timezone label added to formatted times (e.g. "EST").
+ * Event for customizing the timezone label added to formatted times (e.g. "EST"),
+ * and shown in the timezone options of Event Date fields.
  */
 class DefineTimezoneLabelEvent extends Event
 {

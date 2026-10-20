@@ -11,10 +11,13 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
 use craft\i18n\Locale;
 use DateTime;
+use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
 
@@ -382,15 +385,83 @@ class EventDate extends Field implements PreviewableFieldInterface, SortableFiel
             ],
         );
 
+        $value ??= new EventDateModel(['allDay' => $this->allDayMode === self::ALL_DAY_ALWAYS]);
+
         return $view->renderTemplate('eventful/fields/EventDate/input', [
             'id' => $id,
             'name' => $this->handle,
-            'value' => $value ?? new EventDateModel(['allDay' => $this->allDayMode === self::ALL_DAY_ALWAYS]),
+            'value' => $value,
             'field' => $this,
             'freqOptions' => $freqOptions,
             'dayOptions' => $dayOptions,
+            'timezoneOptions' => $this->timezoneOptions($value),
             'readonly' => $static,
         ]);
+    }
+
+    /**
+     * Returns the timezone options, with the likeliest ones first, followed by all of them.
+     * The browser's timezone is suggested by the JS.
+     */
+    private function timezoneOptions(EventDateModel $value): array
+    {
+        $suggestions = array_unique(array_filter([
+            $value->timezone,
+            // the user's preferred timezone (or the system timezone), which new events default to
+            Craft::$app->getTimeZone(),
+            DateHelper::systemTimezone(),
+            ...$this->mostUsedTimezones(),
+        ]));
+
+        $suggested = [];
+        $others = [];
+        foreach (DateHelper::timezoneOptions($value->start) as $option) {
+            $index = array_search($option['value'], $suggestions, true);
+            if ($index === false) {
+                $others[] = $option;
+            } else {
+                $suggested[$index] = $option;
+            }
+        }
+        ksort($suggested);
+
+        return [
+            // so a new event doesn't select the first option, before the JS selects its default
+            ['label' => '', 'value' => null],
+            ['optgroup' => 'Suggested'],
+            ...$suggested,
+            ['optgroup' => 'All timezones'],
+            ...$others,
+        ];
+    }
+
+    /**
+     * Returns the timezones most used by other events with this field.
+     *
+     * @return string[]
+     */
+    private function mostUsedTimezones(int $limit = 3): array
+    {
+        if (! isset($this->layoutElement)) {
+            return [];
+        }
+
+        $timezoneSql = self::storedValueSql([$this], 'timezone');
+
+        return (new Query)
+            ->select(['timezone' => $timezoneSql])
+            ->from(['elements_sites' => Table::ELEMENTS_SITES])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
+            ->where([
+                'elements.fieldLayoutId' => $this->layoutElement->getLayout()->id,
+                'elements.dateDeleted' => null,
+                'elements.revisionId' => null,
+            ])
+            ->andWhere(['not', [$timezoneSql => null]])
+            ->groupBy($timezoneSql)
+            ->orderBy(new Expression('COUNT(*) DESC'))
+            ->limit($limit)
+            ->column();
     }
 
     private function normalizeValueInternal(mixed $value, bool $fromRequest): ?EventDateModel

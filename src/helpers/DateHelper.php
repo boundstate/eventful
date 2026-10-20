@@ -5,13 +5,16 @@ namespace boundstate\eventful\helpers;
 use boundstate\eventful\enums\DateFormat;
 use boundstate\eventful\enums\FormatLength;
 use boundstate\eventful\events\DefineTimezoneLabelEvent;
+use Collator;
 use Craft;
 use craft\helpers\App;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use IntlTimeZone;
 use InvalidArgumentException;
+use Locale;
 use yii\base\Event;
 use yii\i18n\Formatter;
 
@@ -224,6 +227,73 @@ abstract class DateHelper
         }
 
         return $formatted;
+    }
+
+    /**
+     * Returns the options for a timezone input, sorted by location (e.g. "Toronto, Canada", with the city on its own),
+     * with the timezone's label on the given date as a hint (e.g. "EST"), or its offset if it doesn't have one
+     * (e.g. "GMT+1"), since they can change during the year.
+     *
+     * The label is the one added to formatted times, so it can be overridden in the same way.
+     * The options can also be searched by their generic name (e.g. "Eastern Time"), identifier and offset.
+     *
+     * @return array<array{value: string, label: string, data: array{city: string, hint: string, keywords: string}}>
+     *
+     * @see DefineTimezoneLabelEvent
+     */
+    public static function timezoneOptions(?DateTimeInterface $date = null): array
+    {
+        $date ??= new DateTimeImmutable;
+        $locale = Craft::$app->getFormatter()->locale;
+
+        $options = array_map(function (string $timezone) use ($date, $locale): array {
+            $formatter = self::getFormatter($timezone);
+            [$city, $genericName, $offset] = explode("\n", (string) $formatter->asTime($date, "VVV'\n'vvvv'\n'O"));
+            $label = self::formatTimezone($formatter, $date);
+            $region = IntlTimeZone::getRegion($timezone);
+
+            if ($timezone === 'UTC') {
+                $city = $location = 'UTC';
+                $genericName = $formatter->asTime($date, 'zzzz');
+            } else {
+                if (IntlTimeZone::createTimeZone($timezone)->getID() === IntlTimeZone::getUnknown()->getID()) {
+                    // a timezone that's newer than the intl extension's data,
+                    // so use the city from its identifier (e.g. America/North_Dakota/New_Salem => New Salem)
+                    $city = str_replace('_', ' ', substr($timezone, strrpos($timezone, '/') + 1));
+                }
+
+                $location = $region ? $city.', '.Locale::getDisplayRegion("-$region", $locale) : $city;
+            }
+
+            // the label if it isn't just the offset (e.g. "GMT+1"), or the offset (e.g. for UTC)
+            $hint = preg_match('/\p{Nd}/u', $label) || $label === $location ? $offset : $label;
+
+            // the offset in ASCII (e.g. "-04:00"), since the locale's can use a minus sign
+            $isoOffset = (new DateTimeImmutable('@'.$date->getTimestamp()))->setTimezone(new DateTimeZone($timezone))->format('P');
+            $shortOffset = preg_replace(['/^([+-])0/', '/:00$/'], ['$1', ''], $isoOffset);
+
+            return [
+                'value' => $timezone,
+                'label' => $location,
+                'data' => [
+                    'city' => $city,
+                    'hint' => $hint,
+                    'keywords' => implode(' ', array_unique([
+                        $genericName,
+                        $timezone,
+                        $offset,
+                        $isoOffset,
+                        "GMT$shortOffset",
+                        "UTC$shortOffset",
+                    ])),
+                ],
+            ];
+        }, DateTimeZone::listIdentifiers());
+
+        $collator = new Collator($locale);
+        usort($options, fn (array $a, array $b): int => $collator->compare($a['label'], $b['label']) ?: 0);
+
+        return $options;
     }
 
     private static function formatDatetime(

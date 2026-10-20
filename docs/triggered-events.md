@@ -93,7 +93,8 @@ Event::on(
 
 ### [Define timezone label](reference/helpers/DateHelper.md#event_define_timezone_label)
 
-Triggered when a timezone label is added to formatted times (e.g. with the `displayTimezone` setting).
+Triggered when a timezone label is added to formatted times (e.g. with the `displayTimezone` setting),
+and for each option in the timezone dropdown of Event Date fields.
 The label defaults to the locale's short name for the timezone (e.g. "EST"), from the Unicode locale data (CLDR) in PHP's intl extension.
 
 Use it when that name is wrong or out of date. For example, British Columbia stopped changing its clocks on November 1, 2026, but the locale data still calls its time "PDT":

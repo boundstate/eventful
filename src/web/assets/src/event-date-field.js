@@ -136,21 +136,46 @@ Craft.Eventful ??= {};
     },
 
     configureTimezoneField() {
-      // include the city when rendering the selected item, since
-      // timezones can share an offset and abbreviation (e.g. Vancouver & Los Angeles in summer)
-      this.$timezoneSelectize.settings.render.item = ({ text = '', hint }) => {
-        let label = hint ? `${text} - ${hint}` : text;
-        return `<div class="item" title="${Craft.escapeHtml(label)}"><span>${Craft.escapeHtml(label)}</span></div>`;
+      let selectize = this.$timezoneSelectize;
+      let escape = Craft.escapeHtml;
+
+      // show the location, with the timezone's label or offset (e.g. "EST") on the right
+      selectize.settings.render.option = ({ text = '', hint }) =>
+        `<div class="option eventful-timezone-option" role="option">` +
+        `<span>${escape(text)}</span>` +
+        (hint ? `<span class="light">${escape(hint)}</span>` : '') +
+        `</div>`;
+      // and only the city when selected, to fit the field (e.g. "Toronto (EST)")
+      selectize.settings.render.item = ({ text = '', city, hint }) => {
+        let label = (city || text) + (hint ? ` (${hint})` : '');
+        let title = text + (hint ? ` (${hint})` : '');
+        return `<div class="item" title="${escape(title)}"><span>${escape(label)}</span></div>`;
       };
-      this.$timezoneSelectize.clearCache('item');
+      selectize.clearCache();
+
+      this.suggestBrowserTimezone();
 
       // re-render selected option
-      let value = this.$timezoneSelectize.getValue();
+      let value = selectize.getValue();
       if (value) {
-        this.$timezoneSelectize.updateOption(
-          value,
-          this.$timezoneSelectize.options[value],
-        );
+        selectize.updateOption(value, selectize.options[value]);
+      }
+    },
+
+    /**
+     * Moves the browser's timezone into the suggested options (the first group), if it isn't already.
+     */
+    suggestBrowserTimezone() {
+      let selectize = this.$timezoneSelectize;
+      let timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let suggestedGroup = Object.keys(selectize.optgroups)[0];
+      let option = selectize.options[timezone];
+
+      if (option && suggestedGroup && option.optgroup !== suggestedGroup) {
+        selectize.updateOption(timezone, {
+          ...option,
+          optgroup: suggestedGroup,
+        });
       }
     },
 
@@ -262,7 +287,7 @@ Craft.Eventful ??= {};
     },
 
     async updateTimezoneOptions() {
-      // the offsets and abbreviations in the labels change during the year
+      // the labels and offsets in the hints change during the year
       let date = getDateInputVal(this.$startDateInput);
       if (!date) {
         return;
@@ -280,11 +305,11 @@ Craft.Eventful ??= {};
       }
 
       // update the options in place, so the selected one keeps its value,
-      // and reorder them since they're sorted by offset (keeping the empty one first)
-      response.data.forEach((option, index) => {
+      // and they keep their group and order
+      response.data.forEach((option) => {
         this.$timezoneSelectize.updateOption(option.value, {
+          ...this.$timezoneSelectize.options[option.value],
           ...option,
-          $order: index + 2,
         });
       });
     },

@@ -9,6 +9,11 @@ function torontoDate(string $date): DateTime
     return new DateTime($date, new DateTimeZone('America/Toronto'));
 }
 
+function timezoneOption(array $options, string $timezone): array
+{
+    return array_values(array_filter($options, fn (array $option): bool => $option['value'] === $timezone))[0];
+}
+
 describe('setTime', function () {
     it('combines the date of one value with the time of another', function () {
         $result = DateHelper::setTime(torontoDate('2026-03-05 08:15'), torontoDate('2020-01-01 17:45'));
@@ -232,5 +237,72 @@ describe('timezone label', function () {
             ->and($events[0]->timezone)->toBe('America/Vancouver')
             ->and($events[0]->locale)->toBe('en-US')
             ->and($events[0]->label)->toBe('PST');
+    });
+});
+
+describe('timezoneOptions', function () {
+    afterEach(function () {
+        Event::off(DateHelper::class, DateHelper::EVENT_DEFINE_TIMEZONE_LABEL);
+    });
+
+    it('labels each timezone with its location, and its label on the given date', function () {
+        $options = DateHelper::timezoneOptions(torontoDate('2026-07-05 10:00'));
+
+        expect(timezoneOption($options, 'America/Toronto'))->toBe([
+            'value' => 'America/Toronto',
+            'label' => 'Toronto, Canada',
+            'data' => [
+                'city' => 'Toronto',
+                'hint' => 'EDT',
+                'keywords' => 'Eastern Time America/Toronto GMT-4 -04:00 UTC-4',
+            ],
+        ]);
+    });
+
+    it('shows the offset when the label only repeats it', function () {
+        $options = DateHelper::timezoneOptions(torontoDate('2026-03-05 10:00'));
+
+        expect(timezoneOption($options, 'Asia/Kolkata')['data']['hint'])->toBe('GMT+5:30');
+    });
+
+    it('labels UTC as is', function () {
+        expect(timezoneOption(DateHelper::timezoneOptions(), 'UTC'))->toMatchArray([
+            'label' => 'UTC',
+            'data' => [
+                'city' => 'UTC',
+                'hint' => 'GMT',
+                'keywords' => 'Coordinated Universal Time UTC GMT +00:00 GMT+0 UTC+0',
+            ],
+        ]);
+    });
+
+    it('sorts the timezones by location in the locale', function () {
+        Craft::$app->getFormatter()->locale = 'fr';
+
+        $labels = array_column(DateHelper::timezoneOptions(), 'label');
+
+        expect(array_slice($labels, 0, 4))->toBe(['Abidjan, Côte d’Ivoire', 'Accra, Ghana', 'Achgabat, Turkménistan', 'Açores, Portugal']);
+    });
+
+    it('can be searched by an ASCII offset when the locale uses a minus sign', function () {
+        Craft::$app->getFormatter()->locale = 'fr';
+
+        $option = timezoneOption(DateHelper::timezoneOptions(torontoDate('2026-03-05 10:00')), 'America/Toronto');
+
+        expect($option['data']['hint'])->toBe('UTC−5')
+            ->and($option['data']['keywords'])->toContain('UTC-5', 'GMT-5', '-05:00');
+    });
+
+    it('uses the label from an event handler', function () {
+        Event::on(DateHelper::class, DateHelper::EVENT_DEFINE_TIMEZONE_LABEL, function (DefineTimezoneLabelEvent $event) {
+            if ($event->timezone === 'America/Vancouver') {
+                $event->label = 'PT';
+            }
+        });
+
+        $options = DateHelper::timezoneOptions(torontoDate('2026-03-05 10:00'));
+
+        expect(timezoneOption($options, 'America/Vancouver')['data']['hint'])->toBe('PT')
+            ->and(timezoneOption($options, 'America/Toronto')['data']['hint'])->toBe('EST');
     });
 });

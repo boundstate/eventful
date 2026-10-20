@@ -21,7 +21,6 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\web\Controller;
-use craft\web\twig\variables\Cp;
 use DateTime;
 use Recurr\Recurrence;
 use yii\base\Exception;
@@ -306,8 +305,8 @@ class DefaultController extends Controller
     }
 
     /**
-     * Returns the timezone options for the date field, with labels for the given date,
-     * since a timezone's offset and abbreviation can change during the year.
+     * Returns the timezone options for the date field, with hints for the given date,
+     * since a timezone's label and offset can change during the year.
      */
     public function actionTimezoneOptions(): Response
     {
@@ -318,13 +317,15 @@ class DefaultController extends Controller
             throw new BadRequestHttpException('A valid date is required.');
         }
 
-        $options = (new Cp)->getTimeZoneOptions($date);
+        $options = DateHelper::timezoneOptions($date);
 
         // in the format Selectize expects
         return $this->asJson(array_map(fn (array $option): array => [
             'value' => $option['value'],
             'text' => $option['label'],
-            'hint' => $option['data']['hint'] ?? null,
+            'city' => $option['data']['city'],
+            'hint' => $option['data']['hint'],
+            'keywords' => $option['data']['keywords'],
         ], $options));
     }
 

@@ -6,6 +6,7 @@ use boundstate\eventful\base\EventType;
 use boundstate\eventful\enums\EventProp;
 use boundstate\eventful\enums\IcsMethod;
 use boundstate\eventful\Eventful;
+use boundstate\eventful\helpers\DateHelper;
 use boundstate\eventful\helpers\EventDateHelper;
 use boundstate\eventful\helpers\EventRenderer;
 use boundstate\eventful\models\EventDate;
@@ -257,10 +258,17 @@ class DefaultController extends Controller
 
                         // custom properties for HUD
                         'sourceLabel' => $source->pluralDisplayName,
+                        // in the event's timezone (e.g. its local time if it's in person),
+                        // so it's displayed if it isn't the calendar's (the user's preferred one),
+                        // even for occurrences when they have the same offset, so it's consistent
                         'dateDescription' => EventDateHelper::formatDate(
                             $recurrence,
                             allDay: $date->allDay,
-                            displayTimezone: $settings->displayTimezone,
+                            displayTimezone: $settings->displayTimezone || (! $date->allDay && ! DateHelper::hasSameOffsets(
+                                $recurrence->getStart()->getTimezone()->getName(),
+                                Craft::$app->getTimeZone(),
+                                $recurrence->getStart(),
+                            )),
                         ),
                         'repeatDescription' => $date->getRepeatDescription(),
                         'description' => EventRenderer::render($element, EventProp::DESCRIPTION),

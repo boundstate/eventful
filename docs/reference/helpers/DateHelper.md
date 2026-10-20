@@ -67,6 +67,23 @@ public static endOfDay(DateTimeInterface $date): DateTime
 | `$date`    | <span class="code">DateTimeInterface</span> |     |
 | **return** | <span class="code">DateTime</span>          |     |
 
+### hasSameOffsets
+
+Returns whether two timezones have the same offsets from a year before to a year after a date,
+so they display the same times (e.g. Toronto and New York, but not Phoenix and Denver,
+since Phoenix doesn't observe DST).
+
+```php
+public static hasSameOffsets(string $timezone, string $otherTimezone, DateTimeInterface $date): bool
+```
+
+|                  |                                             |     |
+| ---------------- | ------------------------------------------- | --- |
+| `$timezone`      | <span class="code">string</span>            |     |
+| `$otherTimezone` | <span class="code">string</span>            |     |
+| `$date`          | <span class="code">DateTimeInterface</span> |     |
+| **return**       | <span class="code">bool</span>              |     |
+
 ### formatDate
 
 Formats a date (without a time).

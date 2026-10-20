@@ -38,11 +38,10 @@
 
 {{ forms.lightswitchField({
   first: true,
-  label: 'Display timezones'|t('app'),
-  instructions: 'Display event date timezones in the calendar, and by default when using Twig filters.',
+  label: 'Always display time zones',
+  instructions: 'Whether to display the time zones of event times in the calendar, and by default when using Twig filters. Otherwise, the calendar only displays an event’s time zone when it differs from the user’s.',
   name: 'displayTimezone',
   on: settings.displayTimezone,
-  toggle: 'displayTimezone',
   disabled: readOnly,
 }) }}
 

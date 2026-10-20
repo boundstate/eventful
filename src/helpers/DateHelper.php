@@ -67,6 +67,27 @@ abstract class DateHelper
     }
 
     /**
+     * Returns whether two timezones have the same offsets from a year before to a year after a date,
+     * so they display the same times (e.g. Toronto and New York, but not Phoenix and Denver,
+     * since Phoenix doesn't observe DST).
+     */
+    public static function hasSameOffsets(string $timezone, string $otherTimezone, DateTimeInterface $date): bool
+    {
+        $timezone = new DateTimeZone($timezone);
+        $otherTimezone = new DateTimeZone($otherTimezone);
+        $start = DateTimeImmutable::createFromInterface($date)->modify('first day of this month -1 year');
+
+        for ($months = 0; $months <= 24; $months++) {
+            $month = $start->modify("+$months months");
+            if ($timezone->getOffset($month) !== $otherTimezone->getOffset($month)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Formats a date (without a time).
      *
      * @param  FormatLength|string  $format  A length or its value (e.g. `'long'`)

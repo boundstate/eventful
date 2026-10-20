@@ -41,6 +41,19 @@ describe('endOfDay', function () {
     });
 });
 
+describe('hasSameOffsets', function () {
+    it('compares the offsets of two timezones around a date', function (string $timezone, string $otherTimezone, string $date, bool $expected) {
+        expect(DateHelper::hasSameOffsets($timezone, $otherTimezone, new DateTime($date)))->toBe($expected);
+    })->with([
+        'same rules' => ['America/Toronto', 'America/New_York', '2026-01-15', true],
+        'different DST, in winter when the offsets match' => ['America/Phoenix', 'America/Denver', '2026-01-15', false],
+        'different standard time' => ['America/Halifax', 'America/Toronto', '2026-07-15', false],
+        // São Paulo observed DST until February 2019, and Buenos Aires doesn't
+        'rules differ within a year' => ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires', '2019-06-15', false],
+        'rules differ more than a year before' => ['America/Sao_Paulo', 'America/Argentina/Buenos_Aires', '2021-06-15', true],
+    ]);
+});
+
 describe('formatDate', function () {
     it('formats a date', function (string $format, string $expected) {
         expect(DateHelper::formatDate(torontoDate('2026-03-05 10:00'), $format))->toBeFormattedAs($expected);

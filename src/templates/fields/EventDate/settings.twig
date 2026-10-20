@@ -1,15 +1,6 @@
 {% import '_includes/forms' as forms %}
 
 {{
-    forms.checkboxField({
-        label: 'Allow never ending repeating',
-        name: 'allowNeverEnding',
-        value: 1,
-        checked: field.allowNeverEnding
-    })
-}}
-
-{{
     forms.radioGroupField({
         name: 'allDayMode',
         value: field.allDayMode,
@@ -29,5 +20,14 @@
         ],
         warning: field.id ? 'Changing this may result in data loss.'|t('app'),
         errors: field.getErrors('allDayMode')
+    })
+}}
+
+{{
+    forms.lightswitchField({
+        label: 'Allow never-ending repeats',
+        instructions: 'Whether authors should be able to make events repeat forever.',
+        name: 'allowNeverEnding',
+        on: field.allowNeverEnding,
     })
 }}

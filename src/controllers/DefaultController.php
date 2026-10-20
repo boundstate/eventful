@@ -17,6 +17,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\helpers\App;
+use craft\helpers\Cp as CpHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\web\Controller;
@@ -235,6 +236,9 @@ class DefaultController extends Controller
                 /** @var EventDate $date */
                 $date = $element->getFieldValue($source->type->dateFieldHandle);
                 $status = $element->getStatus();
+                $statusLabel = $element->showStatusIndicator()
+                    ? CpHelper::componentStatusLabelHtml($element)
+                    : null;
 
                 foreach ($date->getOccurrencesInRange($startDate, $endDate, includeInProgress: true) as $recurrence) {
                     /** @var Recurrence $recurrence */
@@ -277,6 +281,7 @@ class DefaultController extends Controller
 
                         // custom properties for HUD
                         'sourceLabel' => $source->pluralDisplayName,
+                        'statusLabel' => $statusLabel,
                         // in the event's timezone (e.g. its local time if it's in person),
                         // so it's displayed if it isn't the calendar's (the user's preferred one),
                         // even for occurrences when they have the same offset, so it's consistent

@@ -536,12 +536,15 @@ Craft.Eventful ??= {};
       let $footer = $('<div>', {
         class: 'hud-footer flex flex-justify',
       }).append(
-        $('<div>', { class: 'event-hud-type' }).append(
-          $('<div>', {
-            class: 'event-hud-type-circle',
-            css: { background: info.event.backgroundColor },
-          }),
-          $('<div>', { text: extra.sourceLabel }),
+        $('<div>', { class: 'flex' }).append(
+          $('<div>', { class: 'event-hud-type' }).append(
+            $('<div>', {
+              class: 'event-hud-type-circle',
+              css: { background: info.event.backgroundColor },
+            }),
+            $('<div>', { text: extra.sourceLabel }),
+          ),
+          extra.statusLabel ? $(extra.statusLabel) : null,
         ),
       );
 
